@@ -253,6 +253,8 @@ def test_u_ais_12_sog_1022_is_max_not_none():
         "!AIVDM,1,1,,B,177KQJ5000G?tO`K>RA1wUbN0TKH,0",  # no checksum
         "!AIVDM,1,1,,B,177KQJ5000G?tO`K>RA1wUbN0TKH,0*ZZ",  # non-hex checksum
         _nmea("AIVDM,1,1,,B,177KQJ5000G?tO`K>RA1wUbN0TK~,0"),  # invalid armoring char
+        _nmea("AIVDM,1,1,,B,177KQJ5000G?tO`K>RA1wUbN0TKX,0"),  # 0x58: gap 0x58-0x5F
+        _nmea("AIVDM,1,1,,B,177KQJ5000G?tO`K>RA1wUbN0TK_,0"),  # 0x5F: gap 0x58-0x5F
         _nmea("AIVDM,1,1,,B,177KQJ5000G?tO`K>RA1wUbN0TKH"),  # wrong field count
         _nmea("AIVDM,x,1,,B,177KQJ5000G?tO`K>RA1wUbN0TKH,0"),  # non-numeric count
         _nmea("AIVDM,1,2,,B,177KQJ5000G?tO`K>RA1wUbN0TKH,0"),  # index > count
@@ -263,6 +265,13 @@ def test_malformed_sentences_rejected(line):
     d = AisDecoder()
     assert d.feed(line) is None
     assert d.stats["rejected"] == 1
+
+
+@pytest.mark.parametrize("ch", ["W", "`", "w"])  # 0x57, 0x60, 0x77: edges of the valid ranges
+def test_u_ais_14_armoring_range_edges_accepted(ch):
+    d = AisDecoder()
+    assert d.feed(_nmea(f"AIVDM,1,1,,B,177KQJ5000G?tO`K>RA1wUbN0TK{ch},0")) is not None
+    assert d.stats["rejected"] == 0
 
 
 def test_sequence_id_reused_with_different_count():

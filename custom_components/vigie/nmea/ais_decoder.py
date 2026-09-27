@@ -110,10 +110,13 @@ def _dearmor(payload: str, fill_bits: int) -> tuple[int, int]:
     """Return (bits as one big int, bit length)."""
     value = 0
     for ch in payload:
-        v = ord(ch) - 48
-        if v > 40:
-            v -= 8
-        if not 0 <= v <= 63:
+        code = ord(ch)
+        # Valid six-bit armoring: '0'..'W' (0x30-0x57) → 0..39, '`'..'w' (0x60-0x77) → 40..63
+        if 0x30 <= code <= 0x57:
+            v = code - 48
+        elif 0x60 <= code <= 0x77:
+            v = code - 56
+        else:
             raise AisDecodeError(f"invalid armoring character {ch!r}")
         value = (value << 6) | v
     nbits = 6 * len(payload) - fill_bits

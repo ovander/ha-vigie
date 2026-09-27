@@ -35,3 +35,7 @@ versioning: SemVer.
 - AIS decoder (`nmea/ais_decoder.py`): Class A types 1/2/3 and Class B types 18/19,
   checksum and length validation, multi-fragment reassembly, tag blocks, own-ship `VDO`
   flag, injectable clock. 39 tests, 98.5 % coverage.
+
+### Fixed
+- AIS decoder rejects payload armoring characters 0x58–0x5F (`X`…`_`), which the AIVDM
+  specification does not allow; they were decoded as six-bit values 40–47 (#11).
