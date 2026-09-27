@@ -39,6 +39,7 @@ from .const import (
     CONF_STALE_TIMEOUT,
     CONF_TCPA_THRESHOLD,
     CONF_UPDATE_INTERVAL,
+    CONF_WATCH_LIST,
     DEFAULT_BAUDRATE,
     DEFAULT_OPTIONS,
     DEFAULT_SERIAL_PORT,
@@ -150,6 +151,18 @@ class VigieConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_create_entry(title=self._data[CONF_NAME], data=self._data)
 
 
+def _parse_watch_list(raw: Any) -> list[int] | None:
+    """MMSIs in the order given, without duplicates; None when one is not 9 digits."""
+    result: list[int] = []
+    for item in raw or []:
+        text = str(item).strip()
+        if not _MMSI.match(text):
+            return None
+        if int(text) not in result:
+            result.append(int(text))
+    return result
+
+
 def _parse_baudrate(raw: Any) -> int | None:
     try:
         value = int(str(raw).strip())
@@ -166,9 +179,13 @@ class VigieOptionsFlow(OptionsFlowWithReload):
         if user_input is not None:
             options = dict(user_input)
             mmsi = str(options.pop(CONF_OWN_MMSI, "") or "").strip()
+            watch_list = _parse_watch_list(options.get(CONF_WATCH_LIST, []))
             if mmsi and not _MMSI.match(mmsi):
                 errors[CONF_OWN_MMSI] = "invalid_mmsi"
+            elif watch_list is None:
+                errors[CONF_WATCH_LIST] = "invalid_watch_list"
             else:
+                options[CONF_WATCH_LIST] = watch_list
                 if mmsi:
                     options[CONF_OWN_MMSI] = int(mmsi)
                 return self.async_create_entry(data=options)
@@ -177,6 +194,7 @@ class VigieOptionsFlow(OptionsFlowWithReload):
         if user_input is not None:
             current.update(user_input)
         own_mmsi = current.get(CONF_OWN_MMSI)
+        watched = [str(m).strip() for m in current.get(CONF_WATCH_LIST, [])]
 
         def number(maximum: int, unit: str) -> vol.All:
             return vol.All(
@@ -231,6 +249,14 @@ class VigieOptionsFlow(OptionsFlowWithReload):
                     CONF_OWN_MMSI,
                     description={"suggested_value": str(own_mmsi) if own_mmsi else None},
                 ): TextSelector(),
+                vol.Optional(CONF_WATCH_LIST, default=watched): SelectSelector(
+                    SelectSelectorConfig(
+                        options=watched,
+                        multiple=True,
+                        custom_value=True,
+                        mode=SelectSelectorMode.DROPDOWN,
+                    )
+                ),
             }
         )
         return self.async_show_form(step_id="init", data_schema=schema, errors=errors)

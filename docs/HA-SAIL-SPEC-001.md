@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.8 (draft) |
+| Version | 0.9 (draft) |
 | Date | 2026-09-27 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.9 | 2026-09-27 | WP9 (#27): §9.3 watched targets made precise (device per MMSI linked to the boat, attributes, availability, removal); §11.2 `watch_list` implemented. |
 | 0.8 | 2026-09-27 | WP8 (#25): §9.2 traffic entities made precise (units, suggested nmi, state classes, attributes); CPA/TCPA in the `targets` list; §11.2 P2 threat options implemented. |
 | 0.7 | 2026-09-27 | P2 decisions and WP7 (#23). OD-04 resolved: aggregate sensor + watch-list trackers + threat entities, no `geo_location`. New OD-15, resolved: `collision_risk` anti-flapping latch (§8.2). New OD-16, resolved: dead-reckon own boat and targets to now before CPA/TCPA (§8.1, §8.3). §8.1 made precise (local plane, ‖V‖ threshold 0.1 kn, diverging targets report TCPA < 0 and no CPA); §8.2 stationary exclusion applies to Class A only; §9.2 `collision_risk` unavailable without own position. |
 | 0.6 | 2026-09-27 | WP5 (#15): §9.2 — distances in `sensor.ais_targets` follow the list rebuild (≤ 5 s); §9.5 — `diagnostics.py` also exports GPS rejects, internal errors and reconnects. No change of scope. |
@@ -291,6 +292,11 @@ Speed: HA does not convert knots automatically under either the metric or the US
 
 `device_tracker.ais_<mmsi>` exists only for MMSIs in the user's watch list (options flow), for example friends' boats or a tender. Never auto-created for every target.
 
+- Each watched MMSI gets its own device, named "AIS <mmsi>" and linked to the boat's device (`via_device`); unique ID `{entry_id}_ais_<mmsi>`.
+- State: the target's last reported position (GPS source type, 5 m dead-band). Attributes: MMSI, name, class, SOG, COG, heading, nav status, report age, and — when own position is known — distance, bearing, CPA and TCPA (§8.1).
+- Unavailable while the target is not in the table: not heard yet, or expired (§9.4). A stale position is never shown (NFR-05). Its availability does not depend on own position.
+- Removing an MMSI from the list removes its entity and its device when the entry reloads.
+
 ### 9.4 AIS target table
 
 Keyed by MMSI. An entry expires after a timeout (options `expiry_class_a`, default 10 min, and `expiry_class_b`, default 15 min, the latter also applied to Class A targets with nav status `at_anchor` or `moored`). Own-ship `VDO` reports and reports from the own MMSI (§7.4) never enter the table. Names are filled from type 19 now and types 5/24 in P3; a known name is kept when later reports carry none.
@@ -345,7 +351,7 @@ Exponential backoff (1, 2, 4 … 60 s max) on serial errors and end-of-stream, l
 | `cpa_threshold` | 0.5 NM (0.05–5, step 0.05) | P2 |
 | `tcpa_threshold` | 15 min (1–60) | P2 |
 | `exclude_stationary` (anchored/moored Class A below 0.5 kn) | on | P2 |
-| Watch list (MMSIs) | empty | P2 |
+| `watch_list` (9-digit MMSIs, duplicates dropped) | empty | P2 |
 
 Changing an option reloads the entry.
 

@@ -15,6 +15,9 @@ versioning: SemVer.
   OD-13 and OD-14 stay open pending the receiver capture (#2).
 
 ### Added
+- Watch-list trackers (#27): `device_tracker.ais_<mmsi>` for each MMSI in the new `watch_list`
+  option, on its own device linked to the boat, unavailable while the target is not heard;
+  removing an MMSI removes its tracker and device. F-TRF-05.
 - Traffic entities (#25): `binary_sensor.collision_risk` (safety, anti-flapping latch,
   unavailable without own position), `sensor.closest_target_distance`,
   `sensor.closest_threat_cpa` and `sensor.closest_threat_tcpa` (nautical miles kept on metric

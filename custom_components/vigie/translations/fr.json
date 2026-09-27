@@ -42,7 +42,8 @@
           "own_mmsi": "MMSI du bateau",
           "cpa_threshold": "Seuil de CPA",
           "tcpa_threshold": "Seuil de TCPA",
-          "exclude_stationary": "Ignorer les cibles au mouillage ou amarrées"
+          "exclude_stationary": "Ignorer les cibles au mouillage ou amarrées",
+          "watch_list": "Liste de suivi (MMSI)"
         },
         "data_description": {
           "update_interval": "Les entités écrivent leur état au plus une fois par intervalle.",
@@ -53,12 +54,14 @@
           "own_mmsi": "Facultatif, 9 chiffres. Les rapports de ce MMSI ne sont jamais affichés comme trafic. Appris automatiquement des rapports VDO si vide.",
           "cpa_threshold": "Une cible est une menace si son point de rapprochement maximal est plus proche que cette valeur…",
           "tcpa_threshold": "…et si ce point est atteint dans ce délai.",
-          "exclude_stationary": "Les cibles de classe A au mouillage ou amarrées, à moins de 0,5 nd, ne déclenchent jamais de risque de collision."
+          "exclude_stationary": "Les cibles de classe A au mouillage ou amarrées, à moins de 0,5 nd, ne déclenchent jamais de risque de collision.",
+          "watch_list": "Bateaux à suivre individuellement, par exemple des amis ou votre annexe : saisissez chaque MMSI à 9 chiffres puis Entrée. Chacun a son propre suivi sur la carte."
         }
       }
     },
     "error": {
-      "invalid_mmsi": "Un MMSI comporte exactement 9 chiffres."
+      "invalid_mmsi": "Un MMSI comporte exactement 9 chiffres.",
+      "invalid_watch_list": "Chaque MMSI de la liste de suivi doit comporter exactement 9 chiffres."
     }
   },
   "entity": {
@@ -136,6 +139,11 @@
       "collision_risk": {
         "name": "Risque de collision"
       }
+    }
+  },
+  "device": {
+    "watched_target": {
+      "name": "AIS {mmsi}"
     }
   }
 }
