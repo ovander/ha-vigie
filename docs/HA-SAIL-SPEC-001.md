@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.5 (draft) |
+| Version | 0.6 (draft) |
 | Date | 2026-09-27 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.6 | 2026-09-27 | WP5 (#15): §9.2 — distances in `sensor.ais_targets` follow the list rebuild (≤ 5 s); §9.5 — `diagnostics.py` also exports GPS rejects, internal errors and reconnects. No change of scope. |
 | 0.5 | 2026-09-27 | P1 decisions (issue #3). OD-03 resolved: own GPS parsers. OD-06 resolved: minimum HA 2026.2.0. OD-07 resolved: GPS first, VDO fallback, `include_own_vdo` option. OD-10 resolved: angle entities without device class, state class `measurement_angle`. OD-12 resolved: external replay tool, no file source in the integration. Pure domain modules `state.py`, `geo.py` and a HA-free `hub.py` (§5); framing limits in `sentence.py` (§7.1); availability on disconnect and stale GPS clarified (§9.2, §9.5, §10.1); dead-band semantics, 5 m position dead-band (§10.2); config flow details (§11.1); P1 options incl. two expiry values and optional `own_mmsi` (§11.2); P0 test count corrected to 39. OD-13 and OD-14 stay open (need X-09, issue #2). |
 | 0.4 | 2026-09-27 | OD-01 resolved: project named **Vigie**, domain `vigie`, repository `ha-vigie`. OD-11 resolved: Apache-2.0. Repository bootstrap delivered (X-11): skeleton integration, CI, docs; AIS decoder moved to `custom_components/vigie/nmea/` with injectable clock (TEST-001 TP-05). |
 | 0.3 | 2026-09-27 | Test protocol split into companion document HA-SAIL-TEST-001 (X-10); §12 test bullet now points to it. No functional change. |
@@ -273,7 +274,7 @@ Speed: HA does not convert knots automatically under either the metric or the US
 
 | Entity | Content |
 |---|---|
-| `sensor.ais_targets` | Count of live targets. Attribute `targets`: compact list (MMSI, name, class, lat, lon, SOG, COG, distance, CPA, TCPA, age), capped at the 50 nearest (OD-04). P1 omits CPA/TCPA (added in P2); distance comes from `geo.py`. The attribute is excluded from the recorder (`_unrecorded_attributes`). The count stays available when own position is unavailable: distances are then `None` and the list is ordered by report age. |
+| `sensor.ais_targets` | Count of live targets. Attribute `targets`: compact list (MMSI, name, class, lat, lon, SOG, COG, distance, CPA, TCPA, age), capped at the 50 nearest (OD-04). P1 omits CPA/TCPA (added in P2); distance comes from `geo.py`. The attribute is excluded from the recorder (`_unrecorded_attributes`). The count stays available when own position is unavailable: from the next rebuild of the list (≤ 5 s) distances are `None` and the list is ordered by report age. |
 | `sensor.closest_target_distance` | Distance to the nearest target (NM, device_class distance). Attributes: MMSI, name. |
 | `sensor.closest_threat_cpa` / `_tcpa` | CPA (NM) and TCPA (min) of the most urgent threat; unavailable when none. |
 | `binary_sensor.collision_risk` | On while at least one threat exists (device_class safety). Designed to drive automations (notification, buzzer, lights). |
@@ -293,6 +294,7 @@ Keyed by MMSI. An entry expires after a timeout (options `expiry_class_a`, defau
 - `checksum_errors` and `ais_rejected` are counters (state class `total_increasing`).
 - `sentences_per_min` and `last_sentence_age` change constantly; they are disabled by default and written with a dead-band of 1 unit.
 - `connected` and the counters stay available while the port is disconnected, so they can report the outage.
+- The diagnostics download also carries the hub's other counters (GPS rejects, framing errors, internal errors, reconnects) and the own-boat fields with their source and age.
 - Diagnostics redact the serial port path (by-id paths contain the adapter's serial number), `own_mmsi` and own position.
 
 ## 10. Runtime behaviour

@@ -15,6 +15,13 @@ versioning: SemVer.
   OD-13 and OD-14 stay open pending the receiver capture (#2).
 
 ### Added
+- Entities and diagnostics (#15): own-boat sensors (SOG, COG, heading, GNSS fix, satellites,
+  HDOP), `device_tracker.<boat>` with SOG/COG/heading attributes and a 5 m dead-band,
+  `sensor.ais_targets` with the 50 nearest targets (rebuilt at most every 5 s, not recorded),
+  diagnostic sensors (sentence rate and age disabled by default, checksum errors, rejected AIS,
+  position source) and the `connected` binary sensor; availability follows the connection and
+  the staleness timeout; writes once per tick with dead-bands; diagnostics download with
+  redaction; English and French names. D-08 burst fixture and nightly-only F-PERF tests.
 - Home Assistant wiring (#13): `coordinator.py` owns the hub and the domain state, pushes
   updates on an internal tick and at once on connection changes; setup raises
   `ConfigEntryNotReady` when the port is missing, unload stops the reader and closes the port.

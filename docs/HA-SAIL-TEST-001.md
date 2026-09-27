@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.8 (draft) |
+| Version | 0.9 (draft) |
 | Date | 2026-09-27 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.9 | 2026-09-27 | WP5 (#15): F-ENT-01…07, F-LIFE-08 and the entity halves of F-HUB-03 and F-LIFE-06 implemented (`tests/integration/test_entities.py`, `test_diagnostics.py`); F-PERF-01…03 implemented (`tests/integration/test_perf.py`, marker `perf`, excluded from the PR gate); D-08 committed as `tests/fixtures/burst_60s.nmea`; translation-consistency check (`tests/test_translations.py`). F-ENT-04 clarified: distances in `sensor.ais_targets` become `None` at the next list rebuild (≤ 5 s). Suite: 258 tests + 3 perf. |
 | 0.8 | 2026-09-27 | WP4 (#13): F-LIFE-01…05 and F-LIFE-07 implemented in the HA harness (`tests/integration/test_config_flow.py`, `tests/integration/test_init.py`, fake transport patched in `conftest.py`); F-LIFE-06 options half done, entity unique-ID half in WP5. `pytest-homeassistant-custom-component==0.13.316` added; functional tests run in the `unit` CI job (`asyncio_mode = auto`). Suite: 226 tests. |
 | 0.7 | 2026-09-27 | U-AIS-14 extended (#11): payloads with armoring characters in the invalid gap 0x58–0x5F (`X`, `_`) are rejected; the range edges `W`, `` ` ``, `w` stay valid. D-04 uses `X` again for its invalid-armoring line. |
 | 0.6 | 2026-09-27 | WP3 (#9): F-HUB-01, 02, 04, 05 implemented at hub level (`tests/transport/test_hub.py`, fake transport, injected clock and sleep); hub half of F-HUB-03 done, entity half in WP5; D-04 corpus committed as `tests/fixtures/malformed.nmea`; `pytest-asyncio==1.3.0` added (same pin as phcc 0.13.316). Suite: 203 tests, 98.8 % coverage of the pure modules. |
@@ -168,9 +169,9 @@ Run inside Home Assistant's test harness (`pytest-homeassistant-custom-component
 | F-LIFE-03 | Config flow, garbage (wrong baud) | Hint to try the other baud rate | §11.1 | Done |
 | F-LIFE-04 | Setup with port missing | `ConfigEntryNotReady`, retried | §10.3 | Done |
 | F-LIFE-05 | Unload | Reader task cancelled, port closed, no pending tasks (harness checks lingering tasks) | NFR-07 | Done |
-| F-LIFE-06 | Reload after options change | New options applied, entities keep unique IDs | NFR-06 | Options half done; unique IDs in WP5 |
+| F-LIFE-06 | Reload after options change | New options applied, entities keep unique IDs | NFR-06 | Done |
 | F-LIFE-07 | Options flow: every option round-trips | Stored and applied | §11.2 | Done |
-| F-LIFE-08 | Diagnostics download | Config redacted, counters present | §9.5 | To do |
+| F-LIFE-08 | Diagnostics download | Config redacted, counters present | §9.5 | Done |
 
 ### 4.2 Hub and transport — `F-HUB`
 
@@ -178,7 +179,7 @@ Run inside Home Assistant's test harness (`pytest-homeassistant-custom-component
 |---|---|---|---|---|
 | F-HUB-01 | Mixed stream from D-05 (synthetic stand-in until #2) | `$` lines reach GPS parsers, `!` lines reach AIS decoder | §6 | Done (synthetic; real data: #2) |
 | F-HUB-02 | D-04 malformed corpus injected in a valid stream | Valid data unaffected; counters match the number of bad lines | NFR-01 | Done |
-| F-HUB-03 | Disconnect mid-stream | Own-boat and traffic entities unavailable immediately; `connected` off (and available); diagnostic counters available | §10.1 | Hub half done; entity half in WP5 |
+| F-HUB-03 | Disconnect mid-stream | Own-boat and traffic entities unavailable immediately; `connected` off (and available); diagnostic counters available | §10.1 | Done |
 | F-HUB-04 | Reconnect after 1, 5, 30 s | Backoff sequence respected (1, 2, 4 … 60 s, reset after reopen); one warning per outage, one info line on recovery | NFR-03, §10.3 | Done |
 | F-HUB-05 | Partial line at disconnect | Discarded, no crash | NFR-01 | Done |
 
@@ -188,13 +189,13 @@ F-HUB-01, 02, 04 and 05 prove hub behaviour (routing, counters, backoff, framing
 
 | ID | Case | Expected | SPEC | Status |
 |---|---|---|---|---|
-| F-ENT-01 | D-05 replay (synthetic stand-in until #2) | All §9.1 entities created with correct device_class, native unit, state_class, translation key | §9.1 | To do (real data: #2) |
-| F-ENT-02 | HA unit system switched to metric/imperial; display unit set per entity | Native stays kn under both unit systems (HA does not auto-convert knots); a per-entity display unit (km/h, mph) is converted correctly | §9 | To do |
-| F-ENT-03 | Own position | `device_tracker.<boat>` updates, SOG/COG attributes | §9.1 | To do |
-| F-ENT-04 | GPS silent > staleness timeout | Own-boat entities unavailable; `sensor.ais_targets` stays available with `distance` `None` (entities depending on own position, P2, unavailable) | §10.1, NFR-05 | To do |
-| F-ENT-05 | Heading never provided | `heading` unavailable, no error | §7.4 | To do |
-| F-ENT-06 | Two config entries (two boats, two fake ports) | No unique-ID collision | NFR-06 | To do |
-| F-ENT-07 | Every entity checked in the entity registry | Unique ID prefixed by entry ID | NFR-06 | To do |
+| F-ENT-01 | D-05 replay (synthetic stand-in until #2) | All §9.1 entities created with correct device_class, native unit, state_class, translation key | §9.1 | Done (synthetic; real data: #2) |
+| F-ENT-02 | HA unit system switched to metric/imperial; display unit set per entity | Native stays kn under both unit systems (HA does not auto-convert knots); a per-entity display unit (km/h, mph) is converted correctly | §9 | Done |
+| F-ENT-03 | Own position | `device_tracker.<boat>` updates, SOG/COG attributes | §9.1 | Done |
+| F-ENT-04 | GPS silent > staleness timeout | Own-boat entities unavailable; `sensor.ais_targets` stays available, with `distance` `None` from the next list rebuild (≤ 5 s) (entities depending on own position, P2, unavailable) | §10.1, NFR-05 | Done |
+| F-ENT-05 | Heading never provided | `heading` unavailable, no error | §7.4 | Done |
+| F-ENT-06 | Two config entries (two boats, two fake ports) | No unique-ID collision | NFR-06 | Done |
+| F-ENT-07 | Every entity checked in the entity registry | Unique ID prefixed by entry ID | NFR-06 | Done |
 
 ### 4.4 Traffic behaviour — `F-TRF`
 
@@ -216,9 +217,9 @@ Marked `@pytest.mark.perf`, excluded from the default run and executed by the ni
 
 | ID | Case | Expected | SPEC | Status |
 |---|---|---|---|---|
-| F-PERF-01 | D-08 burst (≥ 50 sentences/s, 60 s) | No backlog: all lines processed within 1 s of arrival; event loop lag < 100 ms | NFR-09 | To do |
-| F-PERF-02 | 10 min of D-06 at real rate (synthetic D-07 stream until #2) | State writes per entity ≤ 1/s; total writes counted and recorded as baseline | NFR-04, §10.2 | To do (baseline on D-06: #2) |
-| F-PERF-03 | `sensor.ais_targets` attributes | Rebuilt ≤ every 5 s; serialized size under HA's attribute limit | §10.2 | To do |
+| F-PERF-01 | D-08 burst (≥ 50 sentences/s, 60 s) | No backlog: all lines processed within 1 s of arrival; event loop lag < 100 ms | NFR-09 | Done |
+| F-PERF-02 | 10 min of D-06 at real rate (synthetic D-07 stream until #2) | State writes per entity ≤ 1/s; total writes counted and recorded as baseline | NFR-04, §10.2 | Done (synthetic baseline; D-06: #2) |
+| F-PERF-03 | `sensor.ais_targets` attributes | Rebuilt ≤ every 5 s; serialized size under HA's attribute limit | §10.2 | Done |
 
 ## 5. End-to-end tests
 

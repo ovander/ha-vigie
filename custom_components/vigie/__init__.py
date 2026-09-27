@@ -15,8 +15,7 @@ if TYPE_CHECKING:
 
     from .coordinator import VigieConfigEntry
 
-# Entity platforms arrive with WP5 (SPEC §9)
-PLATFORMS: list[Platform] = []
+PLATFORMS: list[Platform | str] = ["binary_sensor", "device_tracker", "sensor"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: VigieConfigEntry) -> bool:
