@@ -5,14 +5,15 @@ import json
 import pytest
 
 from custom_components.vigie.geo import bearing_deg, distance_nm
-from custom_components.vigie.nmea.ais_decoder import AisDecoder
+from custom_components.vigie.nmea.ais_decoder import AisDecoder, VesselStatic
 from custom_components.vigie.nmea.parsers import GpsParser, Rmc
 from custom_components.vigie.traffic import Kinematics, TargetReport, ThreatSettings, assess
 from tests.tools import scenario
 from tests.tools.scenario import PRESETS, Scenario, Target, Track, generate, relative
 
 
-def _decode(lines):
+def _decode(lines, statics=None):
+    """Own RMCs and target positions; static records go to `statics` when given."""
     gps, ais = GpsParser(), AisDecoder()
     own, targets = [], []
     for t, sentence in lines:
@@ -20,10 +21,16 @@ def _decode(lines):
             rec = gps.feed(sentence)
             assert isinstance(rec, Rmc), sentence
             own.append((t, rec))
+            continue
+        rec = ais.feed(sentence)
+        count, index = sentence.split(",")[1:3]
+        if rec is None:
+            assert index != count, sentence  # only a first fragment yields nothing
+        elif isinstance(rec, VesselStatic):
+            assert statics is not None, sentence
+            statics.append((t, rec))
         else:
-            pos = ais.feed(sentence)
-            assert pos is not None, sentence
-            targets.append((t, pos))
+            targets.append((t, rec))
     assert gps.stats["rejected"] == 0 and ais.stats["rejected"] == 0
     return own, targets
 
@@ -156,7 +163,7 @@ E02_EXPECTED = {
 def _first_picture(s: Scenario, after_s: float = 0.0):
     """Traffic picture from the first own RMC and each target's first report, as decoded,
     dead-reckoned `after_s` seconds on."""
-    own, targets = _decode(generate(s))
+    own, targets = _decode(generate(s), [])
     t0, rmc = own[0]
     own_k = Kinematics(rmc.latitude, rmc.longitude, rmc.sog_knots, rmc.cog_deg, t0)
     reports = {}
@@ -171,7 +178,7 @@ def _first_picture(s: Scenario, after_s: float = 0.0):
 
 
 def test_e_02_every_u_trf_geometry_has_a_preset():
-    assert set(E02_EXPECTED) == set(PRESETS)
+    assert set(E02_EXPECTED) == set(PRESETS) - {"named-traffic"}  # P3 bench, not a U-TRF case
     assert set(scenario.PRESET_REFERENCE) == set(PRESETS)
 
 
@@ -218,3 +225,116 @@ def test_cli_list_presets(capsys):
     for name in PRESETS:
         assert name in out
     assert "U-TRF-05" in out
+
+
+# --- Static data (P3): type 5 for Class A, type 24 parts A and B for Class B -----------------
+
+NAMED = PRESETS["named-traffic"]
+
+
+def _statics(s: Scenario):
+    statics = []
+    _decode(generate(s), statics)
+    return statics
+
+
+def test_named_traffic_static_reports():
+    by_mmsi = {}
+    for t, rec in _statics(NAMED):
+        by_mmsi.setdefault(rec.mmsi, []).append((t - NAMED.start_epoch, rec))
+    cargo, yacht, tender, unnamed = (t.mmsi for t in NAMED.targets)
+    assert unnamed not in by_mmsi  # no static data given: none sent
+
+    # Class A: type 5 at 30 s, then every 6 min
+    reports = by_mmsi[cargo]
+    assert [round(t) for t, _ in reports] == [30, 390, 750, 1110]
+    s = reports[0][1]
+    assert (s.msg_type, s.name, s.ship_type, s.callsign, s.imo) == (
+        5,
+        "CARGO ONE",
+        70,
+        "ABCD",
+        9123456,
+    )
+    assert (s.length_m, s.beam_m, s.draught_m, s.destination) == (180, 30, 8.5, "MARSEILLE")
+
+    # Class B: type 24 part A and part B each time
+    parts = [(round(t), r.msg_type, r.part) for t, r in by_mmsi[yacht]]
+    assert parts[:2] == [(30, 24, "A"), (30, 24, "B")]
+    names = {r.name for _, r in by_mmsi[yacht] if r.part == "A"}
+    part_b = next(r for _, r in by_mmsi[yacht] if r.part == "B")
+    assert names == {"ALBATROS"}
+    assert (part_b.ship_type, part_b.callsign, part_b.length_m) == (36, "FAB1234", 12)
+
+    # Auxiliary craft: mothership MMSI instead of dimensions
+    tender_b = next(r for _, r in by_mmsi[tender] if r.part == "B")
+    assert (tender_b.mothership_mmsi, tender_b.length_m) == (yacht, None)
+
+
+def test_named_traffic_positions_first_names_later():
+    """Names arrive 30 s after the first positions, as with a real receiver."""
+    _, targets = _decode(generate(NAMED), [])
+    first_position = min(t for t, _ in targets) - NAMED.start_epoch
+    first_static = min(t for t, _ in _statics(NAMED)) - NAMED.start_epoch
+    assert first_position < 1 and first_static == pytest.approx(30, abs=0.01)
+
+
+def test_named_traffic_cargo_becomes_a_threat():
+    """The Class A cargo ship crosses ahead: CPA 0.45 NM, TCPA 16 min at the start."""
+    picture = _first_picture(NAMED)
+    e = picture.encounters[NAMED.targets[0].mmsi]
+    assert e.cpa_nm == pytest.approx(0.45, abs=0.01)
+    assert e.tcpa_min == pytest.approx(16.0, abs=0.1)
+    assert NAMED.targets[0].mmsi not in picture.threats  # not yet: TCPA > 15 min
+    later = _first_picture(NAMED, after_s=120)
+    assert NAMED.targets[0].mmsi in later.threats
+
+
+def test_json_scenario_with_static_data(tmp_path):
+    spec = {
+        "own": {"lat": 43.5, "lon": 7.25, "sog": 6.0, "cog": 0.0},
+        "duration_s": 60,
+        "targets": [
+            {
+                "mmsi": 235000021,
+                "east_nm": 1.0,
+                "north_nm": 1.0,
+                "sog": 5.0,
+                "cog": 270.0,
+                "name": "MOANA",
+                "ship_type": 37,
+                "callsign": "F1234",
+                "dimensions": [9, 3, 2, 2],
+                "static_offset_s": 0,
+            },
+            {
+                "mmsi": 235000022,
+                "class": "B",
+                "east_nm": -1.0,
+                "north_nm": 1.0,
+                "sog": 4.0,
+                "cog": 90.0,
+                "name": "LUTIN",
+                "ship_type": 36,
+                "static_offset_s": 10,
+            },
+        ],
+    }
+    path = tmp_path / "s.json"
+    path.write_text(json.dumps(spec))
+    loaded = scenario.load(path)
+    assert loaded.targets[0].dimensions == (9, 3, 2, 2)
+    statics = _statics(loaded)
+    first = {rec.mmsi: rec for _, rec in reversed(statics)}
+    assert (first[235000021].msg_type, first[235000021].name, first[235000021].length_m) == (
+        5,
+        "MOANA",
+        12,
+    )
+    assert first[235000022].msg_type == 24 and first[235000022].name == "LUTIN"
+
+
+def test_presets_for_e02_send_no_static_data():
+    for name, preset in PRESETS.items():
+        if name != "named-traffic":
+            assert _statics(preset) == [], name

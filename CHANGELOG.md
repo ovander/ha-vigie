@@ -15,6 +15,10 @@ versioning: SemVer.
   OD-13 and OD-14 stay open pending the receiver capture (#2).
 
 ### Added
+- P3 bench material (#38): README map card configuration (own boat and watched targets)
+  and ship-details table, both checked against real entities by tests; scenario targets
+  can send AIS static data (type 5 / type 24), new preset `named-traffic`; P3 report
+  template in `docs/test-reports/P3-report.md`. TEST v0.18.
 - Static data on the entities (#36): ship type (translated category and ITU code), call
   sign, IMO, length, beam, draught and destination on `collision_risk`, the closest
   target/threat sensors and the watch-list trackers; ship type and length in the

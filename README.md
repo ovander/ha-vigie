@@ -6,9 +6,10 @@ Vigie reads the NMEA 0183 output of a boat's AIS receiver over a serial port and
 into Home Assistant entities: own position and motion, surrounding AIS traffic, and
 CPA/TCPA collision-risk alerts you can use in automations. Local only, no cloud.
 
-> **Status: pre-alpha (phase P2).** The integration reads the receiver and creates own-boat,
-> AIS traffic, collision-risk and diagnostic entities. It has been tested on synthetic data
-> only; the checks on board with a real receiver are still to do. See the roadmap below.
+> **Status: pre-alpha (phase P3).** The integration reads the receiver and creates own-boat,
+> AIS traffic, collision-risk and diagnostic entities, with ship names, types and sizes. It
+> has been tested on synthetic data only; the checks on board with a real receiver are
+> still to do. See the roadmap below.
 
 ## ⚠️ Safety
 
@@ -27,6 +28,7 @@ it as your only alarm.
 - AIS traffic: number of targets, nearest target, a compact target list for map cards.
 - Collision risk: CPA/TCPA of the most urgent target and a `collision_risk` binary sensor.
 - Watch list: device trackers for chosen MMSIs (friends' boats, tender…).
+- Ship details from AIS static data: name, ship type, size, call sign, destination.
 
 ## Collision alert automation
 
@@ -85,6 +87,45 @@ recorder:
 
 Keep `binary_sensor.<boat>_collision_risk` recorded: its history shows when alerts fired.
 
+## Ship details
+
+AIS ships send their name, type and size every 6 minutes, apart from their positions, so
+a new target can stay unnamed for a few minutes. Vigie keeps these details for 30 minutes
+after the last report. `collision_risk`, the closest target and closest threat sensors
+and the watch-list trackers carry them as attributes:
+
+| Attribute | Content |
+|---|---|
+| `name` | Ship name |
+| `ship_type` | Category, shown translated: sailing, pleasure craft, cargo, tanker, passenger, fishing, tug, high-speed craft… |
+| `ship_type_code` | AIS ship type code (0–99) |
+| `callsign`, `imo` | Radio call sign; IMO number (large ships) |
+| `length_m`, `beam_m`, `draught_m` | Size in metres (draught: Class A only) |
+| `destination` | Destination as entered by the crew (Class A only) |
+
+A value is empty when the ship has not sent it. The `targets` list of
+`sensor.<boat>_ais_targets` carries `ship_type` and `length_m` for every target.
+
+## Map card
+
+Home Assistant's built-in map card shows your boat and the watched targets (watch list in
+the integration's options), each with its track. Replace the MMSIs with yours:
+
+```yaml
+type: map
+title: Traffic
+hours_to_show: 1
+auto_fit: true
+entities:
+  - entity: device_tracker.garnet
+  - entity: device_tracker.ais_235000011
+  - entity: device_tracker.ais_235000012
+```
+
+The built-in card can only draw entities, so it does not show every AIS target: the full
+picture (up to the 50 nearest targets, with position, CPA and TCPA) is in the `targets`
+attribute of `sensor.<boat>_ais_targets`, for cards that read attributes.
+
 ## Requirements
 
 - Home Assistant OS or Container with access to the receiver's serial port
@@ -105,7 +146,7 @@ Keep `binary_sensor.<boat>_collision_risk` recorded: its history shows when aler
 | P0 | AIS decoder (Class A 1/2/3, Class B 18/19) | ✅ done |
 | P1 | Serial transport, GPS parsing, own-boat entities, AIS target table | built; on-board checks pending |
 | P2 | CPA/TCPA, collision-risk alert, watch-list trackers | built; bench and on-board checks pending |
-| P3 | AIS static data (names, types, dimensions) | planned |
+| P3 | AIS static data (names, types, dimensions), map card | built; on-board checks pending |
 | P4 | Additional instruments (wind, depth) and sailing performance | later |
 
 ## Documentation
