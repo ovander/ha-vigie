@@ -9,6 +9,8 @@ PURE_MODULES = [
     "custom_components.vigie.nmea.ais_decoder",
     "custom_components.vigie.nmea.sentence",
     "custom_components.vigie.nmea.parsers",
+    "custom_components.vigie.geo",
+    "custom_components.vigie.state",
 ]
 
 

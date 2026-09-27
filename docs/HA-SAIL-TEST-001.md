@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.4 (draft) |
+| Version | 0.5 (draft) |
 | Date | 2026-09-27 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.5 | 2026-09-27 | WP2 (#7): U-COO-01…06 and U-TRF-12 implemented (`tests/domain/test_state.py`), plus `geo.py` checks (`tests/domain/test_geo.py`); NFR-02 check and coverage gate cover `state.py` and `geo.py`. Suite: 176 tests, 99.0 % coverage of the pure modules. |
 | 0.4 | 2026-09-27 | WP1 (#5): U-NMEA-01…06 and U-GPS-01…07 implemented (`tests/nmea/test_sentence.py`, `tests/nmea/test_parsers.py`); U-GPS-08 pending on #2; NFR-02 check covers `sentence.py` and `parsers.py`. Suite: 134 tests, 98.7 % coverage of `nmea/`. |
 | 0.3 | 2026-09-27 | P1 decisions (issue #3), aligned with SPEC v0.5. TP-01 and TP-02 resolved (E-1 on HA Container on Linux, own-PTY replay tool, null-modem pair for E-01 on HA OS). Status column added to the P1 tables. U-NMEA-06 framing moved to a pure function; U-COO-05 dead-band compares to the last written value; F-HUB-01/02/04/05 run at hub level with the fake transport; F-HUB-03, F-ENT-04 availability rules clarified; F-ENT-02 corrected (HA does not auto-convert knots); synthetic stand-ins for D-05/D-06 until X-09 (issue #2); F-PERF marked `perf` and run nightly; coverage gate extended to all pure modules. |
 | 0.2 | 2026-09-27 | TP-05 resolved (injectable clock); U-AIS-10…12 implemented; malformed-sentence cases from D-04 added to the AIS suite; NFR-02 import check implemented. Suite: 39 tests, 98.5 % coverage of `nmea/`. |
@@ -133,7 +134,7 @@ Additional cases:
 | U-TRF-09 | Geodesy: flat-earth vs haversine at 43.5° N for 1, 5, 20 NM | Error < 0.5 % up to 20 NM (SPEC §8.1) | To do |
 | U-TRF-10 | Target or own SOG/COG unavailable | CPA/TCPA `None`, target excluded from threats, no exception | To do |
 | U-TRF-11 | Closest-threat selection among several threats | Smallest TCPA wins; tie → smallest CPA | To do |
-| U-TRF-12 | Stale target (report age > expiry) | Removed from the table (SPEC §9.4) | To do |
+| U-TRF-12 | Stale target (report age > expiry) | Removed from the table (SPEC §9.4) | Done |
 | U-TRF-13 | Crossing the antimeridian and the equator | No sign or wrap errors | To do |
 
 Tolerances: CPA ± 0.01 NM, TCPA ± 0.1 min.
@@ -144,12 +145,12 @@ The merge logic is written as plain classes in `state.py` (no HA) wrapped by the
 
 | ID | Case | Expected | Status |
 |---|---|---|---|
-| U-COO-01 | SOG from RMC then VTG | Most recent valid value wins, source recorded | To do |
-| U-COO-02 | GPS fresh + VDO present | GPS used; VDO ignored for own state | To do |
-| U-COO-03 | GPS stale (> timeout) + VDO fresh | Falls back to VDO; `own_position_source = VDO` | To do |
-| U-COO-04 | VDM with own MMSI | Not inserted in the target table | To do |
-| U-COO-05 | Dead-band: SOG 5.00 → 5.04 → 5.12 | 5.00 is written; 5.04 is suppressed (< 0.1 kn from the last *written* value); 5.12 is written | To do |
-| U-COO-06 | Throttle: 10 updates in 1 s | One write per `update_interval` with the latest value | To do |
+| U-COO-01 | SOG from RMC then VTG | Most recent valid value wins, source recorded | Done |
+| U-COO-02 | GPS fresh + VDO present | GPS used; VDO ignored for own state | Done |
+| U-COO-03 | GPS stale (> timeout) + VDO fresh | Falls back to VDO; `own_position_source = VDO` | Done |
+| U-COO-04 | VDM with own MMSI | Not inserted in the target table | Done |
+| U-COO-05 | Dead-band: SOG 5.00 → 5.04 → 5.12 | 5.00 is written; 5.04 is suppressed (< 0.1 kn from the last *written* value); 5.12 is written | Done |
+| U-COO-06 | Throttle: 10 updates in 1 s | One write per `update_interval` with the latest value | Done |
 
 ## 4. Functional tests (`tests/integration/`)
 
