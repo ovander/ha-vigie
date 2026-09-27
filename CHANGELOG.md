@@ -15,6 +15,11 @@ versioning: SemVer.
   OD-13 and OD-14 stay open pending the receiver capture (#2).
 
 ### Added
+- Traffic entities (#25): `binary_sensor.collision_risk` (safety, anti-flapping latch,
+  unavailable without own position), `sensor.closest_target_distance`,
+  `sensor.closest_threat_cpa` and `sensor.closest_threat_tcpa` (nautical miles kept on metric
+  systems), CPA/TCPA in the `sensor.ais_targets` list; options for the CPA and TCPA thresholds
+  and the anchored/moored exclusion. F-TRF-01…04, 06, 07.
 - Traffic logic (#23): `traffic.py` computes distance, bearing, CPA and TCPA on a local plane
   after dead-reckoning both vessels to now, classifies threats (thresholds, stationary Class A
   excluded), picks the most urgent threat, and latches the collision risk against flapping.
@@ -62,5 +67,6 @@ versioning: SemVer.
   flag, injectable clock. 39 tests, 98.5 % coverage.
 
 ### Fixed
+- Nightly report: the F-PERF-02 write baseline was dropped from the junit XML (#25).
 - AIS decoder rejects payload armoring characters 0x58–0x5F (`X`…`_`), which the AIVDM
   specification does not allow; they were decoded as six-bit values 40–47 (#11).

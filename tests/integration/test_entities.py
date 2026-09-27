@@ -206,7 +206,7 @@ async def test_f_ent_06_two_boats_no_unique_id_collision(
 
 async def test_f_ent_07_unique_ids_prefixed_by_entry_id(hass: HomeAssistant, loaded):
     ents = er.async_entries_for_config_entry(er.async_get(hass), loaded.entry_id)
-    assert len(ents) == 14
+    assert len(ents) == 18  # P1: 14; P2 adds collision_risk, closest target, CPA, TCPA
     assert all(e.unique_id.startswith(f"{loaded.entry_id}_") for e in ents)
     assert all(e.platform == DOMAIN for e in ents)
 
@@ -310,8 +310,9 @@ async def test_ais_targets_sensor(hass: HomeAssistant, loaded, fake_ports: FakeP
         "cog",
         "distance_nm",
         "age_s",
+        "cpa_nm",
+        "tcpa_min",
     }
-    assert "cpa" not in first and "tcpa" not in first  # P2
     # A new target: count now, attribute list at most every 5 s
     fake_ports[BY_ID_PORT].feed_lines(nmea("AIVDM,1,1,,A,15MgK45P3@G?fl0E`JbR0OwT0@MS,0", "!"))
     await tick(hass, freezer)

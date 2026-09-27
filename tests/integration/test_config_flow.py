@@ -8,12 +8,15 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.vigie.const import (
     CONF_BAUDRATE,
+    CONF_CPA_THRESHOLD,
+    CONF_EXCLUDE_STATIONARY,
     CONF_EXPIRY_CLASS_A,
     CONF_EXPIRY_CLASS_B,
     CONF_INCLUDE_OWN_VDO,
     CONF_OWN_MMSI,
     CONF_SERIAL_PORT,
     CONF_STALE_TIMEOUT,
+    CONF_TCPA_THRESHOLD,
     CONF_UPDATE_INTERVAL,
     DOMAIN,
 )
@@ -155,6 +158,9 @@ OPTIONS = {
     CONF_EXPIRY_CLASS_B: 20,
     CONF_INCLUDE_OWN_VDO: False,
     CONF_OWN_MMSI: "227000001",
+    CONF_CPA_THRESHOLD: 0.3,
+    CONF_TCPA_THRESHOLD: 20,
+    CONF_EXCLUDE_STATIONARY: False,
 }
 
 
@@ -175,6 +181,8 @@ async def test_f_life_07_every_option_round_trips(hass: HomeAssistant, fake_port
     assert coordinator.targets.expiry_s == (12 * 60, 20 * 60)
     assert coordinator.own.use_vdo is False
     assert coordinator.own.own_mmsi == 227000001
+    settings = coordinator.threat_settings
+    assert (settings.cpa_nm, settings.tcpa_min, settings.exclude_stationary) == (0.3, 20, False)
 
     # The form shows the stored values next time; clearing the MMSI removes it
     result = await hass.config_entries.options.async_init(entry.entry_id)

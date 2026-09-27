@@ -29,12 +29,15 @@ from homeassistant.helpers.selector import (
 from .const import (
     BAUDRATES,
     CONF_BAUDRATE,
+    CONF_CPA_THRESHOLD,
+    CONF_EXCLUDE_STATIONARY,
     CONF_EXPIRY_CLASS_A,
     CONF_EXPIRY_CLASS_B,
     CONF_INCLUDE_OWN_VDO,
     CONF_OWN_MMSI,
     CONF_SERIAL_PORT,
     CONF_STALE_TIMEOUT,
+    CONF_TCPA_THRESHOLD,
     CONF_UPDATE_INTERVAL,
     DEFAULT_BAUDRATE,
     DEFAULT_OPTIONS,
@@ -156,7 +159,7 @@ def _parse_baudrate(raw: Any) -> int | None:
 
 
 class VigieOptionsFlow(OptionsFlowWithReload):
-    """P1 options (SPEC §11.2); changing them reloads the entry."""
+    """Options (SPEC §11.2); changing them reloads the entry."""
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         errors: dict[str, str] = {}
@@ -205,6 +208,24 @@ class VigieOptionsFlow(OptionsFlowWithReload):
                 ),
                 vol.Required(
                     CONF_INCLUDE_OWN_VDO, default=current[CONF_INCLUDE_OWN_VDO]
+                ): BooleanSelector(),
+                vol.Required(CONF_CPA_THRESHOLD, default=current[CONF_CPA_THRESHOLD]): vol.All(
+                    NumberSelector(
+                        NumberSelectorConfig(
+                            min=0.05,
+                            max=5,
+                            step=0.05,
+                            unit_of_measurement="NM",
+                            mode=NumberSelectorMode.BOX,
+                        )
+                    ),
+                    vol.Coerce(float),
+                ),
+                vol.Required(CONF_TCPA_THRESHOLD, default=current[CONF_TCPA_THRESHOLD]): number(
+                    60, "min"
+                ),
+                vol.Required(
+                    CONF_EXCLUDE_STATIONARY, default=current[CONF_EXCLUDE_STATIONARY]
                 ): BooleanSelector(),
                 vol.Optional(
                     CONF_OWN_MMSI,
