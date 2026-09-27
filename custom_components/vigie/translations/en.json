@@ -1,0 +1,18 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Vigie — AIS receiver",
+        "description": "Serial port of the AIS receiver (prefer /dev/serial/by-id/...).",
+        "data": {
+          "name": "Boat name",
+          "serial_port": "Serial port",
+          "baudrate": "Baud rate"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "This serial port is already configured."
+    }
+  }
+}

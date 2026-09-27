@@ -1,0 +1,26 @@
+name: NMEA capture
+description: Contribute a raw capture from an AIS receiver (becomes a regression fixture)
+labels: ["test", "capture"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Anonymise before uploading** (TEST-001 TP-03): replace your own MMSI and home berth
+        position if you do not want them published. Captures are committed under tests/fixtures/.
+  - type: input
+    id: receiver
+    attributes:
+      label: Receiver model, firmware, baud rate
+    validations:
+      required: true
+  - type: dropdown
+    id: context
+    attributes:
+      label: Conditions
+      options: ["In port", "Under way", "Busy traffic area"]
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes (duration, area, anything unusual)

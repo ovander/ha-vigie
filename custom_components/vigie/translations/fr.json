@@ -1,0 +1,18 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Vigie — récepteur AIS",
+        "description": "Port série du récepteur AIS (de préférence /dev/serial/by-id/...).",
+        "data": {
+          "name": "Nom du bateau",
+          "serial_port": "Port série",
+          "baudrate": "Vitesse (bauds)"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Ce port série est déjà configuré."
+    }
+  }
+}
