@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.9 (draft) |
+| Version | 0.10 (draft) |
 | Date | 2026-09-27 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.10 | 2026-09-27 | WP6 (#17): `tests/tools/scenario.py` (D-07, presets for U-TRF-01 and U-TRF-03), `tests/tools/replay.py` (own PTY or existing device, speed factor, loop), `tests/tools/capture.py` (X-09) with tests, including an end-to-end PTY → `serial_transport` → hub check of the E-1 path; nightly workflow running F-PERF; §6 and §7 updated. |
 | 0.9 | 2026-09-27 | WP5 (#15): F-ENT-01…07, F-LIFE-08 and the entity halves of F-HUB-03 and F-LIFE-06 implemented (`tests/integration/test_entities.py`, `test_diagnostics.py`); F-PERF-01…03 implemented (`tests/integration/test_perf.py`, marker `perf`, excluded from the PR gate); D-08 committed as `tests/fixtures/burst_60s.nmea`; translation-consistency check (`tests/test_translations.py`). F-ENT-04 clarified: distances in `sensor.ais_targets` become `None` at the next list rebuild (≤ 5 s). Suite: 258 tests + 3 perf. |
 | 0.8 | 2026-09-27 | WP4 (#13): F-LIFE-01…05 and F-LIFE-07 implemented in the HA harness (`tests/integration/test_config_flow.py`, `tests/integration/test_init.py`, fake transport patched in `conftest.py`); F-LIFE-06 options half done, entity unique-ID half in WP5. `pytest-homeassistant-custom-component==0.13.316` added; functional tests run in the `unit` CI job (`asyncio_mode = auto`). Suite: 226 tests. |
 | 0.7 | 2026-09-27 | U-AIS-14 extended (#11): payloads with armoring characters in the invalid gap 0x58–0x5F (`X`, `_`) are rejected; the range edges `W`, `` ` ``, `w` stay valid. D-04 uses `X` again for its invalid-armoring line. |
@@ -56,7 +57,7 @@ Principles:
 | D-04 | Malformed corpus | Hand-crafted | Bad checksum, missing `*`, truncated payload, wrong field count, invalid armoring char, fill bits > 5, fragment out of range, over-long line, non-ASCII bytes, wrong-baud garbage | U-NMEA, U-AIS, F-HUB |
 | D-05 | Raw capture — in port | SPEC X-09 | ≥ 15 min, receiver's real output, moored | U (regression), F, E |
 | D-06 | Raw capture — under way | SPEC X-09 | ≥ 30 min under way, ideally with traffic | F, E |
-| D-07 | Traffic scenarios | Scripted generator (`tests/tools/scenario.py`) | Own boat + targets on defined tracks, emitted as timed RMC + VDM sentences | U-TRF, F-TRF, E-02 |
+| D-07 | Traffic scenarios | Scripted generator (`python -m tests.tools.scenario`, presets `head-on`, `crossing`) | Own boat + targets on defined tracks, emitted as timed RMC + VDM sentences | U-TRF, F-TRF, E-02 |
 | D-08 | Burst file | Derived from D-03 | ≥ 50 sentences/s for 60 s | F-PERF, E-05 |
 
 Until X-09 exists (issue #2), tests that name D-05/D-06 run on synthetic stand-ins: a mixed stream built from D-03/D-07 for F-HUB-01 and F-ENT-01, a 10-minute D-07 scenario for F-PERF-02. Each is re-run on the real capture under issue #2. Synthetic sentences are never presented as captured data. D-04 lives in `tests/fixtures/malformed.nmea` and D-08 in `tests/fixtures/burst_60s.nmea` (generated from D-03 with a fixed seed).
@@ -275,9 +276,9 @@ Performed in daylight, good visibility, with a crew member responsible for navig
 | pytest, pytest-cov | All levels; coverage report |
 | pytest-homeassistant-custom-component 0.13.316 | Functional tests (HA harness, time travel, lingering-task checks); pins HA 2026.2.3 |
 | pyais (MIT) | Test-only oracle and synthetic AIS generator (D-03, D-07) |
-| `tests/tools/scenario.py` | Generates timed RMC + VDM streams from track definitions (D-07) |
+| `tests/tools/scenario.py` | Generates timed RMC + VDM streams from track definitions (D-07); JSON scenarios or presets. Usage in `CONTRIBUTING.md` |
 | `tests/tools/replay.py` | Timed replay of captures to its own PTY (`--pty`) or an existing device (`--device`), with speed factor |
-| `tests/tools/capture.py` | Timestamped capture of a serial port (X-09) |
+| `tests/tools/capture.py` | Timestamped raw capture of a serial port (X-09) into `captures/` (git-ignored) |
 | socat | Optional pseudo-TTY pair for E-1 |
 | ruff, mypy, hassfest, HACS action | Static checks and packaging validation in CI |
 
@@ -287,7 +288,7 @@ Every PR must pass:
 
 1. `ruff` and `mypy` clean.
 2. Unit tests (`U-*`) green; **coverage ≥ 90 % on the pure modules: `nmea/`, `state.py`, `geo.py`, `hub.py`, `traffic.py`** (NFR-08).
-3. Functional tests (`F-*`) green, excluding `F-PERF` (marker `perf`, run nightly by `.github/workflows/nightly.yml` — timing-sensitive on shared runners). They run in the `unit` CI job.
+3. Functional tests (`F-*`) green, excluding `F-PERF` (marker `perf`, run nightly by `.github/workflows/nightly.yml` (job `perf`, junit report kept as an artifact) — timing-sensitive on shared runners). They run in the `unit` CI job.
 4. No HA import in any pure module (NFR-02 check).
 5. `hassfest` and HACS validation pass.
 

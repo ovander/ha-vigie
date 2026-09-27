@@ -1,0 +1,28 @@
+name: Nightly
+
+# F-PERF tests are timing-sensitive on shared runners, so they run here and not in the
+# PR gate (TEST-001 §4.5, §7). A release also needs this run green on its commit.
+on:
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  perf:
+    name: perf
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -r requirements_test.txt
+      - run: pytest -m perf --junitxml=perf-report.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: perf-report
+          path: perf-report.xml

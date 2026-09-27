@@ -15,6 +15,9 @@ versioning: SemVer.
   OD-13 and OD-14 stay open pending the receiver capture (#2).
 
 ### Added
+- Test tooling (#17): scenario generator (D-07, head-on and crossing presets), timed replay
+  into its own pseudo-terminal or a serial device, timestamped receiver capture (X-09), E-1
+  bench recipe in `CONTRIBUTING.md`; nightly workflow running the F-PERF tests.
 - Entities and diagnostics (#15): own-boat sensors (SOG, COG, heading, GNSS fix, satellites,
   HDOP), `device_tracker.<boat>` with SOG/COG/heading attributes and a 5 m dead-band,
   `sensor.ais_targets` with the 50 nearest targets (rebuilt at most every 5 s, not recorded),
