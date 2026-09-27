@@ -77,5 +77,6 @@ async def async_get_config_entry_diagnostics(
             "count": len(classes),
             "class_a": classes.count("A"),
             "class_b": classes.count("B"),
+            "static": len(coordinator.statics),
         },
     }

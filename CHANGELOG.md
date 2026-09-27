@@ -15,6 +15,10 @@ versioning: SemVer.
   OD-13 and OD-14 stay open pending the receiver capture (#2).
 
 ### Added
+- AIS static data store (#34): names from types 5 and 24 now show in `collision_risk`, the
+  `sensor.ais_targets` list and the watch-list trackers, whether the static report comes
+  before or after the first position. Static data is kept per MMSI for 30 min after its
+  last report (at most 2 000 MMSIs); diagnostics count static reports. U-STA-01…07, F-TRF-08.
 - AIS static data decoding (#32): types 5 and 24 (parts A and B, auxiliary craft) and the
   static fields of type 19 — name, call sign, IMO, ship type with a category key,
   dimensions, draught, destination. Not shown in entities yet (P3 WP12/WP13). Records SPEC

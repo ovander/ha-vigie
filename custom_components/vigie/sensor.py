@@ -340,8 +340,9 @@ class AisTargetsSensor(VigieEntity, SensorEntity):
         position = self.coordinator.own.get(POSITION)
         lat, lon = position.value if position else (None, None)
         encounters = self.coordinator.picture.encounters
+        name = self.coordinator.target_name
         targets = [
-            _target_row(t, distance, encounters.get(t.mmsi), now)
+            _target_row(t, name(t.mmsi), distance, encounters.get(t.mmsi), now)
             for t, distance in self.coordinator.targets.nearest(lat, lon, TARGETS_LIMIT)
         ]
         if targets:  # the first list with data starts the 5 s rhythm
@@ -352,12 +353,12 @@ class AisTargetsSensor(VigieEntity, SensorEntity):
 
 
 def _target_row(
-    t: AisTarget, distance: float | None, encounter: Encounter | None, now: float
+    t: AisTarget, name: str | None, distance: float | None, encounter: Encounter | None, now: float
 ) -> dict[str, Any]:
     """One entry of the `targets` attribute (SPEC §9.2)."""
     return {
         "mmsi": t.mmsi,
-        "name": t.name,
+        "name": name,
         "class": t.ais_class,
         "lat": _round(t.report.latitude, 5),
         "lon": _round(t.report.longitude, 5),

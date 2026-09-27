@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.15 (draft) |
+| Version | 0.16 (draft) |
 | Date | 2026-09-27 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.16 | 2026-09-27 | WP12 (#34): new §3.6 `U-STA` (static store: type 5, type 24 parts merged, merge without erasing, type 19 and auxiliary craft, independence from the target table, 30 min expiry, 2 000-MMSI cap, own ship refused); F-HUB-01 extended to static routing and the `ais_static` counter; new F-TRF-08 (names from types 5/24 in every entity, static data before or after the first position; diagnostics). |
 | 0.15 | 2026-09-27 | P3 tests defined (§9) and WP11 (#32): U-AIS-04 rewritten (types without a decoder are ignored; type 5 is now decoded); U-AIS-15…22 for types 5 and 24 and the static fields of type 19 (reference sentence, short type 5, parts A/B, auxiliary craft, sentinels, fuzz vs oracle, ship-type categories, VDO); F-HUB-01 checks that static data is not delivered as a position until WP12; D-01 and D-03 extended. |
 | 0.14 | 2026-09-27 | WP10 (#29): D-07 presets for every §3.4 geometry (`clear-crossing`, `overtaking`, `not-urgent`, `diverging`, `parallel`, `anchored`, `multi-target`) and `--list`, each checked against its U-TRF hand values; E-02 made concrete (presets, tolerance, notification through the README automation, which is itself tested as published); P2 report template `docs/test-reports/P2-report.md`. |
 | 0.13 | 2026-09-27 | WP9 (#27): F-TRF-05 implemented (`tests/integration/test_watch_list.py`), with availability after expiry, independence from own position and MMSI validation. |
@@ -172,6 +173,20 @@ The merge logic is written as plain classes in `state.py` (no HA) wrapped by the
 | U-COO-05 | Dead-band: SOG 5.00 → 5.04 → 5.12 | 5.00 is written; 5.04 is suppressed (< 0.1 kn from the last *written* value); 5.12 is written | Done |
 | U-COO-06 | Throttle: 10 updates in 1 s | One write per `update_interval` with the latest value | Done |
 
+### 3.6 Static data store — `U-STA` (SPEC §9.4, OD-18)
+
+`AisStaticStore` in `state.py` (`tests/domain/test_static.py`).
+
+| ID | Case | Expected | Status |
+|---|---|---|---|
+| U-STA-01 | Type 5 stored and read back | All fields; category, length, beam; update time | Done |
+| U-STA-02 | Type 24 part A then B, and B then A | Merged into one record | Done |
+| U-STA-03 | Later report without a field; newer value; type 19 static part; auxiliary craft | Known values kept, newer values win; mothership MMSI kept, no length | Done |
+| U-STA-04 | Static data first, no position for 20 min | Still there (independent of the target table) | Done |
+| U-STA-05 | 30 min after the last static report (refreshed by a new one); maximum age configurable | Dropped; never returned once stale, even before `expire()` | Done |
+| U-STA-06 | Capacity (default 2 000, tested with 3) | The MMSI updated longest ago is dropped; an update makes an MMSI the newest | Done |
+| U-STA-07 | Own-ship report; own MMSI | Refused | Done |
+
 ## 4. Functional tests (`tests/integration/`)
 
 Run inside Home Assistant's test harness (`pytest-homeassistant-custom-component==0.13.316`, HA 2026.2.3 — SPEC OD-06). The serial port is replaced by a **fake transport** that feeds lines from a fixture or scenario (D-04 to D-08), under control of the test (pause, disconnect, burst). Time is controlled with the harness's time-travel helpers, so no test sleeps in real time.
@@ -193,7 +208,7 @@ Run inside Home Assistant's test harness (`pytest-homeassistant-custom-component
 
 | ID | Case | Expected | SPEC | Status |
 |---|---|---|---|---|
-| F-HUB-01 | Mixed stream from D-05 (synthetic stand-in until #2) | `$` lines reach GPS parsers, `!` lines reach AIS decoder | §6 | Done (synthetic; real data: #2) |
+| F-HUB-01 | Mixed stream from D-05 (synthetic stand-in until #2) | `$` lines reach GPS parsers, `!` lines reach AIS decoder; static reports (types 5, 24) reach the static callback and `ais_static`, type 19 stays a position with its static part | §6, §9.4 | Done (synthetic; real data: #2) |
 | F-HUB-02 | D-04 malformed corpus injected in a valid stream | Valid data unaffected; counters match the number of bad lines | NFR-01 | Done |
 | F-HUB-03 | Disconnect mid-stream | Own-boat and traffic entities unavailable immediately; `connected` off (and available); diagnostic counters available | §10.1 | Done |
 | F-HUB-04 | Reconnect after 1, 5, 30 s | Backoff sequence respected (1, 2, 4 … 60 s, reset after reopen); one warning per outage, one info line on recovery | NFR-03, §10.3 | Done |
@@ -226,6 +241,7 @@ Driven by D-07 scenarios replayed in accelerated time.
 | F-TRF-05 | Watch list with 2 MMSIs | Exactly 2 AIS trackers created; removal from list removes them | §9.3 | Done |
 | F-TRF-06 | Automation triggered on `collision_risk`; CPA hovering around the threshold during the episode | Automation runs once per risk episode (no flapping, latch of SPEC §8.2 / U-TRF-14) | §9.2 | Done |
 | F-TRF-07 | Anchored target exclusion toggled | Threat state follows the option | §8.2 | Done |
+| F-TRF-08 | Type 5 before and after the first position; type 24 part A | The name shows in `collision_risk`, the `targets` list and the watch-list tracker; diagnostics count static reports and stored MMSIs | §9.4, OD-18 | Done |
 
 ### 4.5 Load and recorder — `F-PERF`
 
