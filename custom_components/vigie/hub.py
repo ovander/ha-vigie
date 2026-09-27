@@ -20,7 +20,7 @@ from typing import Protocol
 
 import serial_asyncio_fast
 
-from .nmea.ais_decoder import AisDecoder, VesselPosition
+from .nmea.ais_decoder import AisDecoder, VesselPosition, VesselStatic
 from .nmea.parsers import GpsRecord, parse_gps
 from .nmea.sentence import SentenceError, check_frame, parse_sentence, split_tag_block
 
@@ -77,6 +77,7 @@ class HubStats:
     lines: int = 0  # non-blank raw lines received
     gps_ok: int = 0  # GPS records delivered
     ais_ok: int = 0  # AIS position reports delivered
+    ais_static: int = 0  # AIS static reports (types 5, 24) delivered
     ignored: int = 0  # valid but produced no record (unsupported, fragment, not NMEA)
     checksum_errors: int = 0
     framing_errors: int = 0  # non-ASCII, over-long, bad tag block, buffer overflow
@@ -108,6 +109,7 @@ class Hub:
         *,
         on_gps: Callable[[GpsRecord], None],
         on_ais: Callable[[VesselPosition], None],
+        on_static: Callable[[VesselStatic], None],
         on_connection: Callable[[bool], None],
         include_own: bool = True,
         name: str = "serial port",
@@ -117,6 +119,7 @@ class Hub:
         self._open = open_transport
         self._on_gps = on_gps
         self._on_ais = on_ais
+        self._on_static = on_static
         self._on_connection = on_connection
         self._name = name
         self._clock = clock
@@ -279,7 +282,10 @@ class Hub:
         elif isinstance(decoded, VesselPosition):
             stats.ais_ok += 1
             self._on_ais(decoded)
-        else:  # nothing, or static data (not routed yet: P3 WP12)
+        elif isinstance(decoded, VesselStatic):
+            stats.ais_static += 1
+            self._on_static(decoded)
+        else:
             stats.ignored += 1
 
 

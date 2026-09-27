@@ -24,6 +24,7 @@ async def test_scenario_replayed_to_pty_reaches_the_hub(tmp_path):
         serial_transport(str(link), 38400),
         on_gps=gps.append,
         on_ais=ais.append,
+        on_static=lambda report: None,
         on_connection=lambda connected: None,
     )
     try:

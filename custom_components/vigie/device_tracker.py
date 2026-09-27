@@ -149,7 +149,7 @@ class WatchedTargetTracker(VigieEntity, TrackerEntity):
         e = self.coordinator.picture.encounters.get(self.mmsi)
         attrs.update(
             {
-                "name": target.name,
+                "name": self.coordinator.target_name(self.mmsi),
                 "class": target.ais_class,
                 "sog": report.sog_knots,
                 "cog": report.cog_deg,

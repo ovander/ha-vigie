@@ -35,9 +35,9 @@ from .const import (
     DOMAIN,
 )
 from .hub import Hub, serial_transport
-from .nmea.ais_decoder import VesselPosition
+from .nmea.ais_decoder import VesselPosition, VesselStatic
 from .nmea.parsers import GpsRecord
-from .state import COG, POSITION, SOG, AisTargetTable, OwnBoatState
+from .state import COG, POSITION, SOG, AisStaticStore, AisTargetTable, OwnBoatState, StaticInfo
 from .traffic import (
     EMPTY_PICTURE,
     Kinematics,
@@ -82,11 +82,13 @@ class VigieCoordinator:
             serial_transport(self.port, int(entry.data[CONF_BAUDRATE])),
             on_gps=self._on_gps,
             on_ais=self._on_ais,
+            on_static=self._on_static,
             on_connection=self._on_connection,
             include_own=use_vdo,
             name=self.port,
             clock=_monotonic,
         )
+        self.statics = AisStaticStore(clock=_monotonic)
         self.threat_settings = ThreatSettings(
             cpa_nm=float(options[CONF_CPA_THRESHOLD]),
             tcpa_min=float(options[CONF_TCPA_THRESHOLD]),
@@ -152,6 +154,11 @@ class VigieCoordinator:
             self.own.apply_vdo(position)
         else:
             self.targets.upsert(position, self.own.own_mmsi)
+        if position.static is not None:  # type 19
+            self._on_static(position.static)
+
+    def _on_static(self, report: VesselStatic) -> None:
+        self.statics.update(report, self.own.own_mmsi)
 
     def _on_connection(self, connected: bool) -> None:
         self._notify()
@@ -161,6 +168,7 @@ class VigieCoordinator:
     @callback
     def _tick(self, _now: datetime) -> None:
         self.targets.expire()
+        self.statics.expire()
         self.update_traffic()
         self._notify()
 
@@ -173,7 +181,14 @@ class VigieCoordinator:
         if self.picture.own_known:  # without own position the risk is unknown, not "off"
             self.risk.update(set(self.picture.threats), self.picture.encounters)
 
+    def static_info(self, mmsi: int) -> StaticInfo | None:
+        return self.statics.get(mmsi)
+
     def target_name(self, mmsi: int) -> str | None:
+        """Name from static data (types 5, 24, 19), else the last one a position carried."""
+        info = self.statics.get(mmsi)
+        if info is not None and info.name:
+            return info.name
         target = self.targets.get(mmsi)
         return None if target is None else target.name
 

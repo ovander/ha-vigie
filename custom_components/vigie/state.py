@@ -1,4 +1,6 @@
-"""Domain core: own-boat state, AIS target table, write gating (SPEC §7.4, §9.4, §10.2).
+"""Domain core: own-boat state, AIS targets and static data, write gating.
+
+SPEC §7.4, §9.4, §10.2.
 
 Pure Python, no Home Assistant import (SPEC NFR-02); the HA coordinator wraps these
 classes. Every class takes an injectable monotonic `clock` for deterministic tests.
@@ -9,12 +11,12 @@ from __future__ import annotations
 import math
 import time
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, fields, replace
 from enum import StrEnum
 from typing import Any
 
 from .geo import distance_m, distance_nm
-from .nmea.ais_decoder import VesselPosition
+from .nmea.ais_decoder import VesselPosition, VesselStatic, ship_type_category
 from .nmea.parsers import Gga, GpsRecord, Gsa, Hdt, Rmc, Vtg
 
 Clock = Callable[[], float]
@@ -241,6 +243,89 @@ class AisTargetTable:
     def _expiry(self, t: AisTarget) -> float:
         slow = t.ais_class == "B" or t.report.nav_status in _SLOW_NAV_STATUS
         return self._expiry_b if slow else self._expiry_a
+
+
+# --- AIS static data ------------------------------------------------------------
+
+
+@dataclass(frozen=True, slots=True)
+class StaticInfo:
+    """Everything known about one MMSI's static data, merged over its reports."""
+
+    mmsi: int
+    name: str | None = None
+    callsign: str | None = None
+    imo: int | None = None
+    ship_type: int | None = None
+    to_bow: int | None = None
+    to_stern: int | None = None
+    to_port: int | None = None
+    to_starboard: int | None = None
+    draught_m: float | None = None
+    destination: str | None = None
+    mothership_mmsi: int | None = None
+    updated_at: float = 0.0  # clock time of the latest static report
+
+    @property
+    def ship_category(self) -> str | None:
+        return ship_type_category(self.ship_type)
+
+    @property
+    def length_m(self) -> int | None:
+        return (self.to_bow or 0) + (self.to_stern or 0) or None
+
+    @property
+    def beam_m(self) -> int | None:
+        return (self.to_port or 0) + (self.to_starboard or 0) or None
+
+
+# Fields merged from reports: a report that does not carry a field keeps the known value
+_MERGED = tuple(f.name for f in fields(StaticInfo) if f.name not in ("mmsi", "updated_at"))
+
+
+class AisStaticStore:
+    """Static data per MMSI, apart from the target table (SPEC §9.4, OD-18).
+
+    Kept `max_age_s` after the MMSI's latest static report, for at most `capacity`
+    MMSIs; the one updated longest ago is dropped first.
+    """
+
+    def __init__(
+        self, max_age_s: float = 1800.0, capacity: int = 2000, *, clock: Clock = time.monotonic
+    ) -> None:
+        self._max_age = max_age_s
+        self.capacity = capacity
+        self._clock = clock
+        self._items: dict[int, StaticInfo] = {}  # oldest update first
+
+    def __len__(self) -> int:
+        return len(self._items)
+
+    def update(self, report: VesselStatic, own_mmsi: int | None = None) -> bool:
+        """Merge a static report; own-ship reports and the own MMSI are refused."""
+        if report.own_ship or report.mmsi == own_mmsi:
+            return False
+        known = self._items.pop(report.mmsi, None) or StaticInfo(report.mmsi)
+        changes = {name: value for name in _MERGED if (value := getattr(report, name)) is not None}
+        self._items[report.mmsi] = replace(known, **changes, updated_at=self._clock())
+        while len(self._items) > self.capacity:
+            del self._items[next(iter(self._items))]
+        return True
+
+    def get(self, mmsi: int) -> StaticInfo | None:
+        """Static data of `mmsi`; None when unknown or older than the maximum age."""
+        info = self._items.get(mmsi)
+        if info is None or self._clock() - info.updated_at > self._max_age + _EPS:
+            return None
+        return info
+
+    def expire(self) -> list[int]:
+        """Drop the MMSIs not updated within the maximum age; return them."""
+        now = self._clock()
+        stale = [m for m, i in self._items.items() if now - i.updated_at > self._max_age + _EPS]
+        for mmsi in stale:
+            del self._items[mmsi]
+        return stale
 
 
 # --- Write gating --------------------------------------------------------------

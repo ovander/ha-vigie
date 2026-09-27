@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.10 (draft) |
+| Version | 0.11 (draft) |
 | Date | 2026-09-27 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.11 | 2026-09-27 | WP12 (#34): §9.4 static store implemented; the hub delivers static reports separately (§6) and counts them (`ais_static`, §9.5); names from static data are preferred wherever a target's name is shown. |
 | 0.10 | 2026-09-27 | P3 decisions and WP11 (#32). New OD-17, resolved: ship type as code plus category key. New OD-18, resolved: static data kept 30 min after its last report, at most 2 000 MMSIs. New OD-19, resolved: built-in map card configuration (own boat, watched targets); a custom card is left for after v1. New OD-20, resolved: fields name, call sign, IMO, ship type, length, beam, draught, destination (no ETA, no EPFD). §7.3 extended to types 5 and 24 and the static fields of type 19; §9.4 static data; §13 P3 exit criterion. |
 | 0.9 | 2026-09-27 | WP9 (#27): §9.3 watched targets made precise (device per MMSI linked to the boat, attributes, availability, removal); §11.2 `watch_list` implemented. |
 | 0.8 | 2026-09-27 | WP8 (#25): §9.2 traffic entities made precise (units, suggested nmi, state classes, attributes); CPA/TCPA in the `targets` list; §11.2 P2 threat options implemented. |
@@ -181,6 +182,7 @@ tests/
 4. C-04 routes records:
    - GPS records and `VDO` reports → `OwnBoatState` (per-field timestamp and source).
    - `VDM` reports → `AisTargetTable` upsert.
+   - Static reports (types 5, 24, and the static part of type 19) → `AisStaticStore` (§9.4); own-ship ones and the own MMSI are refused.
 5. C-05 recomputes CPA/TCPA for affected targets whenever own state or a target changes.
 6. C-04 notifies entities, each throttled per NFR-04 (§10.2). A connection change is pushed immediately, without waiting for the next tick.
 
@@ -304,11 +306,11 @@ Speed: HA does not convert knots automatically under either the metric or the US
 
 Keyed by MMSI. An entry expires after a timeout (options `expiry_class_a`, default 10 min, and `expiry_class_b`, default 15 min, the latter also applied to Class A targets with nav status `at_anchor` or `moored`). Own-ship `VDO` reports and reports from the own MMSI (§7.4) never enter the table. Names are filled from type 19, and from types 5 and 24 from P3; a known name is kept when later reports carry none.
 
-Static data (§7.3) is kept per MMSI apart from the positions and merged into a target when it is read, so data that arrives before the first position report, or a target that expires and returns, keeps its name and type. Type 24 parts A and B are merged field by field. An MMSI's static data is dropped 30 min after its last static report, and at most 2 000 MMSIs are kept, the oldest dropped first (OD-18). Exposed fields: name, call sign, IMO, ship type (code and category), length, beam, draught and destination (OD-20).
+Static data (§7.3) is kept per MMSI apart from the positions and merged into a target when it is read, so data that arrives before the first position report, or a target that expires and returns, keeps its name and type. Type 24 parts A and B are merged field by field. An MMSI's static data is dropped 30 min after its last static report, and at most 2 000 MMSIs are kept, the oldest dropped first (OD-18). Exposed fields: name, call sign, IMO, ship type (code and category), length, beam, draught and destination (OD-20). Wherever a target's name is shown, the static store's name comes first, then the last name a position report (type 19) carried.
 
 ### 9.5 Diagnostics (entity_category: diagnostic)
 
-`sentences_per_min`, `checksum_errors`, `ais_rejected`, `last_sentence_age`, `own_position_source` (GPS / VDO), and a `connected` binary sensor (device class connectivity). `diagnostics.py` exports config (redacted) and counters for bug reports.
+`sentences_per_min`, `checksum_errors`, `ais_rejected`, `last_sentence_age`, `own_position_source` (GPS / VDO), and a `connected` binary sensor (device class connectivity). `diagnostics.py` exports config (redacted) and counters for bug reports. From P3 the download also counts static reports (`ais_static`) and the MMSIs held in the static store.
 
 - `checksum_errors` and `ais_rejected` are counters (state class `total_increasing`).
 - `sentences_per_min` and `last_sentence_age` change constantly; they are disabled by default and written with a dead-band of 1 unit.

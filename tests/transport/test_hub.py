@@ -47,6 +47,7 @@ class Recorder:
     def __init__(self) -> None:
         self.gps: list[object] = []
         self.ais: list[object] = []
+        self.static: list[object] = []
         self.conn: list[bool] = []
 
 
@@ -56,6 +57,7 @@ def make_hub(fake, clock=None, sleep=None, **kwargs):
         fake,
         on_gps=rec.gps.append,
         on_ais=rec.ais.append,
+        on_static=rec.static.append,
         on_connection=rec.conn.append,
         clock=clock or FakeClock(),
         sleep=sleep or asyncio.sleep,
@@ -86,16 +88,18 @@ AIS_TYPE5 = (  # gpsd AIVDM document, two fragments
 )
 
 
-async def test_f_hub_01_static_reports_not_delivered_as_positions():
-    """Until WP12 routes them, decoded static reports count as ignored (as type 5 did)."""
+async def test_f_hub_01_static_reports_routed_and_counted():
+    """Types 5/24 go to on_static (SPEC §9.4); type 19 stays a position with its static part."""
     fake = FakeSerial()
     hub, rec = make_hub(fake)
     task = await start(hub)
-    fake.feed_lines(*AIS_TYPE5, AIS_TYPE1)
+    fake.feed_lines(*AIS_TYPE5, AIS_TYPE1, AIS_TYPE19)
     await settle()
-    assert [p.msg_type for p in rec.ais] == [1]
+    assert [p.msg_type for p in rec.ais] == [1, 19]
+    assert rec.ais[1].static is not None
+    assert [(s.msg_type, s.mmsi, s.name) for s in rec.static] == [(5, 369190000, "MT.MITCHELL")]
     s = hub.stats
-    assert (s.lines, s.ais_ok, s.ignored, s.ais_rejected) == (3, 1, 2, 0)
+    assert (s.lines, s.ais_ok, s.ais_static, s.ignored, s.ais_rejected) == (4, 2, 1, 1, 0)
     await stop(hub, task)
 
 
@@ -205,7 +209,13 @@ async def test_f_hub_02_callback_exception_contained(caplog):
         if len(calls) == 1:
             raise RuntimeError("consumer bug")
 
-    hub = Hub(fake, on_gps=on_gps, on_ais=lambda p: None, on_connection=lambda c: None)
+    hub = Hub(
+        fake,
+        on_gps=on_gps,
+        on_ais=lambda p: None,
+        on_static=lambda s: None,
+        on_connection=lambda c: None,
+    )
     task = await start(hub)
     with caplog.at_level(logging.ERROR, logger=LOGGER):
         fake.feed_lines(RMC, RMC, RMC)
