@@ -19,6 +19,8 @@ versioning: SemVer.
   README's YAML into Home Assistant), recorder and safety notes; scenario presets for every
   TEST §3.4 geometry with `--list`; P2 report template with the E-02, E-12, E-16 and E-3
   checklists in `docs/test-reports/P2-report.md`. TEST v0.14.
+  E-02 pre-run in the Home Assistant container recorded in the report; the README alert
+  message now rounds CPA/TCPA to the sensors' display precision.
 - Watch-list trackers (#27): `device_tracker.ais_<mmsi>` for each MMSI in the new `watch_list`
   option, on its own device linked to the boat, unavailable while the target is not heard;
   removing an MMSI removes its tracker and device. F-TRF-05.
