@@ -193,3 +193,52 @@ class RiskLatch:
                 self._active = False
                 self._episode = set()
         return self._active
+
+
+@dataclass(frozen=True, slots=True)
+class TargetReport:
+    mmsi: int
+    kinematics: Kinematics
+    nav_status: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class TrafficPicture:
+    """Everything the traffic entities show, computed once per tick."""
+
+    own_known: bool  # own position available: False makes the traffic entities unavailable
+    encounters: Mapping[int, Encounter]
+    threats: frozenset[int]
+    closest_target: tuple[int, Encounter] | None  # smallest distance
+    closest_threat: tuple[int, Encounter] | None  # smallest TCPA, then CPA
+
+
+EMPTY_PICTURE = TrafficPicture(False, {}, frozenset(), None, None)
+
+
+def assess(
+    own: Kinematics | None,
+    targets: Iterable[TargetReport],
+    settings: ThreatSettings,
+    now: float,
+) -> TrafficPicture:
+    """Encounters for every located target, dead-reckoned to `now`, and the threats among them."""
+    if own is None or not own.has_position:
+        return EMPTY_PICTURE
+    encounters: dict[int, Encounter] = {}
+    threats: set[int] = set()
+    for report in targets:
+        e = encounter(own, report.kinematics, now)
+        if e is None:
+            continue
+        encounters[report.mmsi] = e
+        if is_threat(e, settings, nav_status=report.nav_status, sog_kn=report.kinematics.sog_kn):
+            threats.add(report.mmsi)
+    closest = min(encounters.items(), key=lambda item: item[1].distance_nm, default=None)
+    return TrafficPicture(
+        own_known=True,
+        encounters=encounters,
+        threats=frozenset(threats),
+        closest_target=closest,
+        closest_threat=closest_threat((m, encounters[m]) for m in threats),
+    )

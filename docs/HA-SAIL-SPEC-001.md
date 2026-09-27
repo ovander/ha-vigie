@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.7 (draft) |
+| Version | 0.8 (draft) |
 | Date | 2026-09-27 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.8 | 2026-09-27 | WP8 (#25): §9.2 traffic entities made precise (units, suggested nmi, state classes, attributes); CPA/TCPA in the `targets` list; §11.2 P2 threat options implemented. |
 | 0.7 | 2026-09-27 | P2 decisions and WP7 (#23). OD-04 resolved: aggregate sensor + watch-list trackers + threat entities, no `geo_location`. New OD-15, resolved: `collision_risk` anti-flapping latch (§8.2). New OD-16, resolved: dead-reckon own boat and targets to now before CPA/TCPA (§8.1, §8.3). §8.1 made precise (local plane, ‖V‖ threshold 0.1 kn, diverging targets report TCPA < 0 and no CPA); §8.2 stationary exclusion applies to Class A only; §9.2 `collision_risk` unavailable without own position. |
 | 0.6 | 2026-09-27 | WP5 (#15): §9.2 — distances in `sensor.ais_targets` follow the list rebuild (≤ 5 s); §9.5 — `diagnostics.py` also exports GPS rejects, internal errors and reconnects. No change of scope. |
 | 0.5 | 2026-09-27 | P1 decisions (issue #3). OD-03 resolved: own GPS parsers. OD-06 resolved: minimum HA 2026.2.0. OD-07 resolved: GPS first, VDO fallback, `include_own_vdo` option. OD-10 resolved: angle entities without device class, state class `measurement_angle`. OD-12 resolved: external replay tool, no file source in the integration. Pure domain modules `state.py`, `geo.py` and a HA-free `hub.py` (§5); framing limits in `sentence.py` (§7.1); availability on disconnect and stale GPS clarified (§9.2, §9.5, §10.1); dead-band semantics, 5 m position dead-band (§10.2); config flow details (§11.1); P1 options incl. two expiry values and optional `own_mmsi` (§11.2); P0 test count corrected to 39. OD-13 and OD-14 stay open (need X-09, issue #2). |
@@ -281,10 +282,10 @@ Speed: HA does not convert knots automatically under either the metric or the US
 
 | Entity | Content |
 |---|---|
-| `sensor.ais_targets` | Count of live targets. Attribute `targets`: compact list (MMSI, name, class, lat, lon, SOG, COG, distance, CPA, TCPA, age), capped at the 50 nearest (OD-04). P1 omits CPA/TCPA (added in P2); distance comes from `geo.py`. The attribute is excluded from the recorder (`_unrecorded_attributes`). The count stays available when own position is unavailable: from the next rebuild of the list (≤ 5 s) distances are `None` and the list is ordered by report age. |
-| `sensor.closest_target_distance` | Distance to the nearest target (NM, device_class distance). Attributes: MMSI, name. |
-| `sensor.closest_threat_cpa` / `_tcpa` | CPA (NM) and TCPA (min) of the most urgent threat; unavailable when none. |
-| `binary_sensor.collision_risk` | On while at least one threat exists, with the anti-flapping latch of §8.2 (device_class safety). **Unavailable** when own position is unavailable: "off" would wrongly reassure. Designed to drive automations (notification, buzzer, lights); trigger on `to: "on"`. |
+| `sensor.ais_targets` | Count of live targets. Attribute `targets`: compact list (MMSI, name, class, lat, lon, SOG, COG, distance, CPA, TCPA, age), capped at the 50 nearest (OD-04). Each entry carries `cpa_nm` and `tcpa_min` from the traffic logic (§8.1; `None` when undefined or diverging); distance comes from `geo.py`. The attribute is excluded from the recorder (`_unrecorded_attributes`). The count stays available when own position is unavailable: from the next rebuild of the list (≤ 5 s) distances are `None` and the list is ordered by report age. |
+| `sensor.closest_target_distance` | Distance to the nearest target, dead-reckoned to now (device_class distance, native and suggested unit nmi — HA's metric system would otherwise show km —, state_class measurement, dead-band 0.01 NM). Attributes: MMSI, name, bearing. Unavailable without own position or without targets. |
+| `sensor.closest_threat_cpa` / `_tcpa` | CPA (nmi, suggested nmi, dead-band 0.01 NM) and TCPA (min, device_class duration, dead-band 0.1 min) of the most urgent threat (§8.2); no state_class, since the underlying target changes. Attributes: MMSI, name, distance, bearing, CPA, TCPA. Unavailable when there is no threat or no own position. A change of target is always written. |
+| `binary_sensor.collision_risk` | On while at least one threat exists, with the anti-flapping latch of §8.2 (device_class safety). **Unavailable** when own position is unavailable: "off" would wrongly reassure. Attributes: `threat_count`, and MMSI and name of the most urgent threat. Designed to drive automations (notification, buzzer, lights); trigger on `to: "on"`. |
 
 ### 9.3 Watched targets
 
@@ -341,9 +342,9 @@ Exponential backoff (1, 2, 4 … 60 s max) on serial errors and end-of-stream, l
 | `expiry_class_b` (also anchored/moored) | 15 min | P1 |
 | `include_own_vdo` | on | P1 |
 | `own_mmsi` | empty (learned from VDO) | P1 |
-| CPA threshold | 0.5 NM | P2 |
-| TCPA threshold | 15 min | P2 |
-| Exclude anchored/moored from threats | on | P2 |
+| `cpa_threshold` | 0.5 NM (0.05–5, step 0.05) | P2 |
+| `tcpa_threshold` | 15 min (1–60) | P2 |
+| `exclude_stationary` (anchored/moored Class A below 0.5 kn) | on | P2 |
 | Watch list (MMSIs) | empty | P2 |
 
 Changing an option reloads the entry.

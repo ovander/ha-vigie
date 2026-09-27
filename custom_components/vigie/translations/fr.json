@@ -39,7 +39,10 @@
           "expiry_class_a": "Expiration des cibles AIS, classe A",
           "expiry_class_b": "Expiration des cibles AIS, classe B et au mouillage/amarrées",
           "include_own_vdo": "Utiliser les rapports du propre navire (VDO)",
-          "own_mmsi": "MMSI du bateau"
+          "own_mmsi": "MMSI du bateau",
+          "cpa_threshold": "Seuil de CPA",
+          "tcpa_threshold": "Seuil de TCPA",
+          "exclude_stationary": "Ignorer les cibles au mouillage ou amarrées"
         },
         "data_description": {
           "update_interval": "Les entités écrivent leur état au plus une fois par intervalle.",
@@ -47,7 +50,10 @@
           "expiry_class_a": "Une cible de classe A non entendue depuis ce délai est retirée.",
           "expiry_class_b": "Idem pour les cibles de classe B et les cibles de classe A au mouillage ou amarrées.",
           "include_own_vdo": "Utiliser les rapports VDO du transpondeur quand les phrases GPS manquent.",
-          "own_mmsi": "Facultatif, 9 chiffres. Les rapports de ce MMSI ne sont jamais affichés comme trafic. Appris automatiquement des rapports VDO si vide."
+          "own_mmsi": "Facultatif, 9 chiffres. Les rapports de ce MMSI ne sont jamais affichés comme trafic. Appris automatiquement des rapports VDO si vide.",
+          "cpa_threshold": "Une cible est une menace si son point de rapprochement maximal est plus proche que cette valeur…",
+          "tcpa_threshold": "…et si ce point est atteint dans ce délai.",
+          "exclude_stationary": "Les cibles de classe A au mouillage ou amarrées, à moins de 0,5 nd, ne déclenchent jamais de risque de collision."
         }
       }
     },
@@ -112,11 +118,23 @@
           "gps": "GPS",
           "vdo": "Rapport AIS du propre navire (VDO)"
         }
+      },
+      "closest_target_distance": {
+        "name": "Distance de la cible la plus proche"
+      },
+      "closest_threat_cpa": {
+        "name": "CPA de la menace la plus proche"
+      },
+      "closest_threat_tcpa": {
+        "name": "TCPA de la menace la plus proche"
       }
     },
     "binary_sensor": {
       "connected": {
         "name": "Connecté"
+      },
+      "collision_risk": {
+        "name": "Risque de collision"
       }
     }
   }

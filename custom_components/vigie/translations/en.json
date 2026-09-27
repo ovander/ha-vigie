@@ -39,7 +39,10 @@
           "expiry_class_a": "AIS target expiry, Class A",
           "expiry_class_b": "AIS target expiry, Class B and anchored/moored",
           "include_own_vdo": "Use own-ship reports (VDO)",
-          "own_mmsi": "Own MMSI"
+          "own_mmsi": "Own MMSI",
+          "cpa_threshold": "CPA threshold",
+          "tcpa_threshold": "TCPA threshold",
+          "exclude_stationary": "Ignore anchored and moored targets"
         },
         "data_description": {
           "update_interval": "Entities write their state at most once per interval.",
@@ -47,7 +50,10 @@
           "expiry_class_a": "A Class A target not heard for this long is removed.",
           "expiry_class_b": "Same for Class B targets and for Class A targets at anchor or moored.",
           "include_own_vdo": "Use the transponder's own-ship reports when GPS sentences are missing.",
-          "own_mmsi": "Optional, 9 digits. Reports from this MMSI are never shown as traffic. Learned automatically from own-ship reports when left empty."
+          "own_mmsi": "Optional, 9 digits. Reports from this MMSI are never shown as traffic. Learned automatically from own-ship reports when left empty.",
+          "cpa_threshold": "A target is a threat when its closest point of approach is nearer than this…",
+          "tcpa_threshold": "…and that point is reached within this time.",
+          "exclude_stationary": "Class A targets reporting at anchor or moored, and slower than 0.5 kn, never raise a collision risk."
         }
       }
     },
@@ -112,11 +118,23 @@
           "gps": "GPS",
           "vdo": "AIS own-ship report (VDO)"
         }
+      },
+      "closest_target_distance": {
+        "name": "Closest target distance"
+      },
+      "closest_threat_cpa": {
+        "name": "Closest threat CPA"
+      },
+      "closest_threat_tcpa": {
+        "name": "Closest threat TCPA"
       }
     },
     "binary_sensor": {
       "connected": {
         "name": "Connected"
+      },
+      "collision_risk": {
+        "name": "Collision risk"
       }
     }
   }

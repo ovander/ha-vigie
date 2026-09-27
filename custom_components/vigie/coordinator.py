@@ -20,12 +20,15 @@ from homeassistant.helpers.event import async_track_time_interval
 
 from .const import (
     CONF_BAUDRATE,
+    CONF_CPA_THRESHOLD,
+    CONF_EXCLUDE_STATIONARY,
     CONF_EXPIRY_CLASS_A,
     CONF_EXPIRY_CLASS_B,
     CONF_INCLUDE_OWN_VDO,
     CONF_OWN_MMSI,
     CONF_SERIAL_PORT,
     CONF_STALE_TIMEOUT,
+    CONF_TCPA_THRESHOLD,
     CONF_UPDATE_INTERVAL,
     DEFAULT_OPTIONS,
     DOMAIN,
@@ -33,7 +36,16 @@ from .const import (
 from .hub import Hub, serial_transport
 from .nmea.ais_decoder import VesselPosition
 from .nmea.parsers import GpsRecord
-from .state import AisTargetTable, OwnBoatState
+from .state import COG, POSITION, SOG, AisTargetTable, OwnBoatState
+from .traffic import (
+    EMPTY_PICTURE,
+    Kinematics,
+    RiskLatch,
+    TargetReport,
+    ThreatSettings,
+    TrafficPicture,
+    assess,
+)
 
 type VigieConfigEntry = ConfigEntry[VigieCoordinator]
 
@@ -74,6 +86,13 @@ class VigieCoordinator:
             name=self.port,
             clock=_monotonic,
         )
+        self.threat_settings = ThreatSettings(
+            cpa_nm=float(options[CONF_CPA_THRESHOLD]),
+            tcpa_min=float(options[CONF_TCPA_THRESHOLD]),
+            exclude_stationary=bool(options[CONF_EXCLUDE_STATIONARY]),
+        )
+        self.picture: TrafficPicture = EMPTY_PICTURE
+        self.risk = RiskLatch(clock=_monotonic)
         self.reader_task: asyncio.Task[None] | None = None
         self._listeners: list[Callable[[], None]] = []
         self._unsub_tick: CALLBACK_TYPE | None = None
@@ -140,7 +159,51 @@ class VigieCoordinator:
     @callback
     def _tick(self, _now: datetime) -> None:
         self.targets.expire()
+        self.update_traffic()
         self._notify()
+
+    def update_traffic(self) -> None:
+        """Recompute CPA/TCPA for every target and the collision risk (SPEC §8)."""
+        now = self.now()
+        self.picture = assess(
+            self._own_kinematics(), self._target_reports(), self.threat_settings, now
+        )
+        if self.picture.own_known:  # without own position the risk is unknown, not "off"
+            self.risk.update(set(self.picture.threats), self.picture.encounters)
+
+    def target_name(self, mmsi: int) -> str | None:
+        target = self.targets.get(mmsi)
+        return None if target is None else target.name
+
+    def _own_kinematics(self) -> Kinematics | None:
+        position = self.own.get(POSITION)
+        if position is None:
+            return None
+        sog, cog = self.own.get(SOG), self.own.get(COG)
+        lat, lon = position.value
+        return Kinematics(
+            lat,
+            lon,
+            None if sog is None else sog.value,
+            None if cog is None else cog.value,
+            position.updated_at,
+        )
+
+    def _target_reports(self) -> list[TargetReport]:
+        return [
+            TargetReport(
+                t.mmsi,
+                Kinematics(
+                    t.report.latitude,
+                    t.report.longitude,
+                    t.report.sog_knots,
+                    t.report.cog_deg,
+                    t.last_seen,
+                ),
+                t.report.nav_status,
+            )
+            for t in self.targets.targets()
+        ]
 
     def _notify(self) -> None:
         for update_callback in list(self._listeners):

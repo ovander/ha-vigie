@@ -12,6 +12,8 @@ testpaths = ["tests"]
 asyncio_mode = "auto"
 markers = ["perf: load and timing tests, run nightly (TEST-001 §4.5, §7)"]
 addopts = "-m 'not perf'"
+# xunit1 keeps record_property values (F-PERF-02 baseline) in the nightly junit report
+junit_family = "xunit1"
 
 [tool.coverage.run]
 # Pure modules only (TEST §7 gate 2); module names, since `source` takes no file paths
