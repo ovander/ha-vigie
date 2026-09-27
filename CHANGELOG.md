@@ -15,6 +15,10 @@ versioning: SemVer.
   OD-13 and OD-14 stay open pending the receiver capture (#2).
 
 ### Added
+- P2 bench material (#29): README collision-alert automation (checked by a test that loads the
+  README's YAML into Home Assistant), recorder and safety notes; scenario presets for every
+  TEST §3.4 geometry with `--list`; P2 report template with the E-02, E-12, E-16 and E-3
+  checklists in `docs/test-reports/P2-report.md`. TEST v0.14.
 - Watch-list trackers (#27): `device_tracker.ais_<mmsi>` for each MMSI in the new `watch_list`
   option, on its own device linked to the boat, unavailable while the target is not heard;
   removing an MMSI removes its tracker and device. F-TRF-05.
