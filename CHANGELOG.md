@@ -15,6 +15,10 @@ versioning: SemVer.
   OD-13 and OD-14 stay open pending the receiver capture (#2).
 
 ### Added
+- GPS sentence layer (#5): `nmea/sentence.py` (framing limits, checksum, tag block, talker
+  and field split, empty fields → `None`) and `nmea/parsers.py` (RMC, GGA, VTG, GSA, HDT as
+  typed dataclasses, units normalised, RMC void not applied, `GpsParser` with counters).
+  U-NMEA-01…06 and U-GPS-01…07; U-GPS-08 pending on the receiver capture (#2).
 - Repository bootstrap: integration skeleton (`vigie` domain, config flow), CI (lint, unit,
   hassfest, HACS), release workflow, issue templates, documentation.
 - AIS decoder (`nmea/ais_decoder.py`): Class A types 1/2/3 and Class B types 18/19,
