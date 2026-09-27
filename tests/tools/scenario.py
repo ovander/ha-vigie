@@ -15,7 +15,14 @@ JSON scenario (target positions relative to own start, in NM):
     {"own": {"lat": 43.5, "lon": 7.25, "sog": 6.0, "cog": 0.0},
      "duration_s": 900,
      "targets": [{"mmsi": 235000001, "east_nm": 0, "north_nm": 2, "sog": 6, "cog": 180,
-                  "class": "A", "interval_s": 10, "nav_status": 0}]}
+                  "class": "A", "interval_s": 10, "nav_status": 0,
+                  "name": "MOANA", "ship_type": 37, "callsign": "F1234", "imo": 0,
+                  "dimensions": [9, 3, 2, 2], "draught_m": 1.8, "destination": "SETE",
+                  "static_offset_s": 30, "static_interval_s": 360}]}
+
+Static keys are optional; a target without any sends no static report. Class B targets
+send type 24 parts A and B, and an auxiliary craft gives "mothership_mmsi" instead of
+"dimensions".
 """
 
 from __future__ import annotations
@@ -62,6 +69,29 @@ class Target:
     interval_s: float = 10.0
     nav_status: int = 0  # Class A only; 1 = at anchor, 5 = moored
     heading: int | None = None
+    # Static data (P3): sent as type 5 (Class A) or type 24 parts A and B (Class B), first
+    # after `static_offset_s`, then every `static_interval_s`; nothing when none is given
+    name: str | None = None
+    ship_type: int = 0
+    callsign: str | None = None
+    imo: int = 0
+    dimensions: tuple[int, int, int, int] = (0, 0, 0, 0)  # to bow, stern, port, starboard
+    draught_m: float = 0.0
+    destination: str | None = None
+    mothership_mmsi: int | None = None  # auxiliary craft (MMSI 98xxxxxxx), Class B
+    static_offset_s: float = 30.0
+    static_interval_s: float = 360.0
+
+    @property
+    def has_static(self) -> bool:
+        return bool(
+            self.name
+            or self.ship_type
+            or self.callsign
+            or self.imo
+            or any(self.dimensions)
+            or self.mothership_mmsi
+        )
 
 
 @dataclass(frozen=True)
@@ -122,6 +152,39 @@ def vdm(target: Target, t: float) -> str:
     return str(encode_dict(msg, talker_id="AI", sentence_type="VDM", radio_channel=channel)[0])
 
 
+def static_reports(target: Target) -> list[str]:
+    """`!AIVDM` static report(s) of `target`: type 5, or type 24 parts A and B."""
+    bow, stern, port, starboard = target.dimensions
+    dims = {"to_bow": bow, "to_stern": stern, "to_port": port, "to_starboard": starboard}
+    common = {"mmsi": target.mmsi, "ship_type": target.ship_type, "callsign": target.callsign or ""}
+    if target.ais_class == "B":
+        part_b = {"type": 24, "partno": 1, **common}
+        part_b.update(
+            {"mothership_mmsi": target.mothership_mmsi} if target.mothership_mmsi else dims
+        )
+        messages = [
+            {"type": 24, "mmsi": target.mmsi, "partno": 0, "shipname": target.name or ""},
+            part_b,
+        ]
+    else:
+        messages = [
+            {
+                "type": 5,
+                **common,
+                "shipname": target.name or "",
+                "imo": target.imo,
+                "draught": target.draught_m,
+                "destination": target.destination or "",
+                **dims,
+            }
+        ]
+    return [
+        str(line)
+        for msg in messages
+        for line in encode_dict(msg, talker_id="AI", sentence_type="VDM", radio_channel="A")
+    ]
+
+
 def generate(scenario: Scenario) -> list[tuple[float, str]]:
     """Timed sentences of the whole scenario, sorted by time."""
     lines: list[tuple[float, str]] = []
@@ -140,6 +203,13 @@ def generate(scenario: Scenario) -> list[tuple[float, str]]:
             t = i * target.interval_s
             # Just after the own-boat sentence of the same second
             lines.append((scenario.start_epoch + t + 0.001, vdm(target, t)))
+        if not target.has_static:
+            continue
+        t = target.static_offset_s
+        while t <= scenario.duration_s:
+            for k, sentence in enumerate(static_reports(target)):
+                lines.append((scenario.start_epoch + t + 0.002 + k * 0.001, sentence))
+            t += target.static_interval_s
     lines.sort(key=lambda line: line[0])
     return lines
 
@@ -181,6 +251,58 @@ PRESETS: dict[str, Scenario] = {
     "multi-target": _preset(2400, _HEAD_ON, _CROSSING, _ANCHORED, _OVERTAKING),
 }
 
+
+def _named_traffic() -> Scenario:
+    """P3 bench (TEST §5): named targets of both classes; names arrive 30 s after positions."""
+    own = Track(43.5, 7.25, 6.0, 0.0)
+
+    def at(east: float, north: float, sog: float, cog: float) -> Track:
+        return Track(*relative(own.lat, own.lon, east, north), sog, cog)
+
+    return Scenario(
+        own,
+        (
+            # Class A cargo crossing ahead: CPA 0.45 NM, TCPA 16 min; a threat from 1 min
+            Target(
+                235000011,
+                at(3.0, 2.0, 12.0, 270.0),
+                name="CARGO ONE",
+                ship_type=70,
+                callsign="ABCD",
+                imo=9123456,
+                dimensions=(150, 30, 15, 15),
+                draught_m=8.5,
+                destination="MARSEILLE",
+            ),
+            # Class B yacht passing clear astern, and its tender (auxiliary craft)
+            Target(
+                235000012,
+                at(-1.0, 0.0, 4.0, 90.0),
+                "B",
+                30.0,
+                name="ALBATROS",
+                ship_type=36,
+                callsign="FAB1234",
+                dimensions=(8, 4, 2, 2),
+            ),
+            Target(
+                982350001,
+                at(-1.0, 0.05, 4.0, 90.0),
+                "B",
+                30.0,
+                name="ALBATROS TENDER",
+                ship_type=37,
+                mothership_mmsi=235000012,
+            ),
+            # No static data: stays unnamed
+            Target(235000014, at(4.0, 0.0, 6.0, 0.0)),
+        ),
+        1200,
+    )
+
+
+PRESETS["named-traffic"] = _named_traffic()
+
 # What the bench operator should see at the start (TEST §3.4, default thresholds 0.5 NM, 15 min)
 PRESET_REFERENCE: dict[str, str] = {
     "head-on": "U-TRF-01  CPA 0.00 NM, TCPA 10.0 min, threat",
@@ -193,6 +315,8 @@ PRESET_REFERENCE: dict[str, str] = {
     "anchored": "U-TRF-08  CPA 0.00 NM, TCPA 4.0 min, no threat (anchored, excluded by default)",
     "multi-target": "U-TRF-11  4 targets; closest threat 235000002 (crossing, TCPA 4.0 min), "
     "then 235000001 (head-on), then 235000004 (overtaking); 235000003 anchored, never a threat",
+    "named-traffic": "P3 bench  names from 30 s: CARGO ONE (cargo, 180 m, threat from 1 min), "
+    "ALBATROS (sailing, 12 m) and ALBATROS TENDER (pleasure craft); 235000014 unnamed",
 }
 
 
@@ -211,6 +335,16 @@ def load(path: Path) -> Scenario:
                 interval_s=float(t.get("interval_s", 10.0)),
                 nav_status=int(t.get("nav_status", 0)),
                 heading=t.get("heading"),
+                name=t.get("name"),
+                ship_type=int(t.get("ship_type", 0)),
+                callsign=t.get("callsign"),
+                imo=int(t.get("imo", 0)),
+                dimensions=tuple(t.get("dimensions", (0, 0, 0, 0))),
+                draught_m=float(t.get("draught_m", 0.0)),
+                destination=t.get("destination"),
+                mothership_mmsi=t.get("mothership_mmsi"),
+                static_offset_s=float(t.get("static_offset_s", 30.0)),
+                static_interval_s=float(t.get("static_interval_s", 360.0)),
             )
         )
     return Scenario(
