@@ -6,6 +6,9 @@ import asyncio
 import functools
 import operator
 
+# Synthetic by-id path of a USB serial adapter
+BY_ID_PORT = "/dev/serial/by-id/usb-Fake_AIS_Receiver_0001-if00-port0"
+
 
 def nmea(body: str, start: str = "$") -> str:
     """Wrap a sentence body with its start character and a valid checksum.
@@ -52,6 +55,9 @@ class FakeSerial:
     def __init__(self) -> None:
         self.available = True
         self.fail_opens = 0
+        self.initial_data = b""  # fed to every new reader (e.g. for the config-flow probe)
+        self.eof_on_open = False  # end the stream right after initial_data
+        self.baudrates: list[int] = []
         self.opens = 0
         self.readers: list[asyncio.StreamReader] = []
         self.writers: list[FakeWriter] = []
@@ -62,6 +68,10 @@ class FakeSerial:
             self.fail_opens = max(0, self.fail_opens - 1)
             raise OSError(2, "fake port unavailable")
         reader, writer = asyncio.StreamReader(), FakeWriter()
+        if self.initial_data:
+            reader.feed_data(self.initial_data)
+        if self.eof_on_open:
+            reader.feed_eof()
         self.readers.append(reader)
         self.writers.append(writer)
         return reader, writer
@@ -88,3 +98,18 @@ async def settle(rounds: int = 20) -> None:
     """Let pending tasks run (yields to the loop; no real time passes)."""
     for _ in range(rounds):
         await asyncio.sleep(0)
+
+
+class FakePorts:
+    """Stands in for `hub.serial_transport(port, baudrate)`: one FakeSerial per port path."""
+
+    def __init__(self) -> None:
+        self.ports: dict[str, FakeSerial] = {}
+
+    def __getitem__(self, port: str) -> FakeSerial:
+        return self.ports.setdefault(port, FakeSerial())
+
+    def __call__(self, port: str, baudrate: int) -> FakeSerial:
+        fake = self[port]
+        fake.baudrates.append(baudrate)
+        return fake

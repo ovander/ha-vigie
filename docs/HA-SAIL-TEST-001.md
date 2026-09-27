@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.7 (draft) |
+| Version | 0.8 (draft) |
 | Date | 2026-09-27 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.8 | 2026-09-27 | WP4 (#13): F-LIFE-01…05 and F-LIFE-07 implemented in the HA harness (`tests/integration/test_config_flow.py`, `tests/integration/test_init.py`, fake transport patched in `conftest.py`); F-LIFE-06 options half done, entity unique-ID half in WP5. `pytest-homeassistant-custom-component==0.13.316` added; functional tests run in the `unit` CI job (`asyncio_mode = auto`). Suite: 226 tests. |
 | 0.7 | 2026-09-27 | U-AIS-14 extended (#11): payloads with armoring characters in the invalid gap 0x58–0x5F (`X`, `_`) are rejected; the range edges `W`, `` ` ``, `w` stay valid. D-04 uses `X` again for its invalid-armoring line. |
 | 0.6 | 2026-09-27 | WP3 (#9): F-HUB-01, 02, 04, 05 implemented at hub level (`tests/transport/test_hub.py`, fake transport, injected clock and sleep); hub half of F-HUB-03 done, entity half in WP5; D-04 corpus committed as `tests/fixtures/malformed.nmea`; `pytest-asyncio==1.3.0` added (same pin as phcc 0.13.316). Suite: 203 tests, 98.8 % coverage of the pure modules. |
 | 0.5 | 2026-09-27 | WP2 (#7): U-COO-01…06 and U-TRF-12 implemented (`tests/domain/test_state.py`), plus `geo.py` checks (`tests/domain/test_geo.py`); NFR-02 check and coverage gate cover `state.py` and `geo.py`. Suite: 176 tests, 99.0 % coverage of the pure modules. |
@@ -162,13 +163,13 @@ Run inside Home Assistant's test harness (`pytest-homeassistant-custom-component
 
 | ID | Case | Expected | SPEC | Status |
 |---|---|---|---|---|
-| F-LIFE-01 | Config flow, port lists `/dev/serial/by-id/*`, valid data within 5 s | Entry created | §11.1 | To do |
-| F-LIFE-02 | Config flow, no data | `no_data` error shown, user can proceed | §11.1 | To do |
-| F-LIFE-03 | Config flow, garbage (wrong baud) | Hint to try the other baud rate | §11.1 | To do |
-| F-LIFE-04 | Setup with port missing | `ConfigEntryNotReady`, retried | §10.3 | To do |
-| F-LIFE-05 | Unload | Reader task cancelled, port closed, no pending tasks (harness checks lingering tasks) | NFR-07 | To do |
-| F-LIFE-06 | Reload after options change | New options applied, entities keep unique IDs | NFR-06 | To do |
-| F-LIFE-07 | Options flow: every option round-trips | Stored and applied | §11.2 | To do |
+| F-LIFE-01 | Config flow, port lists `/dev/serial/by-id/*`, valid data within 5 s | Entry created | §11.1 | Done |
+| F-LIFE-02 | Config flow, no data | `no_data` error shown, user can proceed | §11.1 | Done |
+| F-LIFE-03 | Config flow, garbage (wrong baud) | Hint to try the other baud rate | §11.1 | Done |
+| F-LIFE-04 | Setup with port missing | `ConfigEntryNotReady`, retried | §10.3 | Done |
+| F-LIFE-05 | Unload | Reader task cancelled, port closed, no pending tasks (harness checks lingering tasks) | NFR-07 | Done |
+| F-LIFE-06 | Reload after options change | New options applied, entities keep unique IDs | NFR-06 | Options half done; unique IDs in WP5 |
+| F-LIFE-07 | Options flow: every option round-trips | Stored and applied | §11.2 | Done |
 | F-LIFE-08 | Diagnostics download | Config redacted, counters present | §9.5 | To do |
 
 ### 4.2 Hub and transport — `F-HUB`

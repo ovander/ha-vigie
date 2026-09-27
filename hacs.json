@@ -2,5 +2,6 @@
   "name": "Vigie",
   "render_readme": true,
   "zip_release": true,
-  "filename": "vigie.zip"
+  "filename": "vigie.zip",
+  "homeassistant": "2026.2.0"
 }

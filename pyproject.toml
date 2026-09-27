@@ -8,6 +8,8 @@ license = { text = "Apache-2.0" }
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+# Required by pytest-homeassistant-custom-component; pure async tests carry explicit marks
+asyncio_mode = "auto"
 
 [tool.coverage.run]
 # Pure modules only (TEST §7 gate 2); module names, since `source` takes no file paths
@@ -40,3 +42,12 @@ files = [
 [[tool.mypy.overrides]]
 module = ["homeassistant.*", "voluptuous.*"]
 ignore_missing_imports = true
+# The pure modules never use HA; mypy only reaches it through the package __init__'s
+# TYPE_CHECKING imports, and HA's 3.13 syntax cannot be parsed at python_version 3.12.
+follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+# HA-side modules are outside the strict set (CLAUDE.md: strict on pure modules); mypy
+# would reach them only through the package __init__'s TYPE_CHECKING imports.
+module = ["vigie.coordinator"]  # mypy maps custom_components/vigie to "vigie"
+follow_imports = "skip"

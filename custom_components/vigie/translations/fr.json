@@ -3,16 +3,56 @@
     "step": {
       "user": {
         "title": "Vigie — récepteur AIS",
-        "description": "Port série du récepteur AIS (de préférence /dev/serial/by-id/...).",
+        "description": "Port série du récepteur AIS. Préférez un chemin /dev/serial/by-id/… : il ne change pas quand les périphériques USB sont rebranchés. Vigie écoute jusqu'à 5 s pour vérifier les réglages.",
         "data": {
           "name": "Nom du bateau",
           "serial_port": "Port série",
           "baudrate": "Vitesse (bauds)"
+        },
+        "data_description": {
+          "serial_port": "Choisissez un port détecté ou saisissez un chemin.",
+          "baudrate": "38 400 est la valeur courante des récepteurs AIS ; certains utilisent 4 800. Toute autre valeur peut être saisie."
         }
+      },
+      "no_data": {
+        "title": "Aucune donnée reçue",
+        "description": "Le port {serial_port} s'est ouvert, mais rien n'est arrivé en 5 s. Vérifiez que le récepteur est alimenté et câblé, et qu'aucune autre intégration n'utilise ce port. Vous pouvez enregistrer quand même : Vigie reste à l'écoute et les entités restent indisponibles jusqu'à l'arrivée des données."
       }
+    },
+    "error": {
+      "cannot_connect": "Impossible d'ouvrir le port série. Vérifiez le chemin et qu'aucun autre programme ne l'utilise.",
+      "invalid_baudrate": "Saisissez un nombre entier positif.",
+      "no_data": "Aucune donnée NMEA reçue en 5 s.",
+      "wrong_baud": "Des données arrivent mais aucune phrase NMEA valide. La vitesse est sans doute fausse : essayez {other_baudrate}."
     },
     "abort": {
       "already_configured": "Ce port série est déjà configuré."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options de Vigie",
+        "data": {
+          "update_interval": "Intervalle de mise à jour",
+          "stale_timeout": "Délai d'obsolescence",
+          "expiry_class_a": "Expiration des cibles AIS, classe A",
+          "expiry_class_b": "Expiration des cibles AIS, classe B et au mouillage/amarrées",
+          "include_own_vdo": "Utiliser les rapports du propre navire (VDO)",
+          "own_mmsi": "MMSI du bateau"
+        },
+        "data_description": {
+          "update_interval": "Les entités écrivent leur état au plus une fois par intervalle.",
+          "stale_timeout": "Une valeur plus ancienne devient indisponible.",
+          "expiry_class_a": "Une cible de classe A non entendue depuis ce délai est retirée.",
+          "expiry_class_b": "Idem pour les cibles de classe B et les cibles de classe A au mouillage ou amarrées.",
+          "include_own_vdo": "Utiliser les rapports VDO du transpondeur quand les phrases GPS manquent.",
+          "own_mmsi": "Facultatif, 9 chiffres. Les rapports de ce MMSI ne sont jamais affichés comme trafic. Appris automatiquement des rapports VDO si vide."
+        }
+      }
+    },
+    "error": {
+      "invalid_mmsi": "Un MMSI comporte exactement 9 chiffres."
     }
   }
 }

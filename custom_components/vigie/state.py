@@ -77,6 +77,14 @@ class OwnBoatState:
         self._fields: dict[Source, dict[str, FieldValue]] = {Source.GPS: {}, Source.VDO: {}}
 
     @property
+    def stale_timeout_s(self) -> float:
+        return self._stale
+
+    @property
+    def use_vdo(self) -> bool:
+        return self._use_vdo
+
+    @property
     def own_mmsi(self) -> int | None:
         """Configured own MMSI, else the one learned from VDO reports."""
         if self._configured_mmsi is not None:
@@ -173,6 +181,11 @@ class AisTargetTable:
         self._expiry_b = expiry_b_s
         self._clock = clock
         self._targets: dict[int, AisTarget] = {}
+
+    @property
+    def expiry_s(self) -> tuple[float, float]:
+        """(Class A expiry, Class B and anchored/moored expiry) in seconds."""
+        return self._expiry_a, self._expiry_b
 
     def __len__(self) -> int:
         return len(self._targets)
