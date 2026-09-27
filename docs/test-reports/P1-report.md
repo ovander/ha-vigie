@@ -38,7 +38,7 @@ sentence age (disabled by default), checksum errors, rejected AIS messages, posi
 | U-GPS-08, U-AIS-13 | Pending on the receiver capture (#2) |
 | F-LIFE-01…08, F-HUB-01…05, F-ENT-01…07 | Done; F-HUB-01 and F-ENT-01 on synthetic data until #2 |
 | F-PERF-01…03 | Done locally (`pytest -m perf`); F-PERF-02 baseline on synthetic data until #2 |
-| E-1 (E-01, E-03…E-06) | To run — §5 |
+| E-1 (E-01, E-03…E-06) | Pre-run in the official HA container passed (§5.1: E-01 without HACS, E-04, E-05 on x86, E-06; E-03 partial); formal run to do — §5.2 |
 | E-2 (E-10, E-11, E-13) | To run on board — §6 |
 
 F-PERF-02 synthetic baseline (10 min, 1 RMC + 50 AIS per second): 600 SOG writes, 300 COG
@@ -73,6 +73,45 @@ neutral to either answer; TP-03 (anonymisation) before committing D-05/D-06; TP-
 
 ## 5. E-1 replay bench (TEST §5.1)
 
+### 5.1 Pre-run in a sandbox container (#21)
+
+Not the formal E-1: an x86 sandbox, no HACS, no Raspberry Pi. It exercises the same chain
+(PTY → serial library → integration → entities) in the official image, before the bench.
+
+| Item | Value |
+|---|---|
+| Date | 2026-09-27, 17:52–17:57 UTC |
+| Home Assistant | official image `homeassistant/home-assistant:2026.2.3` (Docker Hub), `default_config`, `--network host` |
+| Host | x86 Linux sandbox, 4 vCPU, 16 GB |
+| Vigie | `main` at `76bad9f`, installed by unpacking `vigie.zip` built as `release.yml` does (manifest stamped `0.1.0-bench`) |
+| Feed | `tests.tools.replay --pty` on the host; link folder and `/dev/pts` bind-mounted, `--device-cgroup-rule='c 136:* rmw'` |
+| Data | `scenario --preset head-on` (1 RMC/s own boat at 6 kn 000°, 1 target 2 NM ahead at 6 kn 180°), then D-08 `burst_60s.nmea` |
+| Driver | HA REST API (onboarding, config flow, states, diagnostics), as the UI does |
+
+| ID | Result | Observed |
+|---|---|---|
+| E-01 | Pass (without HACS) | Loaded as a custom integration (only HA's standard "not tested by Home Assistant" warning). Config flow: port list empty in the container (no `/dev/serial/by-id`), default `/dev/ttyUSB0` offered; entry "Garnet" created in 0.7 s, the probe finding a valid sentence at once. |
+| Entities | Pass | SOG 6.0 kn, COG 0°, `device_tracker.garnet` moving north with `sog`/`cog`/`position_source: gps`, `ais_targets` = 1 at 1.86 NM and closing. GNSS fix, satellites, HDOP unavailable (no GGA in the scenario) and heading unavailable (no HDT, F-ENT-05), as expected. |
+| E-03 | Partial | About 3 min of clean running; full-length run left to the bench (D-06 or a long scenario). |
+| E-04 | Pass | Feed killed at 17:53:22: within a second `connected` off, own-boat and traffic entities unavailable, error counters still available, one WARNING line (the PTY hang-up is reported by the serial library as a read error). Feed restarted after 30 s; reconnected at the 6th attempt (17:54:25, +63 s, as the backoff schedule says) with one INFO line; no HA restart. |
+| E-05 | Pass on x86 (Pi still to do) | D-08 at real speed (51 sentences/s, 60 s): container CPU ≈ 2 %, no slow-callback or blocking-call warnings, 0 checksum/framing/rejected/internal errors, 81 targets tracked. |
+| E-06 | Pass | `docker restart` during the replay: HA back in 4 s, same 12 visible entity IDs; registry holds 14 unique Vigie entities (the 2 off-by-default diagnostics disabled) on one device "Garnet"; HA shut down with exit code 0. |
+| Diagnostics | Pass | Download works; serial port redacted; counters present. |
+
+Other observations:
+
+- The only ERROR in the HA log came from HA core's alerts fetch (`alerts.home-assistant.io`,
+  no internet in the sandbox), not from Vigie.
+- Sentences written while the port is closed are lost: when the feed was switched, about 45
+  AIS lines sent before Vigie reopened the port never arrived. Expected, as with a real
+  receiver.
+- The recipe with `--device /dev/pts/N` breaks on a replay restart; `CONTRIBUTING.md` now uses
+  the bind-mount recipe above.
+- The GHCR image could not be pulled in the sandbox (blob host blocked by its proxy); Docker
+  Hub `homeassistant/home-assistant` is the same image.
+
+### 5.2 Formal E-1 run
+
 Setup: Linux host with Home Assistant **Container** (Raspberry Pi with Raspberry Pi OS for
 E-05); repository checked out, `pip install -r requirements_test.txt`. Details in
 `CONTRIBUTING.md`.
@@ -82,7 +121,7 @@ python -m tests.tools.scenario --preset head-on -o head-on.nmea
 python -m tests.tools.scenario --preset crossing -o crossing.nmea
 python -m tests.tools.scenario my-traffic.json --duration 3600 -o long.nmea  # E-03 stand-in until D-06 (#2)
 python -m tests.tools.replay head-on.nmea --pty /tmp/ttyAIS --loop
-# prints /dev/pts/N: map it into the container, e.g. --device /dev/pts/N:/dev/ttyAIS
+# container: bind-mount the link folder and /dev/pts, --device-cgroup-rule='c 136:* rmw' (CONTRIBUTING.md)
 ```
 
 | Run | Date | Host / HA version | Tester |
@@ -119,4 +158,5 @@ installing Vigie (only one program can own the port).
 - #2 — receiver capture: U-GPS-08, U-AIS-13, F-HUB-01 / F-ENT-01 / F-PERF-02 on real data,
   OD-13, OD-14, SPEC §7.2 sentence list, P1 exit criterion (D-05 replay matches the display).
 - First nightly `perf` run on `main`.
+- Formal E-1 on the bench, including E-05 on the Raspberry Pi and a full-length E-03.
 - Release tag for E-01 (owner's call).

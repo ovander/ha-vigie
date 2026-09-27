@@ -25,6 +25,8 @@ versioning: SemVer.
   excluded), picks the most urgent threat, and latches the collision risk against flapping.
   Records SPEC decisions OD-04, OD-15, OD-16. U-TRF-01…11, 13, 14, 15.
 - P1 report and E-1/E-2 checklists in `docs/test-reports/P1-report.md` (#19).
+- Container pre-run of the E-1 checklist recorded in the P1 report; E-1 container recipe in
+  `CONTRIBUTING.md` now bind-mounts `/dev/pts` so replay restarts keep working (#21).
 - Test tooling (#17): scenario generator (D-07, head-on and crossing presets), timed replay
   into its own pseudo-terminal or a serial device, timestamped receiver capture (X-09), E-1
   bench recipe in `CONTRIBUTING.md`; nightly workflow running the F-PERF tests.

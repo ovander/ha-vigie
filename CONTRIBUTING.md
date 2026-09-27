@@ -46,12 +46,24 @@ run nightly (`.github/workflows/nightly.yml`).
 
 Home Assistant **Container** on a Linux host (a Raspberry Pi with Raspberry Pi OS for E-05).
 
-1. Start the feed on the host: `python -m tests.tools.replay head-on.nmea --pty /tmp/ttyAIS --loop`.
-   It prints the `/dev/pts/N` behind the link.
-2. Give the container that device, e.g. `--device /dev/pts/N:/dev/ttyAIS` (Docker) or a
-   bind-mount of `/dev/pts` plus the link; restart the container after re-creating the PTY.
-3. Install Vigie from the release tag through HACS, add the integration on `/dev/ttyAIS`.
-4. E-04: stop the replay (Ctrl-C), wait 30 s, start it again (same device mapping).
+1. Start the feed on the host, with the link in its own folder:
+   `python -m tests.tools.replay head-on.nmea --pty /srv/vigie-bench/ttyAIS --loop`.
+2. Start the container with the link folder and `/dev/pts` bind-mounted at the same paths,
+   and the pseudo-terminals allowed (Unix98 PTYs have character major 136):
+
+   ```bash
+   docker run -d --name ha --network host -v /srv/ha-config:/config \
+     -v /srv/vigie-bench:/srv/vigie-bench -v /dev/pts:/dev/pts \
+     --device-cgroup-rule='c 136:* rmw' ghcr.io/home-assistant/home-assistant:stable
+   ```
+
+   Mapping one device with `--device /dev/pts/N:/dev/ttyAIS` also works, but only until the
+   replay is restarted: a new PTY may get another number, which breaks E-04.
+3. Install Vigie from the release tag through HACS, add the integration on
+   `/srv/vigie-bench/ttyAIS` at 38 400 baud.
+4. E-04: stop the replay (Ctrl-C), wait 30 s, start it again with the same command. Vigie
+   retries at 1, 3, 7, 15, 31, 63 s after the loss and then every 60 s, so recovery can take
+   up to a minute after the feed is back.
 
 For E-01 on HA OS, wire two USB-serial adapters null-modem (TX↔RX, GND↔GND): one on the HA
 host, one on a laptop running `replay ... --device /dev/ttyUSBx --baud 38400`.
