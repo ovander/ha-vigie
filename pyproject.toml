@@ -20,6 +20,7 @@ source = [
     "custom_components.vigie.geo",
     "custom_components.vigie.state",
     "custom_components.vigie.hub",
+    "custom_components.vigie.traffic",
 ]
 branch = true
 
@@ -39,6 +40,7 @@ files = [
     "custom_components/vigie/geo.py",
     "custom_components/vigie/state.py",
     "custom_components/vigie/hub.py",
+    "custom_components/vigie/traffic.py",
 ]
 
 [[tool.mypy.overrides]]

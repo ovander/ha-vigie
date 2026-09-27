@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.6 (draft) |
+| Version | 0.7 (draft) |
 | Date | 2026-09-27 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.7 | 2026-09-27 | P2 decisions and WP7 (#23). OD-04 resolved: aggregate sensor + watch-list trackers + threat entities, no `geo_location`. New OD-15, resolved: `collision_risk` anti-flapping latch (§8.2). New OD-16, resolved: dead-reckon own boat and targets to now before CPA/TCPA (§8.1, §8.3). §8.1 made precise (local plane, ‖V‖ threshold 0.1 kn, diverging targets report TCPA < 0 and no CPA); §8.2 stationary exclusion applies to Class A only; §9.2 `collision_risk` unavailable without own position. |
 | 0.6 | 2026-09-27 | WP5 (#15): §9.2 — distances in `sensor.ais_targets` follow the list rebuild (≤ 5 s); §9.5 — `diagnostics.py` also exports GPS rejects, internal errors and reconnects. No change of scope. |
 | 0.5 | 2026-09-27 | P1 decisions (issue #3). OD-03 resolved: own GPS parsers. OD-06 resolved: minimum HA 2026.2.0. OD-07 resolved: GPS first, VDO fallback, `include_own_vdo` option. OD-10 resolved: angle entities without device class, state class `measurement_angle`. OD-12 resolved: external replay tool, no file source in the integration. Pure domain modules `state.py`, `geo.py` and a HA-free `hub.py` (§5); framing limits in `sentence.py` (§7.1); availability on disconnect and stale GPS clarified (§9.2, §9.5, §10.1); dead-band semantics, 5 m position dead-band (§10.2); config flow details (§11.1); P1 options incl. two expiry values and optional `own_mmsi` (§11.2); P0 test count corrected to 39. OD-13 and OD-14 stay open (need X-09, issue #2). |
 | 0.4 | 2026-09-27 | OD-01 resolved: project named **Vigie**, domain `vigie`, repository `ha-vigie`. OD-11 resolved: Apache-2.0. Repository bootstrap delivered (X-11): skeleton integration, CI, docs; AIS decoder moved to `custom_components/vigie/nmea/` with injectable clock (TEST-001 TP-05). |
@@ -235,19 +236,25 @@ The design is neutral to OD-13: every path works with VDO present or absent.
 
 For each target with valid position, SOG and COG, and a valid own position/SOG/COG:
 
+- Both vessels are first dead-reckoned from the time of their last report to now, along their SOG/COG (OD-16, resolved v0.7). A Class B target reporting every 3 min at 10 kn would otherwise be up to 0.5 NM behind its true position. Without SOG/COG a position is used as reported.
 - Distance and bearing from own boat (haversine; flat-earth approximation acceptable below 20 NM).
-- Positions projected to a local east/north plane in metres around own position.
+- Positions projected to a local east/north plane in nautical miles around own position (equirectangular, cosine of the mean latitude; longitudes wrapped across 180°).
 - Relative position `P = target − own`, relative velocity `V = v_target − v_own` (velocities from SOG/COG).
-- `TCPA = −(P·V) / |V|²` (if `|V|` ≈ 0, TCPA undefined and CPA = current distance).
-- `CPA = |P + V·TCPA|`, reported for TCPA ≥ 0 only (diverging targets are "no risk").
+- `TCPA = −(P·V) / |V|²`. If `|V|` < 0.1 kn, TCPA is undefined (`None`) and CPA = current distance.
+- `CPA = |P + V·TCPA|`, reported for TCPA ≥ 0 only. A diverging target (TCPA < 0) reports its negative TCPA and no CPA, and is "no risk".
+- Without a position for either vessel there is no result; without SOG/COG for either, distance and bearing only (CPA/TCPA `None`).
 
 ### 8.2 Threat classification
 
-A target is a **threat** when `CPA < cpa_threshold` (default 0.5 NM) and `0 ≤ TCPA < tcpa_threshold` (default 15 min). Targets with nav status `moored` or `at_anchor` and SOG < 0.5 kn are excluded from threats by default (option). Thresholds are configurable (§11.2).
+A target is a **threat** when `CPA < cpa_threshold` (default 0.5 NM) and `0 ≤ TCPA < tcpa_threshold` (default 15 min). Targets with nav status `moored` or `at_anchor` and SOG < 0.5 kn are excluded from threats by default (option). Class B reports carry no nav status, so Class B targets are never excluded. Thresholds are configurable (§11.2).
+
+The most urgent threat is the one with the smallest TCPA, then the smallest CPA.
+
+`collision_risk` follows the threats with an anti-flapping latch (OD-15, resolved v0.7): it turns on as soon as one threat exists; once on, it stays on until no threat has been seen for 60 s, except that it clears at once when every target that was a threat during the episode has passed its CPA (TCPA < 0). One risk episode therefore triggers an automation once, even when a CPA or TCPA hovers around its threshold.
 
 ### 8.3 Limits
 
-CPA/TCPA assume straight-line constant-speed motion from the last report. Class B targets report every 30 s to 3 min, so their predictions are coarser; the report age is exposed so the user can judge. This is an aid, not a collision-avoidance system (documented in the README).
+CPA/TCPA assume straight-line constant-speed motion from the last report (both vessels are dead-reckoned to now, §8.1). Class B targets report every 30 s to 3 min, so their predictions are coarser; the report age is exposed so the user can judge. This is an aid, not a collision-avoidance system (documented in the README).
 
 ## 9. Entity model
 
@@ -277,7 +284,7 @@ Speed: HA does not convert knots automatically under either the metric or the US
 | `sensor.ais_targets` | Count of live targets. Attribute `targets`: compact list (MMSI, name, class, lat, lon, SOG, COG, distance, CPA, TCPA, age), capped at the 50 nearest (OD-04). P1 omits CPA/TCPA (added in P2); distance comes from `geo.py`. The attribute is excluded from the recorder (`_unrecorded_attributes`). The count stays available when own position is unavailable: from the next rebuild of the list (≤ 5 s) distances are `None` and the list is ordered by report age. |
 | `sensor.closest_target_distance` | Distance to the nearest target (NM, device_class distance). Attributes: MMSI, name. |
 | `sensor.closest_threat_cpa` / `_tcpa` | CPA (NM) and TCPA (min) of the most urgent threat; unavailable when none. |
-| `binary_sensor.collision_risk` | On while at least one threat exists (device_class safety). Designed to drive automations (notification, buzzer, lights). |
+| `binary_sensor.collision_risk` | On while at least one threat exists, with the anti-flapping latch of §8.2 (device_class safety). **Unavailable** when own position is unavailable: "off" would wrongly reassure. Designed to drive automations (notification, buzzer, lights); trigger on `to: "on"`. |
 
 ### 9.3 Watched targets
 
@@ -368,7 +375,7 @@ Changing an option reloads the entry.
 | ~~OD-01~~ | ~~Integration domain name~~ | **Resolved v0.4:** Vigie / `vigie` | — |
 | ~~OD-02~~ | ~~Instruments and AIS on one port or several?~~ | **Resolved v0.2:** one port, AIS receiver only (§3.3) | — |
 | ~~OD-03~~ | ~~GPS parsing: own parsers or `pynmea2` (MIT)~~ | **Resolved v0.5:** own parsers (five sentences, typed, no dependency) (§7.1) | — |
-| OD-04 | AIS exposure model | Aggregate sensor + watch-list trackers + threat entities (proposed) vs geo_location platform | P2 |
+| ~~OD-04~~ | ~~AIS exposure model~~ | **Resolved v0.7:** aggregate sensor + watch-list trackers + threat entities; no `geo_location` platform (one entity per target would flood the registry and recorder) | — |
 | ~~OD-06~~ | ~~Minimum supported HA version~~ | **Resolved v0.5:** HA 2026.2.0; tests pinned to phcc 0.13.316 / HA 2026.2.3 (§12) | — |
 | ~~OD-07~~ | ~~Own-boat source priority~~ | **Resolved v0.5:** GPS first, VDO fallback when GPS is stale; `include_own_vdo` option only (§7.4) | — |
 | ~~OD-08~~ | ~~Instrument true wind vs computed~~ | **Withdrawn v0.2:** no wind source (§2.2) | — |
@@ -376,6 +383,8 @@ Changing an option reloads the entry.
 | ~~OD-11~~ | ~~License of this project~~ | **Resolved v0.4:** Apache-2.0 | — |
 | ~~OD-12~~ | ~~Replay tool for development~~ | **Resolved v0.5:** external replay tool (`tests/tools/replay.py`, own pseudo-TTY or an existing device; `socat` optional); no file source in the integration (TEST §5.1) | — |
 | OD-13 | Receiver type: receive-only or Class B transponder? | Determines whether `!AIVDO` exists; design handles both (§7.4) | P1 (from X-09, issue #2) |
+| ~~OD-15~~ | ~~`collision_risk` anti-flapping~~ | **Resolved v0.7:** latch — on at the first threat; off after 60 s without a threat, or at once when every threat of the episode has passed its CPA (§8.2) | — |
+| ~~OD-16~~ | ~~Positions used for CPA/TCPA~~ | **Resolved v0.7:** dead-reckon own boat and targets from their report times to now (§8.1, §8.3) | — |
 | OD-14 | Serial baud rate | 38 400 (typical AIS) vs 4 800; confirmed by X-09 and by the current smart0183serial setting. Baud rate is configurable, the probe suggests the other rate (§11.1) | P1 (from X-09, issue #2) |
 
 (OD-05 and OD-09 from v0.1 were tied to NMEA 2000 and polars; both moved to P4 and are no longer open for v1.)
