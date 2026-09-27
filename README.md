@@ -55,8 +55,8 @@ automation:
           message: >-
             {% set r = 'binary_sensor.garnet_collision_risk' %}
             {{ state_attr(r, 'name') or 'MMSI ' ~ state_attr(r, 'mmsi') }}:
-            CPA {{ states('sensor.garnet_closest_threat_cpa') }} NM
-            in {{ states('sensor.garnet_closest_threat_tcpa') }} min.
+            CPA {{ states('sensor.garnet_closest_threat_cpa', rounded=True) }} NM
+            in {{ states('sensor.garnet_closest_threat_tcpa', rounded=True) }} min.
             Check the lookout.
           data:
             ttl: 0            # Android: deliver now

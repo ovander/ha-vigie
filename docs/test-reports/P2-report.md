@@ -7,7 +7,7 @@ bench and on board; the exit criterion is assessed once they are.
 |---|---|
 | Phase | P2 Traffic (SPEC HA-SAIL-SPEC-001 v0.9 §13) |
 | Documents | SPEC v0.9, TEST v0.14 |
-| Code state | `main` after the WP10 merge (all P2 work packages merged) — fill in the commit |
+| Code state | `main` at `947818f` (all P2 work packages merged) |
 | Release | none yet — E-02 can run from `main`; a beta tag is the owner's call |
 | CI | `lint`, `unit`, `hassfest`, `hacs` green on every P2 PR |
 | Nightly `perf` | first run pending |
@@ -22,7 +22,7 @@ bench and on board; the exit criterion is assessed once they are.
 | #24 | #23 | WP7: `traffic.py` — local-plane CPA/TCPA with dead reckoning, threat classification (stationary Class A excluded by option), closest-threat selection, risk latch |
 | #26 | #25 | WP8: `binary_sensor.collision_risk`, closest target distance, closest threat CPA/TCPA sensors; CPA/TCPA in the `targets` list; threshold options |
 | #28 | #27 | WP9: watch-list `device_tracker.ais_<mmsi>` on their own devices, `watch_list` option |
-| (this) | #29 | WP10: README automation example (tested as published), scenario presets for every TEST §3.4 geometry, this report |
+| #30 | #29 | WP10: README automation example (tested as published), scenario presets for every TEST §3.4 geometry, this report |
 
 ## 2. Test status (TEST §9, row P2)
 
@@ -32,7 +32,7 @@ bench and on board; the exit criterion is assessed once they are.
 | F-TRF-01…07 | Done |
 | README automation | Done — the YAML block of `README.md` is loaded into the HA harness and sends one notification with CPA/TCPA on the U-TRF-03 crossing |
 | Scenario presets | Done — each preset, decoded as the receiver's stream, gives its U-TRF CPA/TCPA/threat |
-| E-02 | To run on the bench — §5 |
+| E-02 | Pre-run in the official HA container passed (§5.1), phone delivery excepted; formal run to do — §5.2 |
 | E-12, E-16 | To run on board, in port — §6 |
 | E-3 (E-20…E-23) | To run under way — §7 |
 
@@ -54,6 +54,47 @@ bench and on board; the exit criterion is assessed once they are.
 | 2 | The README automation has no `from: "off"`: an alert is repeated when own position returns during an encounter, so that the first alert after start-up (`unavailable` → `on`) is never missed | README, this report |
 
 ## 5. E-02 replay bench (TEST §5.1)
+
+### 5.1 Pre-run in a sandbox container
+
+| Item | Value |
+|---|---|
+| Date | 2026-09-27, 19:59–20:40 UTC |
+| Home Assistant | official image `homeassistant/home-assistant:2026.2.3` (Docker Hub), `default_config`, `--network host` |
+| Host | x86 Linux sandbox |
+| Vigie | `main` at `947818f`, copied into `custom_components/` with the manifest stamped `0.2.0-bench` |
+| Setup | Six boats (config entries), one per preset, each on its own PTY, all replayed at real speed from the same instant; a seventh boat replayed `anchored` with *Ignore anchored and moored targets* off. The own boat's start position was fed during configuration, so the scenarios began with own position known. Entries and options added through the HA REST API, as the UI does |
+| Alert | The README automation for each boat, with the notify action replaced by `system_log.write` (no phone in the sandbox): same trigger, same message template |
+| Reading | States polled every 2 s through the REST API; history API for the seventh boat |
+
+Values read at 13 s, TCPA taken back to the start (reading + 13 s):
+
+| Preset | Expected | Read | `collision_risk` (time from start) | Alerts | Result |
+|---|---|---|---|---|---|
+| `head-on` | CPA 0.00 NM, TCPA 10.0 min | 0.00 NM, 10.02 min | on at 1 s; off at 602 s | 1 | Pass |
+| `crossing` | CPA 0.45 NM, TCPA 4.0 min | 0.45 NM, 4.02 min | on at 3 s; off at 241 s | 1 | Pass |
+| `clear-crossing` | CPA 0.71 NM, TCPA 5.0 min; off | 0.71 NM, 5.02 min | off throughout | 0 | Pass |
+| `not-urgent` | CPA 0.26 NM, TCPA 21.6 min; on ≈ 6.6 min, off ≈ 21.6 min | 0.26 NM, 21.62 min | on at 398 s (TCPA 14.99 min); off at 1299 s | 1 | Pass |
+| `anchored` | CPA 0.00 NM, TCPA 4.0 min; off | 0.00 NM, 4.02 min | off throughout | 0 | Pass |
+| `anchored`, exclusion off | on; off when passed | 0.00 NM, 3.63 min at 23 s | on at 9 s (after the option reload); off at 239 s | — (no automation) | Pass |
+| `multi-target` | Closest threat 235000002, then 235000001, then 235000004; 235000003 never | 4 targets at the expected values | on at 1 s (235000002); 235000001 at 241 s, risk stays on; off at 602 s; on at 900 s (235000004, TCPA 15.0 min); off at 1800 s | 2 (one per episode) | Pass |
+
+Observations:
+
+- **Fixed in this PR:** the README message showed raw floats (`CPA 1.22456541783724e-16 NM
+  in 9.9993354711728 min`). It now uses `states(..., rounded=True)`, the sensors' display
+  precision (`CPA 0.00 NM in 9.6 min`); the README test requires that format.
+- Every risk turned off within 3 s of the CPA of its last threat, without the 60 s hold:
+  all threats had passed (SPEC §8.2).
+- When a scenario ends, the boat's entities, `collision_risk` included, become unavailable
+  10 s later (own position stale, NFR-05). Expected; read the results before the end.
+- The standard replay tool closes its PTY at the end of the file: one "Lost … reconnecting"
+  warning, as in E-04.
+- Seven boats at once: container CPU ≈ 0.4 %, memory ≈ 305 MiB. The only ERROR in the log
+  is HA core's alerts fetch (no internet in the sandbox).
+- Not covered: delivery to a phone (companion app), and the dashboard/map card by eye.
+
+### 5.2 Formal E-02 run
 
 Same bench as E-1 (`CONTRIBUTING.md`, P1 report §5). Before the run: a phone with the
 Home Assistant companion app, and the README automation installed with the phone's notify
@@ -127,4 +168,4 @@ E-21 encounters:
 - TP-04 — reference for E-21 (owner).
 - #2 — receiver capture: also the regression data for E-23.
 - First nightly `perf` run on `main`.
-- E-02 on the bench, E-12/E-16 in port, E-3 under way.
+- Formal E-02 on the bench with the phone (pre-run passed, §5.1), E-12/E-16 in port, E-3 under way.

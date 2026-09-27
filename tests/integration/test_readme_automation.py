@@ -42,7 +42,8 @@ async def test_readme_automation_notifies_once_with_cpa_and_tcpa(
     assert len(calls) == 1
     data = calls[0].data
     assert data["title"] == "⚠️ Collision risk"
-    match = re.search(r"MMSI 235000001:\s+CPA ([\d.]+) NM\s+in ([\d.]+) min", data["message"])
+    # Rounded to the sensors' display precision: no raw floats on the phone (E-02 pre-run)
+    match = re.search(r"MMSI 235000001:\s+CPA (\d+\.\d\d) NM\s+in (\d+\.\d) min", data["message"])
     assert match, data["message"]
     assert float(match[1]) == pytest.approx(0.45, abs=0.02)
     assert float(match[2]) == pytest.approx(4.0, abs=0.2)
