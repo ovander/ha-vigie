@@ -377,3 +377,9 @@ def test_position_deadband_in_metres(clock):
     assert not gate.should_write((43.50003, 7.25))  # ≈ 3.3 m
     assert gate.should_write((43.50005, 7.25))  # ≈ 5.6 m from the last written
     assert position_delta_m((0.0, 0.0), (0.0, 0.0)) == 0.0
+
+
+def test_configuration_is_readable(clock):
+    state = OwnBoatState(stale_timeout_s=30.0, use_vdo=False, clock=clock)
+    assert (state.stale_timeout_s, state.use_vdo) == (30.0, False)
+    assert AisTargetTable(expiry_a_s=720, expiry_b_s=1200, clock=clock).expiry_s == (720, 1200)

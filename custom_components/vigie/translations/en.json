@@ -3,16 +3,56 @@
     "step": {
       "user": {
         "title": "Vigie — AIS receiver",
-        "description": "Serial port of the AIS receiver (prefer /dev/serial/by-id/...).",
+        "description": "Serial port of the AIS receiver. Prefer a /dev/serial/by-id/… path: it stays the same when USB devices are re-plugged. Vigie listens for up to 5 s to check the settings.",
         "data": {
           "name": "Boat name",
           "serial_port": "Serial port",
           "baudrate": "Baud rate"
+        },
+        "data_description": {
+          "serial_port": "Pick a detected port or type a path.",
+          "baudrate": "38 400 is usual for AIS receivers; some use 4 800. Any other value can be typed."
         }
+      },
+      "no_data": {
+        "title": "No data received",
+        "description": "The port {serial_port} opened, but nothing arrived within 5 s. Check that the receiver is powered and wired, and that no other integration uses this port. You can save anyway: Vigie keeps listening and the entities stay unavailable until data arrives."
       }
+    },
+    "error": {
+      "cannot_connect": "The serial port cannot be opened. Check the path and that no other program uses it.",
+      "invalid_baudrate": "Enter a positive whole number.",
+      "no_data": "No NMEA data received within 5 s.",
+      "wrong_baud": "Data arrived but no valid NMEA sentence. The baud rate is probably wrong: try {other_baudrate}."
     },
     "abort": {
       "already_configured": "This serial port is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Vigie options",
+        "data": {
+          "update_interval": "Update interval",
+          "stale_timeout": "Staleness timeout",
+          "expiry_class_a": "AIS target expiry, Class A",
+          "expiry_class_b": "AIS target expiry, Class B and anchored/moored",
+          "include_own_vdo": "Use own-ship reports (VDO)",
+          "own_mmsi": "Own MMSI"
+        },
+        "data_description": {
+          "update_interval": "Entities write their state at most once per interval.",
+          "stale_timeout": "A value older than this becomes unavailable.",
+          "expiry_class_a": "A Class A target not heard for this long is removed.",
+          "expiry_class_b": "Same for Class B targets and for Class A targets at anchor or moored.",
+          "include_own_vdo": "Use the transponder's own-ship reports when GPS sentences are missing.",
+          "own_mmsi": "Optional, 9 digits. Reports from this MMSI are never shown as traffic. Learned automatically from own-ship reports when left empty."
+        }
+      }
+    },
+    "error": {
+      "invalid_mmsi": "An MMSI has exactly 9 digits."
     }
   }
 }

@@ -1,10 +1,8 @@
 """Vigie — AIS traffic watch for Home Assistant.
 
-Bootstrap skeleton: the entry loads without platforms. The transport hub,
-coordinator and entities arrive in phase P1 (see docs/HA-SAIL-SPEC-001.md).
-
-Home Assistant types are imported for type checking only, so that importing
-the `nmea` sub-package never pulls in Home Assistant (SPEC NFR-02).
+Home Assistant is imported inside the entry points or for type checking only: importing
+any `custom_components.vigie` sub-module runs this file first, and the pure modules
+(`nmea/`, `state.py`, `geo.py`, `hub.py`) must not pull in Home Assistant (SPEC NFR-02).
 """
 
 from __future__ import annotations
@@ -12,15 +10,36 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.const import Platform
     from homeassistant.core import HomeAssistant
 
+    from .coordinator import VigieConfigEntry
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Vigie from a config entry."""
+# Entity platforms arrive with WP5 (SPEC §9)
+PLATFORMS: list[Platform] = []
+
+
+async def async_setup_entry(hass: HomeAssistant, entry: VigieConfigEntry) -> bool:
+    """Set up Vigie from a config entry: open the port, start the reader."""
+    from homeassistant.exceptions import ConfigEntryNotReady
+
+    from .coordinator import VigieCoordinator
+    from .hub import HubConnectionError
+
+    coordinator = VigieCoordinator(hass, entry)
+    try:
+        await coordinator.async_start()
+    except HubConnectionError as err:
+        # HA retries the setup with its own backoff (SPEC §10.3)
+        raise ConfigEntryNotReady(str(err)) from err
+    entry.runtime_data = coordinator
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Unload a config entry."""
-    return True
+async def async_unload_entry(hass: HomeAssistant, entry: VigieConfigEntry) -> bool:
+    """Unload a config entry: stop the reader and close the port (NFR-07)."""
+    unloaded: bool = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if unloaded:
+        await entry.runtime_data.async_stop()
+    return unloaded

@@ -15,6 +15,14 @@ versioning: SemVer.
   OD-13 and OD-14 stay open pending the receiver capture (#2).
 
 ### Added
+- Home Assistant wiring (#13): `coordinator.py` owns the hub and the domain state, pushes
+  updates on an internal tick and at once on connection changes; setup raises
+  `ConfigEntryNotReady` when the port is missing, unload stops the reader and closes the port.
+  Config flow lists `/dev/serial/by-id/*`, accepts a manual port and a custom baud rate,
+  probes for 5 s (`no_data` confirmation, `wrong_baud` hint, `cannot_connect`); options flow
+  for update interval, staleness, Class A/B expiry, VDO use and own MMSI, reloading the
+  entry. English and French strings. Minimum Home Assistant 2026.2.0 in `hacs.json`.
+  F-LIFE-01…05, 07.
 - Transport hub (#9): `hub.py` (pure asyncio) reads the serial port through an injectable
   transport, frames lines (1 KiB cap, 82-char sentences), routes `$` to the GPS parsers and
   `!` to the AIS decoder after a checksum pre-check, strips tag blocks, contains per-line
