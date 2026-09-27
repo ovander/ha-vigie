@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.4 (draft) |
+| Version | 0.5 (draft) |
 | Date | 2026-09-27 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.5 | 2026-09-27 | P1 decisions (issue #3). OD-03 resolved: own GPS parsers. OD-06 resolved: minimum HA 2026.2.0. OD-07 resolved: GPS first, VDO fallback, `include_own_vdo` option. OD-10 resolved: angle entities without device class, state class `measurement_angle`. OD-12 resolved: external replay tool, no file source in the integration. Pure domain modules `state.py`, `geo.py` and a HA-free `hub.py` (§5); framing limits in `sentence.py` (§7.1); availability on disconnect and stale GPS clarified (§9.2, §9.5, §10.1); dead-band semantics, 5 m position dead-band (§10.2); config flow details (§11.1); P1 options incl. two expiry values and optional `own_mmsi` (§11.2); P0 test count corrected to 39. OD-13 and OD-14 stay open (need X-09, issue #2). |
 | 0.4 | 2026-09-27 | OD-01 resolved: project named **Vigie**, domain `vigie`, repository `ha-vigie`. OD-11 resolved: Apache-2.0. Repository bootstrap delivered (X-11): skeleton integration, CI, docs; AIS decoder moved to `custom_components/vigie/nmea/` with injectable clock (TEST-001 TP-05). |
 | 0.3 | 2026-09-27 | Test protocol split into companion document HA-SAIL-TEST-001 (X-10); §12 test bullet now points to it. No functional change. |
 | 0.2 | 2026-09-27 | OD-02 resolved: a single serial port connected to the AIS receiver, which is the only data source (own position/speed included). Consequences: single-port design; own-boat data from the receiver's GPS sentences and/or `!AIVDO`; wind/depth/STW sensors and the true-wind/VMG layer removed from v1 (no source); traffic awareness (CPA/TCPA) promoted to v1 core value; OD-08 withdrawn; new OD-13 (receiver type), OD-14 (baud rate); new X-09 (raw capture). |
@@ -106,28 +107,31 @@ The exact sentence set will be confirmed from a raw capture of the port (X-09), 
 ├──────────────────────────────────────────────────────────────┤
 │ Traffic logic    traffic.py (CPA/TCPA, closest threat)        │  derived domain logic
 ├──────────────────────────────────────────────────────────────┤
-│ Coordinator      coordinator.py (OwnBoatState, AisTargetTable)│  single source of truth
+│ Coordinator      coordinator.py (HA) · state.py · geo.py (pure)│  single source of truth
 ├──────────────────────────────────────────────────────────────┤
 │ Protocol         nmea/sentence.py · parsers.py · ais_decoder  │  pure Python, no HA
 ├──────────────────────────────────────────────────────────────┤
-│ Transport        hub.py (one serial reader, line framing)     │  asyncio I/O
+│ Transport        hub.py (one serial reader, line framing)     │  asyncio I/O, no HA
 └──────────────────────────────────────────────────────────────┘
 ```
 
 Dependency rule: each layer depends only on the layer below it. Entities never parse NMEA; the traffic logic never sees sentence names.
 
+Pure-Python modules (no `homeassistant` import, `mypy --strict`, covered by the NFR-02 check and the coverage gate): `nmea/`, `state.py`, `geo.py`, `hub.py`, `traffic.py`. The domain logic of the coordinator lives in `state.py` so it can be unit-tested; `coordinator.py` is a thin Home Assistant wrapper. `hub.py` depends only on asyncio and `pyserial-asyncio-fast`; the transport is injected, so tests use a fake transport (v0.5).
+
 ### 5.2 Component map
 
 | ID | Component | File | Responsibility |
 |---|---|---|---|
-| C-01 | Transport hub | `hub.py` | Own the serial port; read lines; route `$…` to C-02, `!…` to C-03; reconnect; diagnostics counters. |
+| C-01 | Transport hub | `hub.py` | Own the serial port (injected transport); read and frame lines; route `$…` to C-02, `!…` to C-03 (checksum pre-checked with C-02 so checksum errors are counted apart from AIS rejects); reconnect; diagnostics counters; 5 s probe for the config flow. No HA import. |
 | C-02 | GPS sentence parsers | `nmea/sentence.py`, `nmea/parsers.py` | Checksum, field split, talker ID; typed decoding of §7.2 sentences. |
 | C-03 | AIS decoder | `nmea/ais_decoder.py` | Delivered (X-02). Types 1/2/3/18/19, fragment reassembly, tag blocks, VDO flag. |
-| C-04 | Coordinator | `coordinator.py` | Merge own-boat data into `OwnBoatState`; maintain `AisTargetTable`; throttle and push updates. |
-| C-05 | Traffic logic | `traffic.py` | CPA/TCPA per target, distance and bearing, closest-threat selection (§8). |
+| C-04 | Coordinator | `state.py` (pure), `coordinator.py` (HA) | `state.py`: `OwnBoatState` (per-field value/timestamp/source, arbitration §7.4), `AisTargetTable` (§9.4), `WriteGate` (throttle and dead-band, §10.2), injectable clock. `coordinator.py`: owns hub and state, runs the update tick, pushes updates to entities. |
+| C-05 | Traffic logic | `geo.py`, `traffic.py` | `geo.py` (P1): distance and bearing. `traffic.py` (P2): CPA/TCPA per target, closest-threat selection (§8). |
 | C-06 | Config flow | `config_flow.py` | Setup and options UI (§11). |
 | C-07 | Sensors | `sensor.py`, `binary_sensor.py` | Own-boat measurements, traffic summary, alert (§9). |
 | C-08 | Trackers | `device_tracker.py` | Own boat position; watched AIS targets (§9.3). |
+| C-10 | Entity base | `entity.py` | Shared device info, unique IDs and availability rule for all entities. |
 | C-09 | Diagnostics | `sensor.py`, `diagnostics.py` | Health counters; HA diagnostics download. |
 
 ### 5.3 File layout
@@ -138,9 +142,12 @@ custom_components/vigie/
 ├── __init__.py
 ├── config_flow.py
 ├── const.py
-├── hub.py
-├── coordinator.py
-├── traffic.py
+├── hub.py              # pure asyncio, no HA
+├── coordinator.py      # HA wrapper around state.py
+├── state.py            # pure: OwnBoatState, AisTargetTable, WriteGate
+├── geo.py              # pure: distance, bearing
+├── traffic.py          # pure (P2)
+├── entity.py
 ├── sensor.py
 ├── binary_sensor.py
 ├── device_tracker.py
@@ -153,21 +160,24 @@ custom_components/vigie/
     ├── parsers.py
     └── ais_decoder.py
 tests/
-├── fixtures/        # raw captures (X-09)
+├── fixtures/        # D-04 malformed corpus, D-08 burst, raw captures (X-09)
 ├── nmea/            # pure-Python tests, no HA fixture
-└── integration/     # pytest-homeassistant-custom-component
+├── domain/          # pure-Python tests of state.py, geo.py, traffic.py
+├── transport/       # hub tests with the fake transport, no HA fixture
+├── integration/     # pytest-homeassistant-custom-component
+└── tools/           # scenario.py, replay.py, capture.py (TEST §6)
 ```
 
 ## 6. Data flow
 
-1. C-01 reads bytes, frames lines on `\r\n`, discards over-long or non-ASCII lines.
+1. C-01 reads bytes, frames lines on `\r\n`, discards over-long or non-ASCII lines (limits in §7.1). A partial line pending at disconnect is discarded.
 2. Routing by first character: `$` → C-02, `!` → C-03, `\` → strip tag block then re-route, anything else → counted as ignored.
 3. Parsers return typed records or `None`; rejects are counted, never raised to the loop.
 4. C-04 routes records:
    - GPS records and `VDO` reports → `OwnBoatState` (per-field timestamp and source).
    - `VDM` reports → `AisTargetTable` upsert.
 5. C-05 recomputes CPA/TCPA for affected targets whenever own state or a target changes.
-6. C-04 notifies entities, each throttled per NFR-04 (§10.2).
+6. C-04 notifies entities, each throttled per NFR-04 (§10.2). A connection change is pushed immediately, without waiting for the next tick.
 
 Reading runs as one long-lived task created in `async_setup_entry` and cancelled in `async_unload_entry`. No polling: `iot_class: local_push`, entities have `should_poll = False`.
 
@@ -175,10 +185,12 @@ Reading runs as one long-lived task created in `async_setup_entry` and cancelled
 
 ### 7.1 Common sentence handling (C-02)
 
-- Checksum: XOR of all characters between `$`/`!` and `*`, compared to the two hex digits. Missing or wrong checksum → reject.
+- Framing (`check_frame()` in `sentence.py`, called by C-01): printable ASCII only; at most 82 characters, `$`/`!` to checksum inclusive, measured after stripping any NMEA 4.0 tag block. The hub also caps its receive buffer (1 KiB) so a line with no terminator cannot grow without bound. Rejects are counted as framing errors.
+- Checksum: XOR of all characters between `$`/`!` and `*`, compared to the two hex digits (upper or lower case). Missing or wrong checksum → reject.
 - Talker ID is not significant for routing: `GPRMC`, `GNRMC`, `AIRMC` all decode as RMC; the talker is kept as metadata.
 - Empty fields → `None`, never `0`.
 - Sentences outside §7.2 (including proprietary `$P…`) are counted and ignored.
+- GPS parsing uses our own parsers for the five §7.2 sentences, no third-party dependency (OD-03, resolved v0.5).
 
 ### 7.2 Supported GPS sentences (v1)
 
@@ -192,7 +204,7 @@ Final list to be confirmed against X-09.
 | GSA | Fix mode (2D/3D), DOP | `fix_mode`, `pdop` |
 | HDT | True heading (if present) | `heading` |
 
-RMC with status `V` (void) is not applied to position/SOG/COG.
+RMC with status `V` (void) is not applied to position/SOG/COG. GGA with fix quality 0 produces no position. RMC two-digit years map to 20yy. Outputs are frozen dataclasses (`Rmc`, `Gga`, `Vtg`, `Gsa`, `Hdt`) with the units of CLAUDE.md (knots, degrees, decimal degrees N/E positive, variation E positive).
 
 ### 7.3 AIS (C-03)
 
@@ -203,11 +215,18 @@ Implemented and delivered as `ais_decoder.py` (X-02). Summary:
 - Reassembles multi-fragment messages by (talker, channel, sequence ID) with a 5 s timeout.
 - Maps "not available" sentinels (lon 181°, lat 91°, SOG 1023, COG 3600, heading 511) to `None`.
 - Output: `VesselPosition(mmsi, ais_class, msg_type, latitude, longitude, sog_knots, cog_deg, heading_deg, nav_status, name, own_ship, channel, received_at)`.
-- Test suite: 15 tests including 2 500 fuzzed messages per type compared against pyais (MIT, test-only dependency).
+- Test suite: 39 tests (38 decoder tests and the NFR-02 import check), including 500 fuzzed messages per type compared against pyais (MIT, test-only dependency).
+- The decoder is reused as is. The hub validates the checksum of `!` lines with C-02 before feeding the decoder, so `checksum_errors` and `ais_rejected` are counted separately (§9.5).
 
 ### 7.4 Own-boat source arbitration
 
-When both GPS sentences and `VDO` are present, GPS sentences are preferred (higher rate, fix quality available); `VDO` is used only when GPS data is stale. The active source is exposed as an attribute. Heading is taken from `HDT` or `VDO` heading when not 511, else unavailable.
+When both GPS sentences and `VDO` are present, GPS sentences are preferred (higher rate, fix quality available); `VDO` is used only when GPS data is stale (older than the staleness timeout, §10.1). Arbitration is per field: GPS and VDO values are stored separately with their timestamps. The active position source is exposed as the `own_position_source` diagnostic sensor and as a tracker attribute. Heading is taken from `HDT` first, then `VDO` heading when not 511, else unavailable.
+
+The option `include_own_vdo` (default on) disables VDO entirely; no other priority setting is offered (OD-07, resolved v0.5).
+
+The own MMSI, used to keep the boat out of the target table (§9.4), is learned from `VDO` reports or set with the optional `own_mmsi` option (§11.2). With neither, no MMSI is excluded; a receive-only unit does not receive its own transmissions.
+
+The design is neutral to OD-13: every path works with VDO present or absent.
 
 ## 8. Traffic logic (C-05)
 
@@ -238,19 +257,23 @@ All entities belong to one HA device per config entry ("the boat"), except watch
 | Key | Name | device_class | Native unit | state_class |
 |---|---|---|---|---|
 | `sog` | Speed over ground | speed | kn | measurement |
-| `cog` | Course over ground | — (OD-10) | ° | — (OD-10) |
-| `heading` | Heading (true), optional | — (OD-10) | ° | — (OD-10) |
+| `cog` | Course over ground | — | ° | measurement_angle |
+| `heading` | Heading (true), optional | — | ° | measurement_angle |
 | `fix_quality` | GNSS fix | enum | — | — (diagnostic) |
 | `satellites` | Satellites in use | — | — | measurement (diagnostic) |
 | `hdop` | Horizontal dilution | — | — | measurement (diagnostic) |
 
-`device_tracker.<boat>` exposes own position (GPS source type) with SOG/COG attributes.
+`device_tracker.<boat>` exposes own position (GPS source type) with SOG, COG, heading and position-source attributes.
+
+Angles (OD-10, resolved v0.5): verified in HA 2026.2.3, state class `measurement_angle` exists and requires the unit `°`; the only angle device class, `wind_direction`, does not describe COG or heading, so no device class is set. Long-term statistics then use circular means.
+
+Speed: HA does not convert knots automatically under either the metric or the US unit system. The native unit stays kn; a display unit chosen per entity (km/h, mph, m/s) is converted by HA.
 
 ### 9.2 Traffic sensors
 
 | Entity | Content |
 |---|---|
-| `sensor.ais_targets` | Count of live targets. Attributes: compact list (MMSI, name, class, lat, lon, SOG, COG, distance, CPA, TCPA, age), capped at the 50 nearest (OD-04). |
+| `sensor.ais_targets` | Count of live targets. Attribute `targets`: compact list (MMSI, name, class, lat, lon, SOG, COG, distance, CPA, TCPA, age), capped at the 50 nearest (OD-04). P1 omits CPA/TCPA (added in P2); distance comes from `geo.py`. The attribute is excluded from the recorder (`_unrecorded_attributes`). The count stays available when own position is unavailable: distances are then `None` and the list is ordered by report age. |
 | `sensor.closest_target_distance` | Distance to the nearest target (NM, device_class distance). Attributes: MMSI, name. |
 | `sensor.closest_threat_cpa` / `_tcpa` | CPA (NM) and TCPA (min) of the most urgent threat; unavailable when none. |
 | `binary_sensor.collision_risk` | On while at least one threat exists (device_class safety). Designed to drive automations (notification, buzzer, lights). |
@@ -261,47 +284,67 @@ All entities belong to one HA device per config entry ("the boat"), except watch
 
 ### 9.4 AIS target table
 
-Keyed by MMSI. An entry expires after a timeout (default 10 min Class A, 15 min Class B and anchored/moored). Own-ship `VDO` reports never enter the table. Names are filled from type 19 now and types 5/24 in P3.
+Keyed by MMSI. An entry expires after a timeout (options `expiry_class_a`, default 10 min, and `expiry_class_b`, default 15 min, the latter also applied to Class A targets with nav status `at_anchor` or `moored`). Own-ship `VDO` reports and reports from the own MMSI (§7.4) never enter the table. Names are filled from type 19 now and types 5/24 in P3; a known name is kept when later reports carry none.
 
 ### 9.5 Diagnostics (entity_category: diagnostic)
 
-`sentences_per_min`, `checksum_errors`, `ais_rejected`, `last_sentence_age`, `own_position_source` (GPS / VDO), and a `connected` binary sensor. `diagnostics.py` exports config (redacted) and counters for bug reports.
+`sentences_per_min`, `checksum_errors`, `ais_rejected`, `last_sentence_age`, `own_position_source` (GPS / VDO), and a `connected` binary sensor (device class connectivity). `diagnostics.py` exports config (redacted) and counters for bug reports.
+
+- `checksum_errors` and `ais_rejected` are counters (state class `total_increasing`).
+- `sentences_per_min` and `last_sentence_age` change constantly; they are disabled by default and written with a dead-band of 1 unit.
+- `connected` and the counters stay available while the port is disconnected, so they can report the outage.
+- Diagnostics redact the serial port path (by-id paths contain the adapter's serial number), `own_mmsi` and own position.
 
 ## 10. Runtime behaviour
 
 ### 10.1 Availability
 
-Each state field carries its last-update time. Own-boat entities become `unavailable` when their source is older than the staleness timeout (default 10 s). A port disconnect makes all entities unavailable immediately. Traffic entities go unavailable if own position is unavailable (CPA undefined).
+Each state field carries its last-update time. Own-boat entities become `unavailable` when their source is older than the staleness timeout (option `stale_timeout`, default 10 s). A port disconnect makes own-boat and traffic entities unavailable immediately; `connected` and the diagnostic counters stay available (§9.5). Entities that depend on own position (closest-target and CPA/TCPA sensors, P2) go unavailable when own position is unavailable (CPA undefined); `sensor.ais_targets` stays available (§9.2).
 
 ### 10.2 Throttling and recorder load
 
-- Entities write state at most once per `update_interval` (default 1 s), with the latest value.
-- Dead-bands (0.1 kn, 1°, 0.01 NM) suppress insignificant writes.
+- The coordinator runs one tick every `update_interval` (default 1 s). At each tick it expires targets, applies staleness, and each entity decides through its `WriteGate` whether to write. Entities write state at most once per `update_interval`, with the latest value. The tick is internal; HA never polls (`should_poll = False`).
+- Dead-bands (0.1 kn, 1°, 0.01 NM, 5 m on own position) suppress insignificant writes. A dead-band compares the new value to the last *written* value, so slow drift is still written once it adds up. Angle dead-bands wrap around (359° → 1° is a 2° change).
 - `sensor.ais_targets` attributes are rebuilt at most every 5 s; the README recommends excluding it from the recorder (large attributes).
 - `state_class` is set only on true measurements.
 
 ### 10.3 Reconnection
 
-Exponential backoff (1 s → 60 s max) on serial errors, logged once per outage. On first setup with the port unavailable, raise `ConfigEntryNotReady` so HA retries.
+Exponential backoff (1, 2, 4 … 60 s max) on serial errors and end-of-stream, logged once per outage (one warning at start, one info line on recovery). The backoff resets after a successful reopen. On first setup with the port unavailable, raise `ConfigEntryNotReady` so HA retries.
 
 ## 11. Configuration
 
 ### 11.1 Config flow (setup)
 
 1. Boat name.
-2. Serial port, discovered from the system (`/dev/serial/by-id/*` preferred for stability), manual entry allowed.
-3. Baud rate: 38 400 default, 4 800 and custom offered (OD-14).
-4. Validation: open the port and wait up to 5 s for one valid sentence; otherwise show `no_data` (user can still proceed). If the probe shows only garbage, suggest the other baud rate.
+2. Serial port, discovered from the system (`/dev/serial/by-id/*`, listed in the executor; preferred for stability), manual entry allowed.
+3. Baud rate: 38 400 default, 4 800 and custom offered. Nothing in the code assumes a rate (OD-14 stays open until X-09).
+4. Validation: open the port and wait up to 5 s for one valid sentence. With no data, a confirmation step shows `no_data` and lets the user save anyway. If the probe shows only garbage, the form shows `wrong_baud` and suggests the other baud rate.
+5. The config entry's unique ID is the serial port; configuring the same port twice is aborted.
 
 ### 11.2 Options flow
 
-Update interval, staleness timeout, AIS target expiry, CPA threshold, TCPA threshold, exclude anchored/moored from threats, include own `VDO`, watch list (MMSIs).
+| Option | Default | Phase |
+|---|---|---|
+| `update_interval` | 1 s | P1 |
+| `stale_timeout` | 10 s | P1 |
+| `expiry_class_a` | 10 min | P1 |
+| `expiry_class_b` (also anchored/moored) | 15 min | P1 |
+| `include_own_vdo` | on | P1 |
+| `own_mmsi` | empty (learned from VDO) | P1 |
+| CPA threshold | 0.5 NM | P2 |
+| TCPA threshold | 15 min | P2 |
+| Exclude anchored/moored from threats | on | P2 |
+| Watch list (MMSIs) | empty | P2 |
+
+Changing an option reloads the entry.
 
 ## 12. Quality, packaging, security
 
 - **Tests:** defined in HA-SAIL-TEST-001 (X-10): unit (pure Python, no HA), functional (HA test harness with a fake serial transport), end-to-end (replay bench, in port, under way). NFR traceability and CI gates are specified there.
 - **CI:** GitHub Actions running tests, `ruff`, `mypy`, `hassfest`, HACS validation.
 - **Packaging:** `manifest.json` with `iot_class: local_push`, `integration_type: hub`, `config_flow: true`, explicit `requirements` (`pyserial-asyncio-fast`). Installed via HACS custom repository. The `nmea/` package can later move to PyPI (HA best practice).
+- **Minimum Home Assistant version:** 2026.2.0 (OD-06, resolved v0.5), declared in `hacs.json`. Functional tests run against HA 2026.2.3 via `pytest-homeassistant-custom-component==0.13.316`. HA 2026.x requires Python 3.13; pure modules stay compatible with Python 3.12.
 - **Workflow:** GitHub issue → PR → CI → review → versioned release.
 - **Security:** no network listener, no credentials, no outbound traffic. Serial input treated as untrusted: bounded line length, strict parsing, exceptions contained per line.
 - **Licensing:** Apache-2.0 (OD-11). Clean-room rule from §3.1 applies to all contributors.
@@ -310,7 +353,7 @@ Update interval, staleness timeout, AIS target expiry, CPA threshold, TCPA thres
 
 | Phase | Content | Exit criterion |
 |---|---|---|
-| P0 | AIS decoder (C-03) | **Done** — X-02, 15 tests green |
+| P0 | AIS decoder (C-03) | **Done** — X-02, 39 tests green |
 | P1 | Raw capture (X-09); transport, GPS parsers, coordinator, own-boat entities, AIS target table, `sensor.ais_targets`, diagnostics | Capture replayed; own-boat entities match the receiver/chartplotter display |
 | P2 | Traffic logic: CPA/TCPA, closest target/threat, `binary_sensor.collision_risk`, watched-target trackers | Scenario tests green; on-water check against a chartplotter's AIS page |
 | P3 | AIS static data (types 5, 24): names, ship type, dimensions; Lovelace map card configuration | — |
@@ -322,16 +365,16 @@ Update interval, staleness timeout, AIS target expiry, CPA threshold, TCPA thres
 |---|---|---|---|
 | ~~OD-01~~ | ~~Integration domain name~~ | **Resolved v0.4:** Vigie / `vigie` | — |
 | ~~OD-02~~ | ~~Instruments and AIS on one port or several?~~ | **Resolved v0.2:** one port, AIS receiver only (§3.3) | — |
-| OD-03 | GPS parsing: own parsers or `pynmea2` (MIT) | Own = 5 sentences, no dependency (proposed given the reduced scope); pynmea2 = broader coverage | P1 |
+| ~~OD-03~~ | ~~GPS parsing: own parsers or `pynmea2` (MIT)~~ | **Resolved v0.5:** own parsers (five sentences, typed, no dependency) (§7.1) | — |
 | OD-04 | AIS exposure model | Aggregate sensor + watch-list trackers + threat entities (proposed) vs geo_location platform | P2 |
-| OD-06 | Minimum supported HA version | Current stable at P1 start; affects available device classes | P1 |
-| OD-07 | Own-boat source priority | GPS sentences first, VDO fallback (proposed, §7.4) vs configurable | P1 |
+| ~~OD-06~~ | ~~Minimum supported HA version~~ | **Resolved v0.5:** HA 2026.2.0; tests pinned to phcc 0.13.316 / HA 2026.2.3 (§12) | — |
+| ~~OD-07~~ | ~~Own-boat source priority~~ | **Resolved v0.5:** GPS first, VDO fallback when GPS is stale; `include_own_vdo` option only (§7.4) | — |
 | ~~OD-08~~ | ~~Instrument true wind vs computed~~ | **Withdrawn v0.2:** no wind source (§2.2) | — |
-| OD-10 | Angle entities' device_class/state_class | Verify angle-measurement support in the target HA version (OD-06) before relying on it | P1 |
+| ~~OD-10~~ | ~~Angle entities' device_class/state_class~~ | **Resolved v0.5:** no device class, state class `measurement_angle`, unit ° (§9.1) | — |
 | ~~OD-11~~ | ~~License of this project~~ | **Resolved v0.4:** Apache-2.0 | — |
-| OD-12 | Replay tool for development | X-09 log replay into a pseudo-TTY (`socat`) vs built-in file source | P1 |
-| OD-13 | Receiver type: receive-only or Class B transponder? | Determines whether `!AIVDO` exists; design handles both (§7.4) | P1 (from X-09) |
-| OD-14 | Serial baud rate | 38 400 (typical AIS) vs 4 800; confirmed by X-09 and by the current smart0183serial setting | P1 |
+| ~~OD-12~~ | ~~Replay tool for development~~ | **Resolved v0.5:** external replay tool (`tests/tools/replay.py`, own pseudo-TTY or an existing device; `socat` optional); no file source in the integration (TEST §5.1) | — |
+| OD-13 | Receiver type: receive-only or Class B transponder? | Determines whether `!AIVDO` exists; design handles both (§7.4) | P1 (from X-09, issue #2) |
+| OD-14 | Serial baud rate | 38 400 (typical AIS) vs 4 800; confirmed by X-09 and by the current smart0183serial setting. Baud rate is configurable, the probe suggests the other rate (§11.1) | P1 (from X-09, issue #2) |
 
 (OD-05 and OD-09 from v0.1 were tied to NMEA 2000 and polars; both moved to P4 and are no longer open for v1.)
 
@@ -346,6 +389,6 @@ Update interval, staleness timeout, AIS target expiry, CPA threshold, TCPA thres
 | X-05 | `ludeeus/integration_blueprint` — dev container and HACS layout reference | §12 |
 | X-06 | Smart Boat Innovations integrations (ha-smart0183tcp, ha-smart-anchor) — prior art, not reused | §2 |
 | X-08 | pyais (MIT) — test oracle only | §7.3 |
-| X-09 | Raw capture of the AIS receiver's serial output (to be produced; ≥ 15 min, ideally in port and under way) | §3.3, §7.2, OD-13, OD-14, tests |
+| X-09 | Raw capture of the AIS receiver's serial output (to be produced; ≥ 15 min, ideally in port and under way; tracked in issue #2) | §3.3, §7.2, OD-13, OD-14, tests |
 | X-10 | HA-SAIL-TEST-001 — Test protocol (unit, functional, end-to-end) | §12, §13 |
 | X-11 | Repository `ha-vigie` — bootstrap kit (skeleton, CI, GitHub setup script) | §5.3, §12 |

@@ -24,8 +24,8 @@ roadmap, one phase at a time.
 - **Clean room (SPEC §3.1).** Never copy code, structure or data files from
   `ha-smart0183serial` or any non-permissively licensed project. pyais (MIT) is allowed
   **only** as a test oracle/generator, never as a runtime dependency.
-- **Layering (SPEC §5.1).** `custom_components/vigie/nmea/` and `traffic.py` are pure
-  Python: **no `homeassistant` import**, not even indirectly. The CI test
+- **Layering (SPEC §5.1).** `custom_components/vigie/nmea/`, `state.py`, `geo.py`, `hub.py`
+  and `traffic.py` are pure Python: **no `homeassistant` import**, not even indirectly. The CI test
   `tests/nmea/test_no_ha_import.py` enforces this; extend it to every new pure module.
   HA types in `__init__.py` stay under `TYPE_CHECKING`.
 - **Scope.** Implement only what the current phase requires. No wind, depth, STW or
@@ -39,7 +39,8 @@ roadmap, one phase at a time.
 
 ## Engineering conventions
 
-- Python 3.13 in CI; code must also run on 3.12. Type hints everywhere; `mypy --strict`
+- Python 3.13 in CI. Pure modules must also run on 3.12; HA-side code follows the minimum HA
+  version (2026.2.0, SPEC OD-06), which requires 3.13. Type hints everywhere; `mypy --strict`
   on pure modules (extend `[tool.mypy] files` in `pyproject.toml` as modules are added).
 - Style: ruff (config in `pyproject.toml`), line length 100.
 - asyncio only on the HA side; never block the event loop. File-system globbing (serial
@@ -56,8 +57,9 @@ roadmap, one phase at a time.
 - Every test that implements a TEST case carries its ID in the name or docstring,
   e.g. `test_u_gps_02_rmc_void_not_applied`. Update the TEST status column ("Done") in the
   same PR.
-- Unit tests (`tests/nmea/`, `tests/domain/`) never import Home Assistant.
-- Functional tests (`tests/integration/`) use `pytest-homeassistant-custom-component`,
+- Unit tests (`tests/nmea/`, `tests/domain/`) and hub tests (`tests/transport/`) never import
+  Home Assistant.
+- Functional tests (`tests/integration/`) use `pytest-homeassistant-custom-component==0.13.316`,
   a fake serial transport and the harness's time helpers — never real sleeps, never a real
   serial port.
 - CPA/TCPA expected values come from TEST §3.4 (hand-computed), not from an oracle.
@@ -93,4 +95,5 @@ Update `CHANGELOG.md` (Keep a Changelog) under `[Unreleased]`.
   stamps the manifest version. Do not tag unless asked.
 - Real captures of the receiver (SPEC X-09) are not in the repo yet. Until they are, use
   synthetic fixtures and mark the tests that need real data (`U-GPS-08`, `U-AIS-13`) as
-  pending with an issue reference.
+  pending with a reference to issue #2.
+- F-PERF tests carry `@pytest.mark.perf` and run nightly, not in the PR gate (TEST §7).
