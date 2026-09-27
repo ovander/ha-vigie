@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.13 (draft) |
+| Version | 0.14 (draft) |
 | Date | 2026-09-27 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.14 | 2026-09-27 | WP10 (#29): D-07 presets for every §3.4 geometry (`clear-crossing`, `overtaking`, `not-urgent`, `diverging`, `parallel`, `anchored`, `multi-target`) and `--list`, each checked against its U-TRF hand values; E-02 made concrete (presets, tolerance, notification through the README automation, which is itself tested as published); P2 report template `docs/test-reports/P2-report.md`. |
 | 0.13 | 2026-09-27 | WP9 (#27): F-TRF-05 implemented (`tests/integration/test_watch_list.py`), with availability after expiry, independence from own position and MMSI validation. |
 | 0.12 | 2026-09-27 | WP8 (#25): F-TRF-01, 02, 03, 04, 06, 07 implemented (`tests/integration/test_traffic_entities.py`, D-07 scenarios in simulated time); pure `assess()` unit-tested in `tests/domain/test_traffic.py`; nightly junit report now keeps the F-PERF-02 baseline (`junit_family = xunit1`). |
 | 0.11 | 2026-09-27 | WP7 (#23): U-TRF-01…11 and U-TRF-13 implemented (`tests/domain/test_traffic.py`) with the hand-computed values of §3.4; new U-TRF-14 (risk latch, SPEC OD-15) and U-TRF-15 (dead reckoning, SPEC OD-16); U-TRF-05 time advance made concrete; F-TRF-06 tied to the latch; Status column added to the scenario table. |
@@ -60,7 +61,7 @@ Principles:
 | D-04 | Malformed corpus | Hand-crafted | Bad checksum, missing `*`, truncated payload, wrong field count, invalid armoring char, fill bits > 5, fragment out of range, over-long line, non-ASCII bytes, wrong-baud garbage | U-NMEA, U-AIS, F-HUB |
 | D-05 | Raw capture — in port | SPEC X-09 | ≥ 15 min, receiver's real output, moored | U (regression), F, E |
 | D-06 | Raw capture — under way | SPEC X-09 | ≥ 30 min under way, ideally with traffic | F, E |
-| D-07 | Traffic scenarios | Scripted generator (`python -m tests.tools.scenario`, presets `head-on`, `crossing`) | Own boat + targets on defined tracks, emitted as timed RMC + VDM sentences | U-TRF, F-TRF, E-02 |
+| D-07 | Traffic scenarios | Scripted generator (`python -m tests.tools.scenario`; one preset per §3.4 geometry: `head-on`, `clear-crossing`, `crossing`, `overtaking`, `not-urgent`, `diverging`, `parallel`, `anchored`, `multi-target`; `--list` prints their expected values) | Own boat + targets on defined tracks, emitted as timed RMC + VDM sentences | U-TRF, F-TRF, E-02 |
 | D-08 | Burst file | Derived from D-03 | ≥ 50 sentences/s for 60 s | F-PERF, E-05 |
 
 Until X-09 exists (issue #2), tests that name D-05/D-06 run on synthetic stand-ins: a mixed stream built from D-03/D-07 for F-HUB-01 and F-ENT-01, a 10-minute D-07 scenario for F-PERF-02. Each is re-run on the real capture under issue #2. Synthetic sentences are never presented as captured data. D-04 lives in `tests/fixtures/malformed.nmea` and D-08 in `tests/fixtures/burst_60s.nmea` (generated from D-03 with a fixed seed).
@@ -243,7 +244,7 @@ Setup (TP-01, TP-02, SPEC OD-12 — resolved v0.3):
 | ID | Case | Expected |
 |---|---|---|
 | E-01 | Install via HACS custom repository from the release tag, configure through the UI | Integration works with no manual file copy |
-| E-02 | Replay D-07 head-on and crossing scenarios at real speed | Dashboard shows target, CPA/TCPA values match U-TRF within tolerance; `collision_risk` fires; a test notification is delivered to the phone |
+| E-02 | Replay the D-07 presets `head-on`, `crossing`, `clear-crossing`, `not-urgent`, `anchored`, `multi-target` at real speed, with the README automation installed | Dashboard shows the targets; CPA/TCPA match U-TRF within ± 0.02 NM, ± 0.2 min; `collision_risk` fires (and clears) exactly where the preset says; one notification per episode is delivered to the phone. Checklist in `docs/test-reports/P2-report.md` |
 | E-03 | Replay D-06 for its full duration | No error in HA log; own track in the map/logbook matches the capture |
 | E-04 | Kill the replay tool (or the feed side of `socat`), restart after 30 s | Unavailable → recovered without HA restart |
 | E-05 | D-08 burst at real speed on the Pi | CPU and event-loop lag within F-PERF-01 limits on the target hardware |

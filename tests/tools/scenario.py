@@ -6,6 +6,7 @@ as `!AIVDM` position reports at its own interval. Every sentence is synthetic.
 
 AIS payloads are encoded with pyais (MIT), a test-only dependency (SPEC §3.1, X-08).
 
+    python -m tests.tools.scenario --list
     python -m tests.tools.scenario --preset head-on -o head-on.nmea
     python -m tests.tools.scenario my-scenario.json --duration 900 -o out.nmea
 
@@ -147,16 +148,51 @@ def format_timed(lines: list[tuple[float, str]]) -> str:
     return "".join(f"{t:.3f} {sentence}\r\n" for t, sentence in lines)
 
 
-def _preset(east_nm: float, north_nm: float, sog: float, cog: float, duration: int) -> Scenario:
-    """TEST §3.4 geometry: own boat at origin heading 000° at 6 kn."""
+def _preset(duration: int, *targets: tuple[float, float, float, float, int]) -> Scenario:
+    """TEST §3.4 geometry: own boat at origin heading 000° at 6 kn.
+
+    Each target is (east NM, north NM, SOG kn, COG °, nav status), MMSIs 235000001 upwards.
+    """
     own = Track(43.5, 7.25, 6.0, 0.0)
-    lat, lon = relative(own.lat, own.lon, east_nm, north_nm)
-    return Scenario(own, (Target(235000001, Track(lat, lon, sog, cog)),), duration)
+    built = []
+    for index, (east, north, sog, cog, status) in enumerate(targets):
+        lat, lon = relative(own.lat, own.lon, east, north)
+        built.append(Target(235000001 + index, Track(lat, lon, sog, cog), nav_status=status))
+    return Scenario(own, tuple(built), duration)
 
 
+# U-TRF-05: relative velocity (−6, −5) kn with own (0, 6) → target (−6, 1) kn
+_NOT_URGENT = (2.0, 2.0, math.hypot(6.0, 1.0), math.degrees(math.atan2(-6.0, 1.0)) % 360, 0)
+_HEAD_ON = (0.0, 2.0, 6.0, 180.0, 0)
+_CROSSING = (1.0, 0.0, 12.0, 270.0, 0)
+_ANCHORED = (0.0, 0.4, 0.0, 0.0, 1)  # nav status 1: at anchor
+_OVERTAKING = (0.0, 1.0, 4.0, 0.0, 0)
+
+# Durations run past every target's TCPA, so each alert both fires and clears (E-02)
 PRESETS: dict[str, Scenario] = {
-    "head-on": _preset(0.0, 2.0, 6.0, 180.0, 900),  # U-TRF-01: CPA 0.00 NM, TCPA 10.0 min
-    "crossing": _preset(1.0, 0.0, 12.0, 270.0, 600),  # U-TRF-03: CPA 0.45 NM, TCPA 4.0 min
+    "head-on": _preset(900, _HEAD_ON),
+    "clear-crossing": _preset(600, (1.0, 0.0, 6.0, 270.0, 0)),
+    "crossing": _preset(600, _CROSSING),
+    "overtaking": _preset(2400, _OVERTAKING),
+    "not-urgent": _preset(1500, _NOT_URGENT),
+    "diverging": _preset(600, (0.0, -1.0, 3.0, 0.0, 0)),
+    "parallel": _preset(600, (0.3, 0.0, 6.0, 0.0, 0)),
+    "anchored": _preset(600, _ANCHORED),
+    "multi-target": _preset(2400, _HEAD_ON, _CROSSING, _ANCHORED, _OVERTAKING),
+}
+
+# What the bench operator should see at the start (TEST §3.4, default thresholds 0.5 NM, 15 min)
+PRESET_REFERENCE: dict[str, str] = {
+    "head-on": "U-TRF-01  CPA 0.00 NM, TCPA 10.0 min, threat",
+    "clear-crossing": "U-TRF-02  CPA 0.71 NM, TCPA 5.0 min, no threat (CPA)",
+    "crossing": "U-TRF-03  CPA 0.45 NM, TCPA 4.0 min, threat",
+    "overtaking": "U-TRF-04  CPA 0.00 NM, TCPA 30.0 min, no threat until TCPA < 15 min",
+    "not-urgent": "U-TRF-05  CPA 0.26 NM, TCPA 21.6 min, threat once TCPA < 15 min (≈ 6.6 min in)",
+    "diverging": "U-TRF-06  no CPA, TCPA negative, no threat",
+    "parallel": "U-TRF-07  CPA 0.30 NM (current distance), no TCPA, no threat",
+    "anchored": "U-TRF-08  CPA 0.00 NM, TCPA 4.0 min, no threat (anchored, excluded by default)",
+    "multi-target": "U-TRF-11  4 targets; closest threat 235000002 (crossing, TCPA 4.0 min), "
+    "then 235000001 (head-on), then 235000004 (overtaking); 235000003 anchored, never a threat",
 }
 
 
@@ -189,9 +225,15 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("scenario", nargs="?", type=Path, help="JSON scenario file")
     parser.add_argument("--preset", choices=sorted(PRESETS), help="built-in scenario")
+    parser.add_argument("--list", action="store_true", help="list the presets and exit")
     parser.add_argument("--duration", type=int, help="override the duration in seconds")
     parser.add_argument("-o", "--output", type=Path, help="output file (default: stdout)")
     args = parser.parse_args(argv)
+    if args.list:
+        width = max(map(len, PRESETS))
+        for name, reference in PRESET_REFERENCE.items():
+            print(f"{name:<{width}}  {reference}")
+        return 0
     if (args.scenario is None) == (args.preset is None):
         parser.error("give either a scenario file or --preset")
     scenario = PRESETS[args.preset] if args.preset else load(args.scenario)

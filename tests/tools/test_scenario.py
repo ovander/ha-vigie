@@ -7,6 +7,7 @@ import pytest
 from custom_components.vigie.geo import bearing_deg, distance_nm
 from custom_components.vigie.nmea.ais_decoder import AisDecoder
 from custom_components.vigie.nmea.parsers import GpsParser, Rmc
+from custom_components.vigie.traffic import Kinematics, TargetReport, ThreatSettings, assess
 from tests.tools import scenario
 from tests.tools.scenario import PRESETS, Scenario, Target, Track, generate, relative
 
@@ -127,3 +128,93 @@ def test_json_scenario_and_cli(tmp_path):
 def test_cli_preset_to_stdout(capsys):
     assert scenario.main(["--preset", "head-on", "--duration", "5"]) == 0
     assert len(capsys.readouterr().out.splitlines()) == 6 + 1  # 6 RMC + 1 VDM at t=0
+
+
+# --- E-02 bench presets: one per TEST §3.4 geometry ------------------------------------------
+
+NEG = "negative"
+# preset → {target index: (CPA NM, TCPA min, threat)}, hand values of TEST §3.4
+E02_EXPECTED = {
+    "head-on": {0: (0.00, 10.0, True)},  # U-TRF-01
+    "clear-crossing": {0: (0.71, 5.0, False)},  # U-TRF-02
+    "crossing": {0: (0.45, 4.0, True)},  # U-TRF-03
+    "overtaking": {0: (0.00, 30.0, False)},  # U-TRF-04
+    "not-urgent": {0: (0.26, 21.6, False)},  # U-TRF-05
+    "diverging": {0: (None, NEG, False)},  # U-TRF-06
+    "parallel": {0: (0.30, None, False)},  # U-TRF-07
+    "anchored": {0: (0.00, 4.0, False)},  # U-TRF-08, excluded by default
+    # U-TRF-11: head-on, crossing, anchored, overtaking together
+    "multi-target": {
+        0: (0.00, 10.0, True),
+        1: (0.45, 4.0, True),
+        2: (0.00, 4.0, False),
+        3: (0.00, 30.0, False),
+    },
+}
+
+
+def _first_picture(s: Scenario, after_s: float = 0.0):
+    """Traffic picture from the first own RMC and each target's first report, as decoded,
+    dead-reckoned `after_s` seconds on."""
+    own, targets = _decode(generate(s))
+    t0, rmc = own[0]
+    own_k = Kinematics(rmc.latitude, rmc.longitude, rmc.sog_knots, rmc.cog_deg, t0)
+    reports = {}
+    for t, p in targets:
+        reports.setdefault(
+            p.mmsi,
+            TargetReport(
+                p.mmsi, Kinematics(p.latitude, p.longitude, p.sog_knots, p.cog_deg, t), p.nav_status
+            ),
+        )
+    return assess(own_k, reports.values(), ThreatSettings(), t0 + after_s)
+
+
+def test_e_02_every_u_trf_geometry_has_a_preset():
+    assert set(E02_EXPECTED) == set(PRESETS)
+    assert set(scenario.PRESET_REFERENCE) == set(PRESETS)
+
+
+@pytest.mark.parametrize("name", sorted(E02_EXPECTED))
+def test_e_02_preset_matches_u_trf_hand_values(name):
+    """Decoded like the receiver's stream, each preset gives the TEST §3.4 CPA/TCPA/threat."""
+    s = PRESETS[name]
+    picture = _first_picture(s)
+    for index, (cpa, tcpa, threat) in E02_EXPECTED[name].items():
+        mmsi = s.targets[index].mmsi
+        e = picture.encounters[mmsi]
+        if cpa is None:
+            assert e.cpa_nm is None, (name, mmsi)
+        else:
+            assert e.cpa_nm == pytest.approx(cpa, abs=0.01), (name, mmsi)
+        if tcpa is None:
+            assert e.tcpa_min is None, (name, mmsi)
+        elif tcpa == NEG:
+            assert e.tcpa_min is not None and e.tcpa_min < 0, (name, mmsi)
+        else:
+            assert e.tcpa_min == pytest.approx(tcpa, abs=0.1), (name, mmsi)
+        assert (mmsi in picture.threats) is threat, (name, mmsi)
+    # Each preset runs past every target's TCPA, so each alert also clears
+    tcpas = [v[1] for v in E02_EXPECTED[name].values() if isinstance(v[1], float)]
+    assert s.duration_s > max(tcpas, default=0) * 60
+
+
+def test_e_02_multi_target_closest_threat_is_the_crossing():
+    """U-TRF-11 on the bench: smallest TCPA wins; the anchored target is excluded."""
+    s = PRESETS["multi-target"]
+    assert len({t.mmsi for t in s.targets}) == len(s.targets)
+    picture = _first_picture(s)
+    assert picture.closest_threat is not None
+    assert picture.closest_threat[0] == s.targets[1].mmsi
+    assert s.targets[2].nav_status == 1  # at anchor
+    later = _first_picture(s, after_s=300)  # crossing passed at 4 min: head-on takes over
+    assert later.closest_threat is not None
+    assert later.closest_threat[0] == s.targets[0].mmsi
+
+
+def test_cli_list_presets(capsys):
+    assert scenario.main(["--list"]) == 0
+    out = capsys.readouterr().out
+    for name in PRESETS:
+        assert name in out
+    assert "U-TRF-05" in out

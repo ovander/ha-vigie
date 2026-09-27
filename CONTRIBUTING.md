@@ -34,7 +34,7 @@ Run from the repository root with the test requirements installed.
 
 | Tool | Use |
 |---|---|
-| `python -m tests.tools.scenario --preset head-on -o head-on.nmea` | D-07 scenario: own boat as `$GPRMC` (1 Hz) and targets as `!AIVDM`, timed format `<epoch> <sentence>`. Presets `head-on` (U-TRF-01) and `crossing` (U-TRF-03); custom scenarios as JSON (see the module docstring). |
+| `python -m tests.tools.scenario --preset head-on -o head-on.nmea` | D-07 scenario: own boat as `$GPRMC` (1 Hz) and targets as `!AIVDM`, timed format `<epoch> <sentence>`. One preset per TEST §3.4 geometry (`--list` shows them with their expected CPA/TCPA); custom scenarios as JSON (see the module docstring). |
 | `python -m tests.tools.replay FILE --pty /tmp/ttyAIS [--speed 10] [--loop]` | Replays a timed or plain capture into a pseudo-terminal linked at `/tmp/ttyAIS`. Configure Vigie on that path. |
 | `python -m tests.tools.replay FILE --device /dev/ttyUSB1 --baud 38400` | Same, into a real serial adapter (null-modem to the HA host) or one end of a socat pair. |
 | `python -m tests.tools.capture --port /dev/serial/by-id/... --baud 38400 --duration 900` | Raw timestamped capture of the receiver (X-09) into `captures/` (git-ignored). Stop Vigie first; anonymise before committing (TEST-001 TP-03). |
@@ -67,6 +67,13 @@ Home Assistant **Container** on a Linux host (a Raspberry Pi with Raspberry Pi O
 
 For E-01 on HA OS, wire two USB-serial adapters null-modem (TX↔RX, GND↔GND): one on the HA
 host, one on a laptop running `replay ... --device /dev/ttyUSBx --baud 38400`.
+
+### E-02 traffic bench (TEST-001 §5.1)
+
+Same bench as E-1, with the README's collision-alert automation installed and the companion
+app on a phone. Generate the presets (`python -m tests.tools.scenario --list`, then
+`--preset NAME -o NAME.nmea`), replay each once at real speed without `--loop`, and fill in
+the table in `docs/test-reports/P2-report.md` §5.
 
 ## Workflow
 
