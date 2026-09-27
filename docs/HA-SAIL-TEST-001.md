@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.6 (draft) |
+| Version | 0.7 (draft) |
 | Date | 2026-09-27 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.7 | 2026-09-27 | U-AIS-14 extended (#11): payloads with armoring characters in the invalid gap 0x58–0x5F (`X`, `_`) are rejected; the range edges `W`, `` ` ``, `w` stay valid. D-04 uses `X` again for its invalid-armoring line. |
 | 0.6 | 2026-09-27 | WP3 (#9): F-HUB-01, 02, 04, 05 implemented at hub level (`tests/transport/test_hub.py`, fake transport, injected clock and sleep); hub half of F-HUB-03 done, entity half in WP5; D-04 corpus committed as `tests/fixtures/malformed.nmea`; `pytest-asyncio==1.3.0` added (same pin as phcc 0.13.316). Suite: 203 tests, 98.8 % coverage of the pure modules. |
 | 0.5 | 2026-09-27 | WP2 (#7): U-COO-01…06 and U-TRF-12 implemented (`tests/domain/test_state.py`), plus `geo.py` checks (`tests/domain/test_geo.py`); NFR-02 check and coverage gate cover `state.py` and `geo.py`. Suite: 176 tests, 99.0 % coverage of the pure modules. |
 | 0.4 | 2026-09-27 | WP1 (#5): U-NMEA-01…06 and U-GPS-01…07 implemented (`tests/nmea/test_sentence.py`, `tests/nmea/test_parsers.py`); U-GPS-08 pending on #2; NFR-02 check covers `sentence.py` and `parsers.py`. Suite: 134 tests, 98.7 % coverage of `nmea/`. |
@@ -108,7 +109,7 @@ Pure pytest, **no Home Assistant import** (enforced: a CI step fails if importin
 | U-AIS-10 | Fragment timeout: first fragment alone, clock advanced > 5 s, second fragment → no message; `received_at` follows the injected clock | Done |
 | U-AIS-11 | Interleaved fragments on channels A and B with same sequence ID | Done |
 | U-AIS-12 | Sentinels individually (lon 181, lat 91, SOG 1023, SOG 1022, COG 3600, heading 511), types 1 and 18 | Done |
-| U-AIS-14 | D-04 malformed cases: unterminated tag block, missing/non-hex checksum, invalid armoring, wrong field count, bad fragment/fill values, sequence ID reused with another count | Done |
+| U-AIS-14 | D-04 malformed cases: unterminated tag block, missing/non-hex checksum, invalid armoring (incl. the 0x58–0x5F gap), wrong field count, bad fragment/fill values, sequence ID reused with another count | Done |
 | U-AIS-13 | Every D-05/D-06 `!` line | Pending (#2) |
 
 Note for U-AIS-10: `AisDecoder` takes an optional `clock` parameter (default `time.monotonic`), used for fragment expiry and `received_at` (TP-05, resolved v0.2).
