@@ -54,5 +54,70 @@
     "error": {
       "invalid_mmsi": "An MMSI has exactly 9 digits."
     }
+  },
+  "entity": {
+    "sensor": {
+      "sog": {
+        "name": "Speed over ground"
+      },
+      "cog": {
+        "name": "Course over ground"
+      },
+      "heading": {
+        "name": "Heading"
+      },
+      "fix_quality": {
+        "name": "GNSS fix",
+        "state": {
+          "no_fix": "No fix",
+          "gps": "GPS",
+          "dgps": "Differential GPS",
+          "pps": "PPS",
+          "rtk": "RTK",
+          "float_rtk": "Float RTK",
+          "estimated": "Estimated (dead reckoning)",
+          "manual": "Manual input",
+          "simulation": "Simulation"
+        }
+      },
+      "satellites": {
+        "name": "Satellites in use"
+      },
+      "hdop": {
+        "name": "Horizontal dilution of precision"
+      },
+      "ais_targets": {
+        "name": "AIS targets",
+        "state_attributes": {
+          "targets": {
+            "name": "Targets"
+          }
+        }
+      },
+      "sentences_per_min": {
+        "name": "Sentences per minute"
+      },
+      "checksum_errors": {
+        "name": "Checksum errors"
+      },
+      "ais_rejected": {
+        "name": "Rejected AIS messages"
+      },
+      "last_sentence_age": {
+        "name": "Last sentence age"
+      },
+      "own_position_source": {
+        "name": "Own position source",
+        "state": {
+          "gps": "GPS",
+          "vdo": "AIS own-ship report (VDO)"
+        }
+      }
+    },
+    "binary_sensor": {
+      "connected": {
+        "name": "Connected"
+      }
+    }
   }
 }

@@ -10,6 +10,8 @@ pythonpath = ["."]
 testpaths = ["tests"]
 # Required by pytest-homeassistant-custom-component; pure async tests carry explicit marks
 asyncio_mode = "auto"
+markers = ["perf: load and timing tests, run nightly (TEST-001 §4.5, §7)"]
+addopts = "-m 'not perf'"
 
 [tool.coverage.run]
 # Pure modules only (TEST §7 gate 2); module names, since `source` takes no file paths

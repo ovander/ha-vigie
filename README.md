@@ -6,8 +6,9 @@ Vigie reads the NMEA 0183 output of a boat's AIS receiver over a serial port and
 into Home Assistant entities: own position and motion, surrounding AIS traffic, and
 CPA/TCPA collision-risk alerts you can use in automations. Local only, no cloud.
 
-> **Status: pre-alpha (phase P0 done).** The AIS decoder is implemented and tested; the
-> integration itself loads but does not create entities yet. See the roadmap below.
+> **Status: pre-alpha (phase P1 in progress).** The integration reads the receiver and creates
+> own-boat, AIS traffic and diagnostic entities; it has not yet been checked against a real
+> receiver. Collision alerts (CPA/TCPA) arrive in P2. See the roadmap below.
 
 ## ⚠️ Safety
 
@@ -40,7 +41,7 @@ Keep a proper lookout at all times (COLREGs Rule 5).
 | Phase | Content | Status |
 |---|---|---|
 | P0 | AIS decoder (Class A 1/2/3, Class B 18/19) | ✅ done |
-| P1 | Serial transport, GPS parsing, own-boat entities, AIS target table | planned |
+| P1 | Serial transport, GPS parsing, own-boat entities, AIS target table | in progress |
 | P2 | CPA/TCPA, collision-risk alert, watch-list trackers | planned |
 | P3 | AIS static data (names, types, dimensions) | planned |
 | P4 | Additional instruments (wind, depth) and sailing performance | later |

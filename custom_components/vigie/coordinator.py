@@ -82,6 +82,11 @@ class VigieCoordinator:
     def connected(self) -> bool:
         return self.hub.connected
 
+    @staticmethod
+    def now() -> float:
+        """The monotonic clock shared by the hub, the domain state and the entities."""
+        return _monotonic()
+
     async def async_start(self) -> None:
         """Open the port (raises HubConnectionError) and start reading."""
         await self.hub.connect()

@@ -54,5 +54,70 @@
     "error": {
       "invalid_mmsi": "Un MMSI comporte exactement 9 chiffres."
     }
+  },
+  "entity": {
+    "sensor": {
+      "sog": {
+        "name": "Vitesse fond"
+      },
+      "cog": {
+        "name": "Route fond"
+      },
+      "heading": {
+        "name": "Cap"
+      },
+      "fix_quality": {
+        "name": "Position GNSS",
+        "state": {
+          "no_fix": "Pas de position",
+          "gps": "GPS",
+          "dgps": "GPS différentiel",
+          "pps": "PPS",
+          "rtk": "RTK",
+          "float_rtk": "RTK flottant",
+          "estimated": "Estimée (navigation à l'estime)",
+          "manual": "Saisie manuelle",
+          "simulation": "Simulation"
+        }
+      },
+      "satellites": {
+        "name": "Satellites utilisés"
+      },
+      "hdop": {
+        "name": "Dilution horizontale de précision"
+      },
+      "ais_targets": {
+        "name": "Cibles AIS",
+        "state_attributes": {
+          "targets": {
+            "name": "Cibles"
+          }
+        }
+      },
+      "sentences_per_min": {
+        "name": "Phrases par minute"
+      },
+      "checksum_errors": {
+        "name": "Erreurs de somme de contrôle"
+      },
+      "ais_rejected": {
+        "name": "Messages AIS rejetés"
+      },
+      "last_sentence_age": {
+        "name": "Âge de la dernière phrase"
+      },
+      "own_position_source": {
+        "name": "Source de la position",
+        "state": {
+          "gps": "GPS",
+          "vdo": "Rapport AIS du propre navire (VDO)"
+        }
+      }
+    },
+    "binary_sensor": {
+      "connected": {
+        "name": "Connecté"
+      }
+    }
   }
 }
