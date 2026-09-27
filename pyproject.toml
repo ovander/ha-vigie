@@ -15,6 +15,7 @@ source = [
     "custom_components.vigie.nmea",
     "custom_components.vigie.geo",
     "custom_components.vigie.state",
+    "custom_components.vigie.hub",
 ]
 branch = true
 
@@ -33,6 +34,7 @@ files = [
     "custom_components/vigie/nmea",
     "custom_components/vigie/geo.py",
     "custom_components/vigie/state.py",
+    "custom_components/vigie/hub.py",
 ]
 
 [[tool.mypy.overrides]]
