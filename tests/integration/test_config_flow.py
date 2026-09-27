@@ -18,6 +18,7 @@ from custom_components.vigie.const import (
     CONF_STALE_TIMEOUT,
     CONF_TCPA_THRESHOLD,
     CONF_UPDATE_INTERVAL,
+    CONF_WATCH_LIST,
     DOMAIN,
 )
 from tests.helpers import BY_ID_PORT, FakePorts, nmea
@@ -161,6 +162,7 @@ OPTIONS = {
     CONF_CPA_THRESHOLD: 0.3,
     CONF_TCPA_THRESHOLD: 20,
     CONF_EXCLUDE_STATIONARY: False,
+    CONF_WATCH_LIST: ["235000101", "235000101"],  # duplicate dropped
 }
 
 
@@ -172,7 +174,7 @@ async def test_f_life_07_every_option_round_trips(hass: HomeAssistant, fake_port
     result = await hass.config_entries.options.async_configure(result["flow_id"], OPTIONS)
     assert result["type"] is FlowResultType.CREATE_ENTRY
     await hass.async_block_till_done()
-    assert entry.options == {**OPTIONS, CONF_OWN_MMSI: 227000001}
+    assert entry.options == {**OPTIONS, CONF_OWN_MMSI: 227000001, CONF_WATCH_LIST: [235000101]}
 
     # Applied: the entry was reloaded with a coordinator built from the new options
     coordinator = entry.runtime_data
@@ -181,6 +183,7 @@ async def test_f_life_07_every_option_round_trips(hass: HomeAssistant, fake_port
     assert coordinator.targets.expiry_s == (12 * 60, 20 * 60)
     assert coordinator.own.use_vdo is False
     assert coordinator.own.own_mmsi == 227000001
+    assert coordinator.watch_list == (235000101,)
     settings = coordinator.threat_settings
     assert (settings.cpa_nm, settings.tcpa_min, settings.exclude_stationary) == (0.3, 20, False)
 

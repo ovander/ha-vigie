@@ -21,6 +21,7 @@ CONF_OWN_MMSI = "own_mmsi"
 CONF_CPA_THRESHOLD = "cpa_threshold"  # NM
 CONF_TCPA_THRESHOLD = "tcpa_threshold"  # minutes
 CONF_EXCLUDE_STATIONARY = "exclude_stationary"  # anchored/moored Class A never threats
+CONF_WATCH_LIST = "watch_list"  # MMSIs with their own device_tracker (SPEC §9.3)
 
 DEFAULT_OPTIONS: dict[str, int | float | bool] = {
     CONF_UPDATE_INTERVAL: 1,

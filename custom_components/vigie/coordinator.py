@@ -30,6 +30,7 @@ from .const import (
     CONF_STALE_TIMEOUT,
     CONF_TCPA_THRESHOLD,
     CONF_UPDATE_INTERVAL,
+    CONF_WATCH_LIST,
     DEFAULT_OPTIONS,
     DOMAIN,
 )
@@ -91,6 +92,7 @@ class VigieCoordinator:
             tcpa_min=float(options[CONF_TCPA_THRESHOLD]),
             exclude_stationary=bool(options[CONF_EXCLUDE_STATIONARY]),
         )
+        self.watch_list: tuple[int, ...] = tuple(int(m) for m in options.get(CONF_WATCH_LIST, ()))
         self.picture: TrafficPicture = EMPTY_PICTURE
         self.risk = RiskLatch(clock=_monotonic)
         self.reader_task: asyncio.Task[None] | None = None

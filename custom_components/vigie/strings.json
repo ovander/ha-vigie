@@ -42,7 +42,8 @@
           "own_mmsi": "Own MMSI",
           "cpa_threshold": "CPA threshold",
           "tcpa_threshold": "TCPA threshold",
-          "exclude_stationary": "Ignore anchored and moored targets"
+          "exclude_stationary": "Ignore anchored and moored targets",
+          "watch_list": "Watch list (MMSIs)"
         },
         "data_description": {
           "update_interval": "Entities write their state at most once per interval.",
@@ -53,12 +54,14 @@
           "own_mmsi": "Optional, 9 digits. Reports from this MMSI are never shown as traffic. Learned automatically from own-ship reports when left empty.",
           "cpa_threshold": "A target is a threat when its closest point of approach is nearer than this…",
           "tcpa_threshold": "…and that point is reached within this time.",
-          "exclude_stationary": "Class A targets reporting at anchor or moored, and slower than 0.5 kn, never raise a collision risk."
+          "exclude_stationary": "Class A targets reporting at anchor or moored, and slower than 0.5 kn, never raise a collision risk.",
+          "watch_list": "Boats to follow individually, e.g. friends or your tender: type each 9-digit MMSI and press Enter. Each gets its own device tracker on the map."
         }
       }
     },
     "error": {
-      "invalid_mmsi": "An MMSI has exactly 9 digits."
+      "invalid_mmsi": "An MMSI has exactly 9 digits.",
+      "invalid_watch_list": "Every MMSI in the watch list must have exactly 9 digits."
     }
   },
   "entity": {
@@ -136,6 +139,11 @@
       "collision_risk": {
         "name": "Collision risk"
       }
+    }
+  },
+  "device": {
+    "watched_target": {
+      "name": "AIS {mmsi}"
     }
   }
 }
