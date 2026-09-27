@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.14 (draft) |
+| Version | 0.15 (draft) |
 | Date | 2026-09-27 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.15 | 2026-09-27 | P3 tests defined (§9) and WP11 (#32): U-AIS-04 rewritten (types without a decoder are ignored; type 5 is now decoded); U-AIS-15…22 for types 5 and 24 and the static fields of type 19 (reference sentence, short type 5, parts A/B, auxiliary craft, sentinels, fuzz vs oracle, ship-type categories, VDO); F-HUB-01 checks that static data is not delivered as a position until WP12; D-01 and D-03 extended. |
 | 0.14 | 2026-09-27 | WP10 (#29): D-07 presets for every §3.4 geometry (`clear-crossing`, `overtaking`, `not-urgent`, `diverging`, `parallel`, `anchored`, `multi-target`) and `--list`, each checked against its U-TRF hand values; E-02 made concrete (presets, tolerance, notification through the README automation, which is itself tested as published); P2 report template `docs/test-reports/P2-report.md`. |
 | 0.13 | 2026-09-27 | WP9 (#27): F-TRF-05 implemented (`tests/integration/test_watch_list.py`), with availability after expiry, independence from own position and MMSI validation. |
 | 0.12 | 2026-09-27 | WP8 (#25): F-TRF-01, 02, 03, 04, 06, 07 implemented (`tests/integration/test_traffic_entities.py`, D-07 scenarios in simulated time); pure `assess()` unit-tested in `tests/domain/test_traffic.py`; nightly junit report now keeps the F-PERF-02 baseline (`junit_family = xunit1`). |
@@ -55,9 +56,9 @@ Principles:
 
 | ID | Dataset | Source | Content | Used by |
 |---|---|---|---|---|
-| D-01 | Spec reference sentences | X-01 (gpsd AIVDM doc) | Type 1 example, type 5 two-fragment example | U-AIS |
+| D-01 | Spec reference sentences | X-01 (gpsd AIVDM doc) | Type 1 example, type 5 two-fragment example (decoded from P3: U-AIS-15) | U-AIS |
 | D-02 | Public samples | Common test corpora | Type 18 and type 19 samples | U-AIS |
-| D-03 | Synthetic AIS | Generated with pyais encoder (test-only dependency) | Randomised types 1/2/3/18/19 incl. N/A sentinels, fixed seeds | U-AIS fuzz |
+| D-03 | Synthetic AIS | Generated with pyais encoder (test-only dependency) | Randomised types 1/2/3/18/19, and 5 and 24 (parts A, B, auxiliary craft) from P3, incl. N/A sentinels, fixed seeds | U-AIS fuzz |
 | D-04 | Malformed corpus | Hand-crafted | Bad checksum, missing `*`, truncated payload, wrong field count, invalid armoring char, fill bits > 5, fragment out of range, over-long line, non-ASCII bytes, wrong-baud garbage | U-NMEA, U-AIS, F-HUB |
 | D-05 | Raw capture — in port | SPEC X-09 | ≥ 15 min, receiver's real output, moored | U (regression), F, E |
 | D-06 | Raw capture — under way | SPEC X-09 | ≥ 30 min under way, ideally with traffic | F, E |
@@ -100,14 +101,14 @@ Pure pytest, **no Home Assistant import** (enforced: a CI step fails if importin
 
 ### 3.3 AIS decoder — `U-AIS` (SPEC §7.3, C-03)
 
-**Status: implemented** (`tests/nmea/test_ais_decoder.py`, 38 tests green, plus the NFR-02 import check in `tests/nmea/test_no_ha_import.py`). Current coverage and additions:
+**Status: implemented** (`tests/nmea/test_ais_decoder.py`; static data from P3 in `tests/nmea/test_ais_static.py`; the NFR-02 import check in `tests/nmea/test_no_ha_import.py`). Current coverage and additions:
 
 | ID | Case | Status |
 |---|---|---|
 | U-AIS-01 | D-01 type 1 reference, D-02 types 18/19 vs oracle | Done |
 | U-AIS-02 | Type 19 ship name (`@` terminator, trailing spaces) | Done |
 | U-AIS-03 | Bad checksum rejected and counted | Done |
-| U-AIS-04 | Type 5 (non-position) ignored without rejection | Done |
+| U-AIS-04 | Message types without a decoder (e.g. 4, 21) ignored without rejection (rewritten v0.15: type 5 is decoded from P3) | Done |
 | U-AIS-05 | Tag block prefix; non-AIS `$` line ignored | Done |
 | U-AIS-06 | Truncated payload rejected (length check) | Done |
 | U-AIS-07 | `VDO` flagged `own_ship`; excluded when `include_own=False` | Done |
@@ -118,6 +119,14 @@ Pure pytest, **no Home Assistant import** (enforced: a CI step fails if importin
 | U-AIS-12 | Sentinels individually (lon 181, lat 91, SOG 1023, SOG 1022, COG 3600, heading 511), types 1 and 18 | Done |
 | U-AIS-14 | D-04 malformed cases: unterminated tag block, missing/non-hex checksum, invalid armoring (incl. the 0x58–0x5F gap), wrong field count, bad fragment/fill values, sequence ID reused with another count | Done |
 | U-AIS-13 | Every D-05/D-06 `!` line | Pending (#2) |
+| U-AIS-15 | D-01 type 5 reference (two fragments): MMSI, IMO, call sign, name, ship type, dimensions, draught, destination | Done |
+| U-AIS-16 | Type 5 length: 424, 422 and 420 bits accepted; 418 rejected | Done |
+| U-AIS-17 | Type 24 part A (name; 160 and 168 bits), part B (ship type, call sign, dimensions), auxiliary craft (mothership MMSI, no dimensions), part B too short rejected, parts 2/3 ignored | Done |
+| U-AIS-18 | Type 19 position carries its static part (name, ship type, dimensions); types 1 and 18 carry none | Done |
+| U-AIS-19 | Static "not available" values (IMO, ship type, draught 0, empty text → `None`; length/beam `None` only when both parts are 0); name padding and `@` terminator | Done |
+| U-AIS-20 | Fuzz: 500 messages each of type 5, 24A, 24B and 24B auxiliary craft vs oracle | Done |
+| U-AIS-21 | Ship-type category of every code 0…255 (SPEC OD-17) | Done |
+| U-AIS-22 | Static `VDO` flagged `own_ship`; excluded when `include_own=False` | Done |
 
 Note for U-AIS-10: `AisDecoder` takes an optional `clock` parameter (default `time.monotonic`), used for fragment expiry and `received_at` (TP-05, resolved v0.2).
 
@@ -323,7 +332,7 @@ Functional requirements map by SPEC section: §7.2 → U-GPS; §7.3 → U-AIS; �
 | P0 AIS decoder | U-AIS-01…12, U-AIS-14 | **Met** (39 tests green, 98.5 % coverage) |
 | P1 Base | U-NMEA, U-GPS, U-AIS-13, U-COO, U-TRF-12, F-LIFE, F-HUB, F-ENT, F-PERF, E-1 (E-01, E-03…E-06), E-2 (E-10, E-11, E-13) | All green; D-05 replay matches receiver display. Tests needing X-09 (U-GPS-08, U-AIS-13, real-data runs of F-HUB-01, F-ENT-01, F-PERF-02) tracked in issue #2 |
 | P2 Traffic | U-TRF, F-TRF, E-02, E-12, E-16, E-3 | All green; at least 3 real encounters in E-21 consistent with the chartplotter |
-| P3 Static data | Additions to U-AIS for types 5/24, F-TRF name checks | Defined when P3 starts |
+| P3 Static data | U-AIS-04, U-AIS-15…22; U-STA (static store, WP12); F-TRF static checks (entities, WP13); E-12 extended to names and ship types | All green; on board, names and ship types of 5 targets match the chartplotter (E-12); U-AIS-13 on the receiver capture (#2) decodes its type 5/24 lines without rejects |
 
 **Test report** per release: version, commit, CI run link, coverage figures, E-stage checklists with date/location/conditions, deviations and their tickets. Stored in the repository under `docs/test-reports/`.
 

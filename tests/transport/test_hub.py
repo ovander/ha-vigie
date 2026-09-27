@@ -80,6 +80,24 @@ async def stop(hub, task):
 
 # --- F-HUB-01 routing ------------------------------------------------------
 
+AIS_TYPE5 = (  # gpsd AIVDM document, two fragments
+    "!AIVDM,2,1,3,B,55P5TL01VIaAL@7WKO@mBplU@<PDhh000000001S;AJ::4A80?4i@E53,0*3E",
+    "!AIVDM,2,2,3,B,1@0000000000000,2*55",
+)
+
+
+async def test_f_hub_01_static_reports_not_delivered_as_positions():
+    """Until WP12 routes them, decoded static reports count as ignored (as type 5 did)."""
+    fake = FakeSerial()
+    hub, rec = make_hub(fake)
+    task = await start(hub)
+    fake.feed_lines(*AIS_TYPE5, AIS_TYPE1)
+    await settle()
+    assert [p.msg_type for p in rec.ais] == [1]
+    s = hub.stats
+    assert (s.lines, s.ais_ok, s.ignored, s.ais_rejected) == (3, 1, 2, 0)
+    await stop(hub, task)
+
 
 async def test_f_hub_01_mixed_stream_routed():
     fake, clock = FakeSerial(), FakeClock()

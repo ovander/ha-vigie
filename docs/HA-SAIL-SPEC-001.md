@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.9 (draft) |
+| Version | 0.10 (draft) |
 | Date | 2026-09-27 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.10 | 2026-09-27 | P3 decisions and WP11 (#32). New OD-17, resolved: ship type as code plus category key. New OD-18, resolved: static data kept 30 min after its last report, at most 2 000 MMSIs. New OD-19, resolved: built-in map card configuration (own boat, watched targets); a custom card is left for after v1. New OD-20, resolved: fields name, call sign, IMO, ship type, length, beam, draught, destination (no ETA, no EPFD). §7.3 extended to types 5 and 24 and the static fields of type 19; §9.4 static data; §13 P3 exit criterion. |
 | 0.9 | 2026-09-27 | WP9 (#27): §9.3 watched targets made precise (device per MMSI linked to the boat, attributes, availability, removal); §11.2 `watch_list` implemented. |
 | 0.8 | 2026-09-27 | WP8 (#25): §9.2 traffic entities made precise (units, suggested nmi, state classes, attributes); CPA/TCPA in the `targets` list; §11.2 P2 threat options implemented. |
 | 0.7 | 2026-09-27 | P2 decisions and WP7 (#23). OD-04 resolved: aggregate sensor + watch-list trackers + threat entities, no `geo_location`. New OD-15, resolved: `collision_risk` anti-flapping latch (§8.2). New OD-16, resolved: dead-reckon own boat and targets to now before CPA/TCPA (§8.1, §8.3). §8.1 made precise (local plane, ‖V‖ threshold 0.1 kn, diverging targets report TCPA < 0 and no CPA); §8.2 stationary exclusion applies to Class A only; §9.2 `collision_risk` unavailable without own position. |
@@ -220,7 +221,9 @@ Implemented and delivered as `ais_decoder.py` (X-02). Summary:
 - Maps "not available" sentinels (lon 181°, lat 91°, SOG 1023, COG 3600, heading 511) to `None`.
 - Output: `VesselPosition(mmsi, ais_class, msg_type, latitude, longitude, sog_knots, cog_deg, heading_deg, nav_status, name, own_ship, channel, received_at)`.
 - Test suite: 39 tests (38 decoder tests and the NFR-02 import check), including 500 fuzzed messages per type compared against pyais (MIT, test-only dependency).
-- The decoder is reused as is. The hub validates the checksum of `!` lines with C-02 before feeding the decoder, so `checksum_errors` and `ais_rejected` are counted separately (§9.5).
+- Static data (P3, WP11): type 5 (Class A static and voyage data; 424 bits, accepted from 420 bits because many transmitters send 420 or 422), type 24 part A (name, ≥ 160 bits) and part B (ship type, call sign, dimensions, ≥ 168 bits; an auxiliary craft, MMSI 98xxxxxxx, sends its mothership's MMSI instead of dimensions), and the static fields of type 19. Output: `VesselStatic(mmsi, ais_class, msg_type, part, name, callsign, imo, ship_type, to_bow, to_stern, to_port, to_starboard, draught_m, destination, mothership_mmsi, own_ship, channel, received_at)` with `length_m` and `beam_m`; a type 19 `VesselPosition` carries its `static` part. Not available: IMO 0, ship type 0, draught 0, empty text → `None`; a dimension of 0 is kept, and length or beam is `None` only when both of its parts are 0. Type 24 parts 2 and 3 are not defined and are ignored. ETA and EPFD are not decoded (OD-20).
+- Ship types are exposed as the ITU code and a category key (OD-17): `wing_in_ground` (20–29), `fishing` (30), `towing` (31, 32), `dredging` (33), `diving` (34), `military` (35), `sailing` (36), `pleasure_craft` (37), `high_speed` (40–49), `pilot` (50), `search_and_rescue` (51), `tug` (52), `port_tender` (53), `law_enforcement` (55), `medical` (58), `passenger` (60–69), `cargo` (70–79), `tanker` (80–89), `other` (every other code).
+- The P0 decoder is reused and extended. The hub validates the checksum of `!` lines with C-02 before feeding the decoder, so `checksum_errors` and `ais_rejected` are counted separately (§9.5).
 
 ### 7.4 Own-boat source arbitration
 
@@ -299,7 +302,9 @@ Speed: HA does not convert knots automatically under either the metric or the US
 
 ### 9.4 AIS target table
 
-Keyed by MMSI. An entry expires after a timeout (options `expiry_class_a`, default 10 min, and `expiry_class_b`, default 15 min, the latter also applied to Class A targets with nav status `at_anchor` or `moored`). Own-ship `VDO` reports and reports from the own MMSI (§7.4) never enter the table. Names are filled from type 19 now and types 5/24 in P3; a known name is kept when later reports carry none.
+Keyed by MMSI. An entry expires after a timeout (options `expiry_class_a`, default 10 min, and `expiry_class_b`, default 15 min, the latter also applied to Class A targets with nav status `at_anchor` or `moored`). Own-ship `VDO` reports and reports from the own MMSI (§7.4) never enter the table. Names are filled from type 19, and from types 5 and 24 from P3; a known name is kept when later reports carry none.
+
+Static data (§7.3) is kept per MMSI apart from the positions and merged into a target when it is read, so data that arrives before the first position report, or a target that expires and returns, keeps its name and type. Type 24 parts A and B are merged field by field. An MMSI's static data is dropped 30 min after its last static report, and at most 2 000 MMSIs are kept, the oldest dropped first (OD-18). Exposed fields: name, call sign, IMO, ship type (code and category), length, beam, draught and destination (OD-20).
 
 ### 9.5 Diagnostics (entity_category: diagnostic)
 
@@ -372,7 +377,7 @@ Changing an option reloads the entry.
 | P0 | AIS decoder (C-03) | **Done** — X-02, 39 tests green |
 | P1 | Raw capture (X-09); transport, GPS parsers, coordinator, own-boat entities, AIS target table, `sensor.ais_targets`, diagnostics | Capture replayed; own-boat entities match the receiver/chartplotter display |
 | P2 | Traffic logic: CPA/TCPA, closest target/threat, `binary_sensor.collision_risk`, watched-target trackers | Scenario tests green; on-water check against a chartplotter's AIS page |
-| P3 | AIS static data (types 5, 24): names, ship type, dimensions; Lovelace map card configuration | — |
+| P3 | AIS static data (types 5, 24): names, ship type, dimensions; Lovelace map card configuration (built-in map card: own boat and watched targets, OD-19) | U-AIS static tests, U-STA and the F-TRF static checks green; on board, names and ship types of 5 targets match the chartplotter (E-12); the receiver capture (#2) decodes its type 5/24 lines without rejects |
 | P4 | Optional additional sources if instruments are added (wind, depth, log) and the performance layer (true wind, VMG, polars), via a second port or TCP | Requires new hardware; re-opens §2.2 |
 
 ## 14. Open decisions
@@ -392,6 +397,10 @@ Changing an option reloads the entry.
 | OD-13 | Receiver type: receive-only or Class B transponder? | Determines whether `!AIVDO` exists; design handles both (§7.4) | P1 (from X-09, issue #2) |
 | ~~OD-15~~ | ~~`collision_risk` anti-flapping~~ | **Resolved v0.7:** latch — on at the first threat; off after 60 s without a threat, or at once when every threat of the episode has passed its CPA (§8.2) | — |
 | ~~OD-16~~ | ~~Positions used for CPA/TCPA~~ | **Resolved v0.7:** dead-reckon own boat and targets from their report times to now (§8.1, §8.3) | — |
+| ~~OD-17~~ | ~~Ship type exposure~~ | **Resolved v0.10:** ITU code plus a category key, translated in the UI (§7.3) | — |
+| ~~OD-18~~ | ~~Lifetime of static data~~ | **Resolved v0.10:** kept per MMSI 30 min after its last static report, at most 2 000 MMSIs, apart from the target table (§9.4) | — |
+| ~~OD-19~~ | ~~Map card~~ | **Resolved v0.10:** document a built-in map card configuration (own boat, watched targets); the full picture stays in the `targets` attribute; a custom card (separate HACS plugin) is left for after v1 (§13) | — |
+| ~~OD-20~~ | ~~Static fields exposed~~ | **Resolved v0.10:** name, call sign, IMO, ship type, length, beam, draught, destination; no ETA (no year, often stale), no EPFD (§7.3, §9.4) | — |
 | OD-14 | Serial baud rate | 38 400 (typical AIS) vs 4 800; confirmed by X-09 and by the current smart0183serial setting. Baud rate is configurable, the probe suggests the other rate (§11.1) | P1 (from X-09, issue #2) |
 
 (OD-05 and OD-09 from v0.1 were tied to NMEA 2000 and polars; both moved to P4 and are no longer open for v1.)

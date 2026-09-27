@@ -50,16 +50,6 @@ def test_bad_checksum_rejected():
     assert d.stats["rejected"] == 1
 
 
-def test_non_position_ignored():
-    d = AisDecoder()
-    t5 = [
-        "!AIVDM,2,1,3,B,55P5TL01VIaAL@7WKO@mBplU@<PDhh000000001S;AJ::4A80?4i@E53,0*3E",
-        "!AIVDM,2,2,3,B,1@0000000000000,2*55",
-    ]
-    assert [d.feed(s) for s in t5] == [None, None]
-    assert d.stats["rejected"] == 0
-
-
 def test_tag_block_and_other_sentences():
     d = AisDecoder()
     assert d.feed("\\s:rcv1,c:1700000000*00\\" + SPEC_TYPE1) is not None

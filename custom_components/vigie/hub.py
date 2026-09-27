@@ -273,14 +273,14 @@ class Hub:
             return
 
         rejected_before = self._decoder.stats["rejected"]
-        position = self._decoder.feed(sentence)
+        decoded = self._decoder.feed(sentence)
         if self._decoder.stats["rejected"] != rejected_before:
             stats.ais_rejected += 1
-        elif position is None:
-            stats.ignored += 1
-        else:
+        elif isinstance(decoded, VesselPosition):
             stats.ais_ok += 1
-            self._on_ais(position)
+            self._on_ais(decoded)
+        else:  # nothing, or static data (not routed yet: P3 WP12)
+            stats.ignored += 1
 
 
 class ProbeResult(StrEnum):
