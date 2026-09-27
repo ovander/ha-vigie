@@ -1,12 +1,21 @@
-"""SPEC NFR-02: the protocol layer must not import Home Assistant."""
+"""SPEC NFR-02: the pure modules must not import Home Assistant."""
 
 import subprocess
 import sys
 
+import pytest
 
-def test_nmea_package_does_not_import_homeassistant():
+PURE_MODULES = [
+    "custom_components.vigie.nmea.ais_decoder",
+    "custom_components.vigie.nmea.sentence",
+    "custom_components.vigie.nmea.parsers",
+]
+
+
+@pytest.mark.parametrize("module", PURE_MODULES)
+def test_pure_module_does_not_import_homeassistant(module):
     code = (
-        "import sys, custom_components.vigie.nmea.ais_decoder\n"
+        f"import sys, {module}\n"
         "bad = [m for m in sys.modules if m.split('.')[0] == 'homeassistant']\n"
         "assert not bad, bad\n"
     )

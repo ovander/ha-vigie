@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.3 (draft) |
+| Version | 0.4 (draft) |
 | Date | 2026-09-27 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.4 | 2026-09-27 | WP1 (#5): U-NMEA-01…06 and U-GPS-01…07 implemented (`tests/nmea/test_sentence.py`, `tests/nmea/test_parsers.py`); U-GPS-08 pending on #2; NFR-02 check covers `sentence.py` and `parsers.py`. Suite: 134 tests, 98.7 % coverage of `nmea/`. |
 | 0.3 | 2026-09-27 | P1 decisions (issue #3), aligned with SPEC v0.5. TP-01 and TP-02 resolved (E-1 on HA Container on Linux, own-PTY replay tool, null-modem pair for E-01 on HA OS). Status column added to the P1 tables. U-NMEA-06 framing moved to a pure function; U-COO-05 dead-band compares to the last written value; F-HUB-01/02/04/05 run at hub level with the fake transport; F-HUB-03, F-ENT-04 availability rules clarified; F-ENT-02 corrected (HA does not auto-convert knots); synthetic stand-ins for D-05/D-06 until X-09 (issue #2); F-PERF marked `perf` and run nightly; coverage gate extended to all pure modules. |
 | 0.2 | 2026-09-27 | TP-05 resolved (injectable clock); U-AIS-10…12 implemented; malformed-sentence cases from D-04 added to the AIS suite; NFR-02 import check implemented. Suite: 39 tests, 98.5 % coverage of `nmea/`. |
 | 0.1 | 2026-09-27 | Initial protocol: three test levels, test data corpus, CPA/TCPA reference scenarios (hand-computed), traceability to SPEC-001 NFRs, CI gates and phase exit criteria. |
@@ -67,24 +68,24 @@ Pure pytest, **no Home Assistant import** (enforced: a CI step fails if importin
 
 | ID | Case | Expected | Status |
 |---|---|---|---|
-| U-NMEA-01 | Valid checksum, upper- and lower-case hex | Accepted | To do |
-| U-NMEA-02 | Wrong checksum / missing `*` / one hex digit | Rejected, counted | To do |
-| U-NMEA-03 | Talker variants `GP`, `GN`, `AI`, `II` on RMC | Same parser, talker kept as metadata | To do |
-| U-NMEA-04 | Empty fields | `None`, never `0` | To do |
-| U-NMEA-05 | Proprietary `$P…` and unsupported sentence IDs | Ignored, counted, no exception | To do |
-| U-NMEA-06 | Line > 82 chars (outside tag block), non-ASCII bytes | Rejected at framing by `check_frame()` in `nmea/sentence.py` (pure, called by the hub; SPEC §7.1) | To do |
+| U-NMEA-01 | Valid checksum, upper- and lower-case hex | Accepted | Done |
+| U-NMEA-02 | Wrong checksum / missing `*` / one hex digit | Rejected, counted | Done |
+| U-NMEA-03 | Talker variants `GP`, `GN`, `AI`, `II` on RMC | Same parser, talker kept as metadata | Done |
+| U-NMEA-04 | Empty fields | `None`, never `0` | Done |
+| U-NMEA-05 | Proprietary `$P…` and unsupported sentence IDs | Ignored, counted, no exception | Done |
+| U-NMEA-06 | Line > 82 chars (outside tag block), non-ASCII bytes | Rejected at framing by `check_frame()` in `nmea/sentence.py` (pure, called by the hub; SPEC §7.1) | Done |
 
 ### 3.2 GPS parsers — `U-GPS` (SPEC §7.2)
 
 | ID | Case | Expected | Status |
 |---|---|---|---|
-| U-GPS-01 | RMC valid (`A`) | Position in decimal degrees (N/E positive), SOG kn, COG °, UTC datetime, variation signed (E positive) | To do |
-| U-GPS-02 | RMC void (`V`) | Position/SOG/COG not produced | To do |
-| U-GPS-03 | Hemisphere conversion: S and W, and 0°/180° boundaries | Correct signs, no wrap errors | To do |
-| U-GPS-04 | GGA fix quality 0/1/2/6, satellites, HDOP | Typed values; quality 0 → no position | To do |
-| U-GPS-05 | VTG with and without magnetic course, with `N`/`K` units | SOG in kn from the `N` field | To do |
-| U-GPS-06 | GSA 2D/3D, PDOP | Fix mode enum | To do |
-| U-GPS-07 | HDT present / empty | Heading or `None` | To do |
+| U-GPS-01 | RMC valid (`A`) | Position in decimal degrees (N/E positive), SOG kn, COG °, UTC datetime, variation signed (E positive) | Done |
+| U-GPS-02 | RMC void (`V`) | Position/SOG/COG not produced | Done |
+| U-GPS-03 | Hemisphere conversion: S and W, and 0°/180° boundaries | Correct signs, no wrap errors | Done |
+| U-GPS-04 | GGA fix quality 0/1/2/6, satellites, HDOP | Typed values; quality 0 → no position | Done |
+| U-GPS-05 | VTG with and without magnetic course, with `N`/`K` units | SOG in kn from the `N` field | Done |
+| U-GPS-06 | GSA 2D/3D, PDOP | Fix mode enum | Done |
+| U-GPS-07 | HDT present / empty | Heading or `None` | Done |
 | U-GPS-08 | Every D-05/D-06 `$` line | No exception; rejection rate reported | Pending (#2) |
 
 ### 3.3 AIS decoder — `U-AIS` (SPEC §7.3, C-03)
