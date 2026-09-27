@@ -50,3 +50,10 @@ async def test_readme_map_card_entities_exist_and_show_the_boats(
         assert "latitude" in state.attributes and "longitude" in state.attributes, entity_id
     names = {hass.states.get(e).attributes.get("name") for e in entities[1:]}
     assert names == {"CARGO ONE", "ALBATROS"}  # static data arrived at 30 s
+
+    # Watched targets are labelled with an attribute they carry (the ship name): the
+    # default label, initials of "AIS <mmsi>", is the same for every target (P3 pre-run)
+    for item in card["entities"]:
+        if item["entity"].startswith("device_tracker.ais_"):
+            assert item.get("label_mode") == "attribute", item
+            assert hass.states.get(item["entity"]).attributes.get(item["attribute"]), item

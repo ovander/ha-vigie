@@ -119,8 +119,16 @@ auto_fit: true
 entities:
   - entity: device_tracker.garnet
   - entity: device_tracker.ais_235000011
+    label_mode: attribute
+    attribute: name
   - entity: device_tracker.ais_235000012
+    label_mode: attribute
+    attribute: name
 ```
+
+`label_mode: attribute` labels each target with its ship name. Without it, every watched
+target shows the same initials ("A2", from "AIS 2…"). A target shows no label until its
+name has been received.
 
 The built-in card can only draw entities, so it does not show every AIS target: the full
 picture (up to the 50 nearest targets, with position, CPA and TCPA) is in the `targets`
