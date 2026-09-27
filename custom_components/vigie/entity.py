@@ -10,6 +10,7 @@ here only applies the dead-band.
 
 from __future__ import annotations
 
+import math
 from collections.abc import Callable
 from typing import Any
 
@@ -24,6 +25,15 @@ from .state import WriteGate
 
 def _abs_delta(a: float, b: float) -> float:
     return abs(a - b)
+
+
+def with_identity(delta: Callable[[Any, Any], float]) -> Callable[[Any, Any], float]:
+    """Compare (identity, value) pairs: another identity is always a significant change."""
+
+    def compare(a: tuple[Any, Any], b: tuple[Any, Any]) -> float:
+        return math.inf if a[0] != b[0] else delta(a[1], b[1])
+
+    return compare
 
 
 class VigieEntity(Entity):

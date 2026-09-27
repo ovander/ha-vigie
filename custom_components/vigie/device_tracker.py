@@ -13,7 +13,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .const import DOMAIN
 from .coordinator import VigieConfigEntry, VigieCoordinator
-from .entity import VigieEntity
+from .entity import VigieEntity, with_identity
 from .state import COG, HEADING, POSITION, SOG, position_delta_m
 
 POSITION_DEADBAND_M = 5.0  # SPEC §10.2
@@ -105,10 +105,14 @@ class WatchedTargetTracker(VigieEntity, TrackerEntity):
 
     def __init__(self, coordinator: VigieCoordinator, mmsi: int) -> None:
         super().__init__(
-            coordinator, f"ais_{mmsi}", deadband=POSITION_DEADBAND_M, delta=position_delta_m
+            coordinator,
+            f"ais_{mmsi}",
+            deadband=POSITION_DEADBAND_M,
+            delta=with_identity(position_delta_m),
         )
         self.mmsi = mmsi
-        self._attr_translation_key = None
+        # Translates the ship type attribute; the entity keeps the device's name
+        self._attr_translation_key = "watched_target"
         entry_id = coordinator.entry.entry_id
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, f"{entry_id}_{mmsi}")},
@@ -124,6 +128,11 @@ class WatchedTargetTracker(VigieEntity, TrackerEntity):
             return None
         lat, lon = target.report.latitude, target.report.longitude
         return None if lat is None or lon is None else (lat, lon)
+
+    def gate_value(self) -> Any:
+        # Written on a 5 m move, or when the target's static data changes (SPEC §9.4)
+        position = self.current_value()
+        return None if position is None else (self.coordinator.statics.get(self.mmsi), position)
 
     @property
     def available(self) -> bool:
@@ -160,6 +169,7 @@ class WatchedTargetTracker(VigieEntity, TrackerEntity):
                 "bearing": None if e is None else round(e.bearing_deg),
                 "cpa_nm": None if e is None or e.cpa_nm is None else round(e.cpa_nm, 2),
                 "tcpa_min": None if e is None or e.tcpa_min is None else round(e.tcpa_min, 1),
+                **self.coordinator.static_attributes(self.mmsi),
             }
         )
         return attrs

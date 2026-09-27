@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.11 (draft) |
+| Version | 0.12 (draft) |
 | Date | 2026-09-27 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.12 | 2026-09-27 | WP13 (#36): static data on the entities (§9.2, §9.3, §9.4): ship type (translated category and code), call sign, IMO, length, beam, draught, destination on the closest target/threat sensors, `collision_risk` and the watch-list trackers; ship type and length in the `targets` list; static data that changes is written at once. |
 | 0.11 | 2026-09-27 | WP12 (#34): §9.4 static store implemented; the hub delivers static reports separately (§6) and counts them (`ais_static`, §9.5); names from static data are preferred wherever a target's name is shown. |
 | 0.10 | 2026-09-27 | P3 decisions and WP11 (#32). New OD-17, resolved: ship type as code plus category key. New OD-18, resolved: static data kept 30 min after its last report, at most 2 000 MMSIs. New OD-19, resolved: built-in map card configuration (own boat, watched targets); a custom card is left for after v1. New OD-20, resolved: fields name, call sign, IMO, ship type, length, beam, draught, destination (no ETA, no EPFD). §7.3 extended to types 5 and 24 and the static fields of type 19; §9.4 static data; §13 P3 exit criterion. |
 | 0.9 | 2026-09-27 | WP9 (#27): §9.3 watched targets made precise (device per MMSI linked to the boat, attributes, availability, removal); §11.2 `watch_list` implemented. |
@@ -288,17 +289,17 @@ Speed: HA does not convert knots automatically under either the metric or the US
 
 | Entity | Content |
 |---|---|
-| `sensor.ais_targets` | Count of live targets. Attribute `targets`: compact list (MMSI, name, class, lat, lon, SOG, COG, distance, CPA, TCPA, age), capped at the 50 nearest (OD-04). Each entry carries `cpa_nm` and `tcpa_min` from the traffic logic (§8.1; `None` when undefined or diverging); distance comes from `geo.py`. The attribute is excluded from the recorder (`_unrecorded_attributes`). The count stays available when own position is unavailable: from the next rebuild of the list (≤ 5 s) distances are `None` and the list is ordered by report age. |
-| `sensor.closest_target_distance` | Distance to the nearest target, dead-reckoned to now (device_class distance, native and suggested unit nmi — HA's metric system would otherwise show km —, state_class measurement, dead-band 0.01 NM). Attributes: MMSI, name, bearing. Unavailable without own position or without targets. |
-| `sensor.closest_threat_cpa` / `_tcpa` | CPA (nmi, suggested nmi, dead-band 0.01 NM) and TCPA (min, device_class duration, dead-band 0.1 min) of the most urgent threat (§8.2); no state_class, since the underlying target changes. Attributes: MMSI, name, distance, bearing, CPA, TCPA. Unavailable when there is no threat or no own position. A change of target is always written. |
-| `binary_sensor.collision_risk` | On while at least one threat exists, with the anti-flapping latch of §8.2 (device_class safety). **Unavailable** when own position is unavailable: "off" would wrongly reassure. Attributes: `threat_count`, and MMSI and name of the most urgent threat. Designed to drive automations (notification, buzzer, lights); trigger on `to: "on"`. |
+| `sensor.ais_targets` | Count of live targets. Attribute `targets`: compact list (MMSI, name, class, lat, lon, SOG, COG, distance, CPA, TCPA, age, and from P3 ship type category and length), capped at the 50 nearest (OD-04). Each entry carries `cpa_nm` and `tcpa_min` from the traffic logic (§8.1; `None` when undefined or diverging); distance comes from `geo.py`. The attribute is excluded from the recorder (`_unrecorded_attributes`). The count stays available when own position is unavailable: from the next rebuild of the list (≤ 5 s) distances are `None` and the list is ordered by report age. |
+| `sensor.closest_target_distance` | Distance to the nearest target, dead-reckoned to now (device_class distance, native and suggested unit nmi — HA's metric system would otherwise show km —, state_class measurement, dead-band 0.01 NM). Attributes: MMSI, name, bearing, and the target's static data (§9.4). Unavailable without own position or without targets. |
+| `sensor.closest_threat_cpa` / `_tcpa` | CPA (nmi, suggested nmi, dead-band 0.01 NM) and TCPA (min, device_class duration, dead-band 0.1 min) of the most urgent threat (§8.2); no state_class, since the underlying target changes. Attributes: MMSI, name, distance, bearing, CPA, TCPA, and the target's static data (§9.4). Unavailable when there is no threat or no own position. A change of target, or of its static data, is always written. |
+| `binary_sensor.collision_risk` | On while at least one threat exists, with the anti-flapping latch of §8.2 (device_class safety). **Unavailable** when own position is unavailable: "off" would wrongly reassure. Attributes: `threat_count`, and MMSI, name and static data (§9.4) of the most urgent threat. Designed to drive automations (notification, buzzer, lights); trigger on `to: "on"`. |
 
 ### 9.3 Watched targets
 
 `device_tracker.ais_<mmsi>` exists only for MMSIs in the user's watch list (options flow), for example friends' boats or a tender. Never auto-created for every target.
 
 - Each watched MMSI gets its own device, named "AIS <mmsi>" and linked to the boat's device (`via_device`); unique ID `{entry_id}_ais_<mmsi>`.
-- State: the target's last reported position (GPS source type, 5 m dead-band). Attributes: MMSI, name, class, SOG, COG, heading, nav status, report age, and — when own position is known — distance, bearing, CPA and TCPA (§8.1).
+- State: the target's last reported position (GPS source type, 5 m dead-band). Attributes: MMSI, name, class, SOG, COG, heading, nav status, report age, static data (§9.4), and — when own position is known — distance, bearing, CPA and TCPA (§8.1). Written on a 5 m move or when its static data changes.
 - Unavailable while the target is not in the table: not heard yet, or expired (§9.4). A stale position is never shown (NFR-05). Its availability does not depend on own position.
 - Removing an MMSI from the list removes its entity and its device when the entry reloads.
 
@@ -306,7 +307,7 @@ Speed: HA does not convert knots automatically under either the metric or the US
 
 Keyed by MMSI. An entry expires after a timeout (options `expiry_class_a`, default 10 min, and `expiry_class_b`, default 15 min, the latter also applied to Class A targets with nav status `at_anchor` or `moored`). Own-ship `VDO` reports and reports from the own MMSI (§7.4) never enter the table. Names are filled from type 19, and from types 5 and 24 from P3; a known name is kept when later reports carry none.
 
-Static data (§7.3) is kept per MMSI apart from the positions and merged into a target when it is read, so data that arrives before the first position report, or a target that expires and returns, keeps its name and type. Type 24 parts A and B are merged field by field. An MMSI's static data is dropped 30 min after its last static report, and at most 2 000 MMSIs are kept, the oldest dropped first (OD-18). Exposed fields: name, call sign, IMO, ship type (code and category), length, beam, draught and destination (OD-20). Wherever a target's name is shown, the static store's name comes first, then the last name a position report (type 19) carried.
+Static data (§7.3) is kept per MMSI apart from the positions and merged into a target when it is read, so data that arrives before the first position report, or a target that expires and returns, keeps its name and type. Type 24 parts A and B are merged field by field. An MMSI's static data is dropped 30 min after its last static report, and at most 2 000 MMSIs are kept, the oldest dropped first (OD-18). Exposed fields: name, call sign, IMO, ship type (code and category), length, beam, draught and destination (OD-20). Wherever a target's name is shown, the static store's name comes first, then the last name a position report (type 19) carried. On the entities, static data is the attributes `ship_type` (category key of §7.3, translated in the UI), `ship_type_code`, `callsign`, `imo`, `length_m`, `beam_m`, `draught_m` and `destination`, `None` when unknown; the compact `targets` list carries only `ship_type` and `length_m`. Static data is part of what those entities compare before writing, so a name or type that arrives after the position is shown at the next tick.
 
 ### 9.5 Diagnostics (entity_category: diagnostic)
 

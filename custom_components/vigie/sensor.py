@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import math
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
@@ -18,7 +17,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .coordinator import VigieConfigEntry, VigieCoordinator
-from .entity import VigieEntity
+from .entity import VigieEntity, with_identity
 from .nmea.parsers import FixQuality
 from .state import (
     COG,
@@ -30,6 +29,7 @@ from .state import (
     SOG,
     AisTarget,
     Source,
+    StaticInfo,
     angle_delta,
 )
 from .traffic import Encounter
@@ -71,10 +71,11 @@ def _closest_threat(c: VigieCoordinator) -> tuple[int, Encounter] | None:
 
 def _mmsi(
     pick: Callable[[VigieCoordinator], tuple[int, Encounter] | None],
-) -> Callable[[VigieCoordinator], int | None]:
-    def identity(c: VigieCoordinator) -> int | None:
+) -> Callable[[VigieCoordinator], tuple[int, StaticInfo | None] | None]:
+    def identity(c: VigieCoordinator) -> tuple[int, StaticInfo | None] | None:
+        # Another target, or new static data about it, is always written (SPEC §9.4)
         item = pick(c)
-        return None if item is None else item[0]
+        return None if item is None else (item[0], c.statics.get(item[0]))
 
     return identity
 
@@ -84,7 +85,12 @@ def _target_attrs(c: VigieCoordinator) -> dict[str, Any]:
     if item is None:
         return {}
     mmsi, e = item
-    return {"mmsi": mmsi, "name": c.target_name(mmsi), "bearing": _round(e.bearing_deg, 0)}
+    return {
+        "mmsi": mmsi,
+        "name": c.target_name(mmsi),
+        "bearing": _round(e.bearing_deg, 0),
+        **c.static_attributes(mmsi),
+    }
 
 
 def _threat_attrs(c: VigieCoordinator) -> dict[str, Any]:
@@ -99,6 +105,7 @@ def _threat_attrs(c: VigieCoordinator) -> dict[str, Any]:
         "bearing": _round(e.bearing_deg, 0),
         "cpa_nm": _round(e.cpa_nm, 2),
         "tcpa_min": _round(e.tcpa_min, 1),
+        **c.static_attributes(mmsi),
     }
 
 
@@ -275,7 +282,7 @@ class VigieSensor(VigieEntity, SensorEntity):
     def __init__(self, coordinator: VigieCoordinator, description: VigieSensorDescription) -> None:
         delta: Callable[[Any, Any], float] = angle_delta if description.circular else _abs_delta
         if description.identity_fn is not None:
-            delta = _with_identity(delta)
+            delta = with_identity(delta)
         super().__init__(coordinator, description.key, deadband=description.deadband, delta=delta)
         self.entity_description = description
         self._always_available = description.always_available
@@ -340,9 +347,9 @@ class AisTargetsSensor(VigieEntity, SensorEntity):
         position = self.coordinator.own.get(POSITION)
         lat, lon = position.value if position else (None, None)
         encounters = self.coordinator.picture.encounters
-        name = self.coordinator.target_name
+        name, static = self.coordinator.target_name, self.coordinator.statics.get
         targets = [
-            _target_row(t, name(t.mmsi), distance, encounters.get(t.mmsi), now)
+            _target_row(t, name(t.mmsi), static(t.mmsi), distance, encounters.get(t.mmsi), now)
             for t, distance in self.coordinator.targets.nearest(lat, lon, TARGETS_LIMIT)
         ]
         if targets:  # the first list with data starts the 5 s rhythm
@@ -353,12 +360,19 @@ class AisTargetsSensor(VigieEntity, SensorEntity):
 
 
 def _target_row(
-    t: AisTarget, name: str | None, distance: float | None, encounter: Encounter | None, now: float
+    t: AisTarget,
+    name: str | None,
+    static: StaticInfo | None,
+    distance: float | None,
+    encounter: Encounter | None,
+    now: float,
 ) -> dict[str, Any]:
-    """One entry of the `targets` attribute (SPEC §9.2)."""
+    """One entry of the `targets` attribute (SPEC §9.2); static data kept to type and length."""
     return {
         "mmsi": t.mmsi,
         "name": name,
+        "ship_type": None if static is None else static.ship_category,
+        "length_m": None if static is None else static.length_m,
         "class": t.ais_class,
         "lat": _round(t.report.latitude, 5),
         "lon": _round(t.report.longitude, 5),
@@ -377,12 +391,3 @@ def _round(value: float | None, digits: int) -> float | None:
 
 def _abs_delta(a: float, b: float) -> float:
     return abs(a - b)
-
-
-def _with_identity(delta: Callable[[Any, Any], float]) -> Callable[[Any, Any], float]:
-    """Compare (identity, value) pairs: another target is always a significant change."""
-
-    def compare(a: tuple[Any, Any], b: tuple[Any, Any]) -> float:
-        return math.inf if a[0] != b[0] else delta(a[1], b[1])
-
-    return compare

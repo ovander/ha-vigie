@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.16 (draft) |
+| Version | 0.17 (draft) |
 | Date | 2026-09-27 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.17 | 2026-09-27 | WP13 (#36): F-TRF-09 (static data on every entity that describes a target, `None` when unknown; `targets` list), F-TRF-10 (static data after the position, and a later change, written without any other change), F-TRF-11 (19 ship-type categories translated in the three files, French strings loaded by HA). |
 | 0.16 | 2026-09-27 | WP12 (#34): new §3.6 `U-STA` (static store: type 5, type 24 parts merged, merge without erasing, type 19 and auxiliary craft, independence from the target table, 30 min expiry, 2 000-MMSI cap, own ship refused); F-HUB-01 extended to static routing and the `ais_static` counter; new F-TRF-08 (names from types 5/24 in every entity, static data before or after the first position; diagnostics). |
 | 0.15 | 2026-09-27 | P3 tests defined (§9) and WP11 (#32): U-AIS-04 rewritten (types without a decoder are ignored; type 5 is now decoded); U-AIS-15…22 for types 5 and 24 and the static fields of type 19 (reference sentence, short type 5, parts A/B, auxiliary craft, sentinels, fuzz vs oracle, ship-type categories, VDO); F-HUB-01 checks that static data is not delivered as a position until WP12; D-01 and D-03 extended. |
 | 0.14 | 2026-09-27 | WP10 (#29): D-07 presets for every §3.4 geometry (`clear-crossing`, `overtaking`, `not-urgent`, `diverging`, `parallel`, `anchored`, `multi-target`) and `--list`, each checked against its U-TRF hand values; E-02 made concrete (presets, tolerance, notification through the README automation, which is itself tested as published); P2 report template `docs/test-reports/P2-report.md`. |
@@ -242,6 +243,9 @@ Driven by D-07 scenarios replayed in accelerated time.
 | F-TRF-06 | Automation triggered on `collision_risk`; CPA hovering around the threshold during the episode | Automation runs once per risk episode (no flapping, latch of SPEC §8.2 / U-TRF-14) | §9.2 | Done |
 | F-TRF-07 | Anchored target exclusion toggled | Threat state follows the option | §8.2 | Done |
 | F-TRF-08 | Type 5 before and after the first position; type 24 part A | The name shows in `collision_risk`, the `targets` list and the watch-list tracker; diagnostics count static reports and stored MMSIs | §9.4, OD-18 | Done |
+| F-TRF-09 | Type 5 cargo ship as the closest target and threat, on the watch list; same without static data | Ship type (`cargo`, code 70), call sign, IMO, length, beam, draught, destination on `collision_risk`, the closest target/threat sensors and the tracker, `None` when unknown; `targets` row has ship type and length only | §9.2–9.4, OD-17, OD-20 | Done |
+| F-TRF-10 | Stationary threat: static data arrives after the position, then its destination changes | `collision_risk` and the tracker are written although their state and position do not change | §9.4 | Done |
+| F-TRF-11 | Ship-type translations | Every category in `strings.json`, `en.json`, `fr.json` for every entity with the attribute; French strings loaded by HA | CLAUDE.md, OD-17 | Done |
 
 ### 4.5 Load and recorder — `F-PERF`
 

@@ -11,7 +11,7 @@ from __future__ import annotations
 import math
 import time
 from collections.abc import Callable
-from dataclasses import dataclass, fields, replace
+from dataclasses import dataclass, field, fields, replace
 from enum import StrEnum
 from typing import Any
 
@@ -264,7 +264,8 @@ class StaticInfo:
     draught_m: float | None = None
     destination: str | None = None
     mothership_mmsi: int | None = None
-    updated_at: float = 0.0  # clock time of the latest static report
+    # Clock time of the latest static report; not part of equality, so entities compare content
+    updated_at: float = field(default=0.0, compare=False)
 
     @property
     def ship_category(self) -> str | None:
