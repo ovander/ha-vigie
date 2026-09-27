@@ -15,6 +15,10 @@ versioning: SemVer.
   OD-13 and OD-14 stay open pending the receiver capture (#2).
 
 ### Added
+- AIS static data decoding (#32): types 5 and 24 (parts A and B, auxiliary craft) and the
+  static fields of type 19 — name, call sign, IMO, ship type with a category key,
+  dimensions, draught, destination. Not shown in entities yet (P3 WP12/WP13). Records SPEC
+  decisions OD-17…OD-20. U-AIS-15…22.
 - P2 bench material (#29): README collision-alert automation (checked by a test that loads the
   README's YAML into Home Assistant), recorder and safety notes; scenario presets for every
   TEST §3.4 geometry with `--list`; P2 report template with the E-02, E-12, E-16 and E-3
