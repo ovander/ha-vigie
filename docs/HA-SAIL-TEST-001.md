@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.10 (draft) |
+| Version | 0.11 (draft) |
 | Date | 2026-09-27 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.11 | 2026-09-27 | WP7 (#23): U-TRF-01…11 and U-TRF-13 implemented (`tests/domain/test_traffic.py`) with the hand-computed values of §3.4; new U-TRF-14 (risk latch, SPEC OD-15) and U-TRF-15 (dead reckoning, SPEC OD-16); U-TRF-05 time advance made concrete; F-TRF-06 tied to the latch; Status column added to the scenario table. |
 | 0.10 | 2026-09-27 | WP6 (#17): `tests/tools/scenario.py` (D-07, presets for U-TRF-01 and U-TRF-03), `tests/tools/replay.py` (own PTY or existing device, speed factor, loop), `tests/tools/capture.py` (X-09) with tests, including an end-to-end PTY → `serial_transport` → hub check of the E-1 path; nightly workflow running F-PERF; §6 and §7 updated. |
 | 0.9 | 2026-09-27 | WP5 (#15): F-ENT-01…07, F-LIFE-08 and the entity halves of F-HUB-03 and F-LIFE-06 implemented (`tests/integration/test_entities.py`, `test_diagnostics.py`); F-PERF-01…03 implemented (`tests/integration/test_perf.py`, marker `perf`, excluded from the PR gate); D-08 committed as `tests/fixtures/burst_60s.nmea`; translation-consistency check (`tests/test_translations.py`). F-ENT-04 clarified: distances in `sensor.ais_targets` become `None` at the next list rebuild (≤ 5 s). Suite: 258 tests + 3 perf. |
 | 0.8 | 2026-09-27 | WP4 (#13): F-LIFE-01…05 and F-LIFE-07 implemented in the HA harness (`tests/integration/test_config_flow.py`, `tests/integration/test_init.py`, fake transport patched in `conftest.py`); F-LIFE-06 options half done, entity unique-ID half in WP5. `pytest-homeassistant-custom-component==0.13.316` added; functional tests run in the `unit` CI job (`asyncio_mode = auto`). Suite: 226 tests. |
@@ -121,26 +122,28 @@ Note for U-AIS-10: `AisDecoder` takes an optional `clock` parameter (default `ti
 
 Reference scenarios, computed by hand in a local east/north frame (NM, kn), own boat at origin heading 000° at 6 kn unless stated. Thresholds: CPA 0.5 NM, TCPA 15 min (SPEC §8.2 defaults).
 
-| ID | Scenario | Target relative position | Target motion | Expected CPA | Expected TCPA | Threat? |
-|---|---|---|---|---|---|---|
-| U-TRF-01 | Head-on | 2 NM north | 180° at 6 kn | 0.00 NM | 10.0 min | **Yes** |
-| U-TRF-02 | Crossing, passes clear | 1 NM east | 270° at 6 kn | 0.71 NM | 5.0 min | No (CPA) |
-| U-TRF-03 | Crossing, close | 1 NM east | 270° at 12 kn | 0.45 NM | 4.0 min | **Yes** |
-| U-TRF-04 | Overtaking a slower boat | 1 NM north | 000° at 4 kn | 0.00 NM | 30.0 min | No (TCPA) |
-| U-TRF-05 | Close but not yet urgent | 2 NM NE (2 E, 2 N) | relative velocity (−6, −5) kn | 0.26 NM | 21.6 min | No (TCPA) — becomes Yes as time advances |
-| U-TRF-06 | Diverging | 1 NM south | 000° at 3 kn | — | negative | No |
-| U-TRF-07 | Parallel, same speed | 0.3 NM east | 000° at 6 kn | 0.30 NM (current distance) | undefined | No |
-| U-TRF-08 | Anchored target on own track | 0.4 NM north | nav status `at_anchor`, SOG 0 | 0.00 NM | 4.0 min | No by default (exclusion option); Yes with option off |
+| ID | Scenario | Target relative position | Target motion | Expected CPA | Expected TCPA | Threat? | Status |
+|---|---|---|---|---|---|---|---|
+| U-TRF-01 | Head-on | 2 NM north | 180° at 6 kn | 0.00 NM | 10.0 min | **Yes** | Done |
+| U-TRF-02 | Crossing, passes clear | 1 NM east | 270° at 6 kn | 0.71 NM | 5.0 min | No (CPA) | Done |
+| U-TRF-03 | Crossing, close | 1 NM east | 270° at 12 kn | 0.45 NM | 4.0 min | **Yes** | Done |
+| U-TRF-04 | Overtaking a slower boat | 1 NM north | 000° at 4 kn | 0.00 NM | 30.0 min | No (TCPA) | Done |
+| U-TRF-05 | Close but not yet urgent | 2 NM NE (2 E, 2 N) | relative velocity (−6, −5) kn | 0.26 NM | 21.6 min | No (TCPA) — becomes Yes as time advances (7 min later, both dead-reckoned: CPA 0.26 NM, TCPA 14.6 min) | Done |
+| U-TRF-06 | Diverging | 1 NM south | 000° at 3 kn | — | negative | No | Done |
+| U-TRF-07 | Parallel, same speed | 0.3 NM east | 000° at 6 kn | 0.30 NM (current distance) | undefined | No | Done |
+| U-TRF-08 | Anchored target on own track | 0.4 NM north | nav status `at_anchor`, SOG 0 | 0.00 NM | 4.0 min | No by default (exclusion option); Yes with option off | Done |
 
 Additional cases:
 
 | ID | Case | Expected | Status |
 |---|---|---|---|
-| U-TRF-09 | Geodesy: flat-earth vs haversine at 43.5° N for 1, 5, 20 NM | Error < 0.5 % up to 20 NM (SPEC §8.1) | To do |
-| U-TRF-10 | Target or own SOG/COG unavailable | CPA/TCPA `None`, target excluded from threats, no exception | To do |
-| U-TRF-11 | Closest-threat selection among several threats | Smallest TCPA wins; tie → smallest CPA | To do |
+| U-TRF-09 | Geodesy: flat-earth vs haversine at 43.5° N for 1, 5, 20 NM | Error < 0.5 % up to 20 NM (SPEC §8.1) | Done |
+| U-TRF-10 | Target or own SOG/COG unavailable | CPA/TCPA `None`, target excluded from threats, no exception | Done |
+| U-TRF-11 | Closest-threat selection among several threats | Smallest TCPA wins; tie → smallest CPA | Done |
 | U-TRF-12 | Stale target (report age > expiry) | Removed from the table (SPEC §9.4) | Done |
-| U-TRF-13 | Crossing the antimeridian and the equator | No sign or wrap errors | To do |
+| U-TRF-13 | Crossing the antimeridian and the equator | No sign or wrap errors | Done |
+| U-TRF-14 | Risk latch (SPEC OD-15): threat, then no threat without the CPA having passed; all threats passed; target vanished | On until 60 s without a threat; off at once when every threat of the episode has passed; a vanished target holds 60 s | Done |
+| U-TRF-15 | Dead reckoning (SPEC OD-16): 10 min at 6 kn; target report 3 min old at 10 kn; no SOG/COG | Moved 1 NM along COG; old report projected to now (1.5 NM, TCPA 9.0 min); position unchanged without motion | Done |
 
 Tolerances: CPA ± 0.01 NM, TCPA ± 0.1 min.
 
@@ -209,7 +212,7 @@ Driven by D-07 scenarios replayed in accelerated time.
 | F-TRF-03 | 60 targets | `sensor.ais_targets` = 60, attribute list capped at 50 nearest | §9.2 | To do |
 | F-TRF-04 | Target stops reporting | Removed after expiry (Class A 10 min, Class B 15 min) | §9.4 | To do |
 | F-TRF-05 | Watch list with 2 MMSIs | Exactly 2 AIS trackers created; removal from list removes them | §9.3 | To do |
-| F-TRF-06 | Automation triggered on `collision_risk` | Automation runs once per risk episode (no flapping) | §9.2 | To do |
+| F-TRF-06 | Automation triggered on `collision_risk`; CPA hovering around the threshold during the episode | Automation runs once per risk episode (no flapping, latch of SPEC §8.2 / U-TRF-14) | §9.2 | To do |
 | F-TRF-07 | Anchored target exclusion toggled | Threat state follows the option | §8.2 | To do |
 
 ### 4.5 Load and recorder — `F-PERF`
