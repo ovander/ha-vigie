@@ -7,7 +7,7 @@ when the checks are run; the exit criterion is assessed once they are.
 |---|---|
 | Phase | P3 Static data (SPEC HA-SAIL-SPEC-001 v0.12 §13) |
 | Documents | SPEC v0.12, TEST v0.18 |
-| Code state | `main` after the WP14 merge — fill in the commit |
+| Code state | `main` at `b30231e` (all P3 work packages merged) |
 | Release | none yet; a beta tag is the owner's call |
 | CI | `lint`, `unit`, `hassfest`, `hacs` green on every P3 PR |
 | Automated tests | 438 passed, 1 skipped (U-GPS-08, #2), 3 `perf` tests run separately |
@@ -31,7 +31,7 @@ when the checks are run; the exit criterion is assessed once they are.
 | U-STA-01…07 | Done |
 | F-HUB-01 (static routing), F-TRF-08…11 | Done |
 | README map card | Done — every entity of the card exists and shows its target after the `named-traffic` scenario |
-| Bench check (`named-traffic`) | To run — §5 |
+| Bench check (`named-traffic`) | Pre-run in the official HA container passed (§5.1); formal run on the bench to do — §5.2 |
 | E-12 extended (names and ship types) | To run in port — §6 |
 | U-AIS-13 on the receiver capture | Pending on #2 — must decode the type 5/24 lines without rejects |
 
@@ -53,6 +53,42 @@ when the checks are run; the exit criterion is assessed once they are.
 | 3 | The `targets` list and the watch-list trackers now take the name from the static store (WP12), not from the position report | SPEC §9.4 |
 
 ## 5. Bench check (TEST §5.1 bench, `named-traffic`)
+
+### 5.1 Pre-run in a sandbox container
+
+| Item | Value |
+|---|---|
+| Date | 2026-09-27, 22:00–22:21 UTC |
+| Home Assistant | official image `homeassistant/home-assistant:2026.2.3` (Docker Hub), `default_config`, `--network host` |
+| Vigie | `main` at `b30231e`, copied into `custom_components/` (manifest `0.3.0-bench`) |
+| Setup | Boat "Garnet" on a PTY, watch list 235000011 and 235000012; the own boat's start position fed during configuration, then `named-traffic` replayed at real speed (20 min). README collision automation with `system_log.write` instead of the phone |
+| Reading | States polled every 2 s through the REST API; dashboard with the README map card and more-info dialogs rendered in headless Chromium, UI language French; translations fetched with `frontend/get_translations` |
+
+| # | Check | Observed | Result |
+|---|---|---|---|
+| 1 | Before 30 s | 4 targets, all unnamed; both watched trackers located (before the replay: unavailable, not heard yet) | Pass |
+| 2 | After 30 s | Every name in the `targets` list at 30 s: CARGO ONE (cargo, 180 m), ALBATROS (sailing, 12 m), ALBATROS TENDER (pleasure craft, no length: auxiliary craft), 235000014 without name or type | Pass |
+| 3 | Tracker `ais_235000011` | CARGO ONE, cargo (70), ABCD, 9123456, 180 × 30 m, draught 8.5 m, MARSEILLE | Pass |
+| 4 | Tracker `ais_235000012` | ALBATROS, sailing (36), FAB1234, 12 × 4 m; IMO, draught, destination empty (Class B) | Pass |
+| 5 | `collision_risk` | On at 60 s (TCPA crosses 15 min), off at 962 s (CPA at 16.0 min); one alert: "CARGO ONE: CPA 0.45 NM in 15.0 min. Check the lookout." | Pass |
+| 6 | Map card | Garnet and both watched targets with their tracks (no tiles: no internet in the sandbox). **Found:** both targets labelled "A2" (initials of "AIS 2…"); fixed in the README with `label_mode: attribute` / `attribute: name`, which shows "CARGO ONE" and "ALBATROS" | Pass after fix |
+| 7 | UI in French | More-info → Attributes: *Type de navire : Cargo*; categories served in French (*Voilier*, *Plaisance*) | Pass, see finding below |
+
+Findings:
+
+- **Map card labels** (fixed in this PR): see check 6; the README map card test now requires
+  an attribute label on watched targets.
+- **Attribute labels not translated** (not fixed, existing since P2): only `ship_type` has a
+  translated label and values. The other attributes show Home Assistant's automatic English
+  labels ("Callsign", "Imo", "Length m", "Nav status", "Tcpa min") and `nav_status` shows
+  raw values (`under_way_engine`), in English and French alike. Proposed follow-up: names
+  for every attribute and the `nav_status` values in the three translation files.
+- Entity names follow the server language (English here), not the user's: Home Assistant
+  behaviour, not Vigie's.
+- Container CPU ≈ 0.4 %, memory ≈ 320 MiB; the only ERROR in the log is HA core's alerts
+  fetch (no internet).
+
+### 5.2 Formal bench check
 
 Same bench as E-1/E-02 (`CONTRIBUTING.md`). Add the two named MMSIs to the watch list and
 the README map card to a dashboard before the run.
@@ -101,5 +137,6 @@ Pick at least one Class A and one Class B target.
 ## 7. Open items
 
 - #2 — receiver capture: U-AIS-13 over the type 5/24 lines, and the P1/P2 items it carries.
-- Bench check (§5) and E-12 extended (§6).
+- Formal bench check (§5.2; pre-run passed, §5.1) and E-12 extended (§6).
+- Translated labels for every attribute and `nav_status` values (finding of §5.1).
 - P2 items still open: TP-04, E-02 formal run, E-12/E-16, E-3.

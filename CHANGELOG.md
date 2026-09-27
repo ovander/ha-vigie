@@ -19,6 +19,8 @@ versioning: SemVer.
   and ship-details table, both checked against real entities by tests; scenario targets
   can send AIS static data (type 5 / type 24), new preset `named-traffic`; P3 report
   template in `docs/test-reports/P3-report.md`. TEST v0.18.
+  P3 bench pre-run in the Home Assistant container recorded in the report; the README map
+  card labels watched targets with their ship name.
 - Static data on the entities (#36): ship type (translated category and ITU code), call
   sign, IMO, length, beam, draught and destination on `collision_risk`, the closest
   target/threat sensors and the watch-list trackers; ship type and length in the
