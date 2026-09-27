@@ -10,7 +10,12 @@ pythonpath = ["."]
 testpaths = ["tests"]
 
 [tool.coverage.run]
-source = ["custom_components/vigie/nmea"]
+# Pure modules only (TEST §7 gate 2); module names, since `source` takes no file paths
+source = [
+    "custom_components.vigie.nmea",
+    "custom_components.vigie.geo",
+    "custom_components.vigie.state",
+]
 branch = true
 
 [tool.ruff]
@@ -24,7 +29,11 @@ ignore = ["RUF001", "RUF002", "RUF003"]  # allow typographic characters in docs/
 [tool.mypy]
 python_version = "3.12"
 strict = true
-files = ["custom_components/vigie/nmea"]
+files = [
+    "custom_components/vigie/nmea",
+    "custom_components/vigie/geo.py",
+    "custom_components/vigie/state.py",
+]
 
 [[tool.mypy.overrides]]
 module = ["homeassistant.*", "voluptuous.*"]

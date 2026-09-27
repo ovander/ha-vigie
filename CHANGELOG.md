@@ -15,6 +15,11 @@ versioning: SemVer.
   OD-13 and OD-14 stay open pending the receiver capture (#2).
 
 ### Added
+- Domain core (#7): `state.py` (`OwnBoatState` with per-field timestamp and source, GPS
+  first and VDO fallback, own MMSI learned or configured; `AisTargetTable` with class-dependent
+  expiry, own-MMSI exclusion and nearest-first listing; `WriteGate` throttle and dead-band,
+  circular for angles, metres for position) and `geo.py` (distance, bearing). U-COO-01…06 and
+  U-TRF-12.
 - GPS sentence layer (#5): `nmea/sentence.py` (framing limits, checksum, tag block, talker
   and field split, empty fields → `None`) and `nmea/parsers.py` (RMC, GGA, VTG, GSA, HDT as
   typed dataclasses, units normalised, RMC void not applied, `GpsParser` with counters).
