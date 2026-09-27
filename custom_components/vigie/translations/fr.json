@@ -123,13 +123,91 @@
         }
       },
       "closest_target_distance": {
-        "name": "Distance de la cible la plus proche"
+        "name": "Distance de la cible la plus proche",
+        "state_attributes": {
+          "ship_type": {
+            "name": "Type de navire",
+            "state": {
+              "wing_in_ground": "Navire à effet de sol",
+              "fishing": "Pêche",
+              "towing": "Remorquage",
+              "dredging": "Dragage ou travaux sous-marins",
+              "diving": "Plongée",
+              "military": "Opérations militaires",
+              "sailing": "Voilier",
+              "pleasure_craft": "Plaisance",
+              "high_speed": "Navire à grande vitesse",
+              "pilot": "Pilote",
+              "search_and_rescue": "Recherche et sauvetage",
+              "tug": "Remorqueur",
+              "port_tender": "Servitude portuaire",
+              "law_enforcement": "Forces de l'ordre",
+              "medical": "Transport sanitaire",
+              "passenger": "Passagers",
+              "cargo": "Cargo",
+              "tanker": "Navire-citerne",
+              "other": "Autre"
+            }
+          }
+        }
       },
       "closest_threat_cpa": {
-        "name": "CPA de la menace la plus proche"
+        "name": "CPA de la menace la plus proche",
+        "state_attributes": {
+          "ship_type": {
+            "name": "Type de navire",
+            "state": {
+              "wing_in_ground": "Navire à effet de sol",
+              "fishing": "Pêche",
+              "towing": "Remorquage",
+              "dredging": "Dragage ou travaux sous-marins",
+              "diving": "Plongée",
+              "military": "Opérations militaires",
+              "sailing": "Voilier",
+              "pleasure_craft": "Plaisance",
+              "high_speed": "Navire à grande vitesse",
+              "pilot": "Pilote",
+              "search_and_rescue": "Recherche et sauvetage",
+              "tug": "Remorqueur",
+              "port_tender": "Servitude portuaire",
+              "law_enforcement": "Forces de l'ordre",
+              "medical": "Transport sanitaire",
+              "passenger": "Passagers",
+              "cargo": "Cargo",
+              "tanker": "Navire-citerne",
+              "other": "Autre"
+            }
+          }
+        }
       },
       "closest_threat_tcpa": {
-        "name": "TCPA de la menace la plus proche"
+        "name": "TCPA de la menace la plus proche",
+        "state_attributes": {
+          "ship_type": {
+            "name": "Type de navire",
+            "state": {
+              "wing_in_ground": "Navire à effet de sol",
+              "fishing": "Pêche",
+              "towing": "Remorquage",
+              "dredging": "Dragage ou travaux sous-marins",
+              "diving": "Plongée",
+              "military": "Opérations militaires",
+              "sailing": "Voilier",
+              "pleasure_craft": "Plaisance",
+              "high_speed": "Navire à grande vitesse",
+              "pilot": "Pilote",
+              "search_and_rescue": "Recherche et sauvetage",
+              "tug": "Remorqueur",
+              "port_tender": "Servitude portuaire",
+              "law_enforcement": "Forces de l'ordre",
+              "medical": "Transport sanitaire",
+              "passenger": "Passagers",
+              "cargo": "Cargo",
+              "tanker": "Navire-citerne",
+              "other": "Autre"
+            }
+          }
+        }
       }
     },
     "binary_sensor": {
@@ -137,7 +215,63 @@
         "name": "Connecté"
       },
       "collision_risk": {
-        "name": "Risque de collision"
+        "name": "Risque de collision",
+        "state_attributes": {
+          "ship_type": {
+            "name": "Type de navire",
+            "state": {
+              "wing_in_ground": "Navire à effet de sol",
+              "fishing": "Pêche",
+              "towing": "Remorquage",
+              "dredging": "Dragage ou travaux sous-marins",
+              "diving": "Plongée",
+              "military": "Opérations militaires",
+              "sailing": "Voilier",
+              "pleasure_craft": "Plaisance",
+              "high_speed": "Navire à grande vitesse",
+              "pilot": "Pilote",
+              "search_and_rescue": "Recherche et sauvetage",
+              "tug": "Remorqueur",
+              "port_tender": "Servitude portuaire",
+              "law_enforcement": "Forces de l'ordre",
+              "medical": "Transport sanitaire",
+              "passenger": "Passagers",
+              "cargo": "Cargo",
+              "tanker": "Navire-citerne",
+              "other": "Autre"
+            }
+          }
+        }
+      }
+    },
+    "device_tracker": {
+      "watched_target": {
+        "state_attributes": {
+          "ship_type": {
+            "name": "Type de navire",
+            "state": {
+              "wing_in_ground": "Navire à effet de sol",
+              "fishing": "Pêche",
+              "towing": "Remorquage",
+              "dredging": "Dragage ou travaux sous-marins",
+              "diving": "Plongée",
+              "military": "Opérations militaires",
+              "sailing": "Voilier",
+              "pleasure_craft": "Plaisance",
+              "high_speed": "Navire à grande vitesse",
+              "pilot": "Pilote",
+              "search_and_rescue": "Recherche et sauvetage",
+              "tug": "Remorqueur",
+              "port_tender": "Servitude portuaire",
+              "law_enforcement": "Forces de l'ordre",
+              "medical": "Transport sanitaire",
+              "passenger": "Passagers",
+              "cargo": "Cargo",
+              "tanker": "Navire-citerne",
+              "other": "Autre"
+            }
+          }
+        }
       }
     }
   },

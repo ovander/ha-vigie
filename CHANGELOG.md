@@ -15,6 +15,11 @@ versioning: SemVer.
   OD-13 and OD-14 stay open pending the receiver capture (#2).
 
 ### Added
+- Static data on the entities (#36): ship type (translated category and ITU code), call
+  sign, IMO, length, beam, draught and destination on `collision_risk`, the closest
+  target/threat sensors and the watch-list trackers; ship type and length in the
+  `sensor.ais_targets` list. A name or type that arrives after the position shows at the
+  next tick. F-TRF-09…11.
 - AIS static data store (#34): names from types 5 and 24 now show in `collision_risk`, the
   `sensor.ais_targets` list and the watch-list trackers, whether the static report comes
   before or after the first position. Static data is kept per MMSI for 30 min after its

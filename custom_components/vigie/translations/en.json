@@ -123,13 +123,91 @@
         }
       },
       "closest_target_distance": {
-        "name": "Closest target distance"
+        "name": "Closest target distance",
+        "state_attributes": {
+          "ship_type": {
+            "name": "Ship type",
+            "state": {
+              "wing_in_ground": "Wing in ground",
+              "fishing": "Fishing",
+              "towing": "Towing",
+              "dredging": "Dredging or underwater operations",
+              "diving": "Diving operations",
+              "military": "Military operations",
+              "sailing": "Sailing",
+              "pleasure_craft": "Pleasure craft",
+              "high_speed": "High-speed craft",
+              "pilot": "Pilot vessel",
+              "search_and_rescue": "Search and rescue",
+              "tug": "Tug",
+              "port_tender": "Port tender",
+              "law_enforcement": "Law enforcement",
+              "medical": "Medical transport",
+              "passenger": "Passenger",
+              "cargo": "Cargo",
+              "tanker": "Tanker",
+              "other": "Other"
+            }
+          }
+        }
       },
       "closest_threat_cpa": {
-        "name": "Closest threat CPA"
+        "name": "Closest threat CPA",
+        "state_attributes": {
+          "ship_type": {
+            "name": "Ship type",
+            "state": {
+              "wing_in_ground": "Wing in ground",
+              "fishing": "Fishing",
+              "towing": "Towing",
+              "dredging": "Dredging or underwater operations",
+              "diving": "Diving operations",
+              "military": "Military operations",
+              "sailing": "Sailing",
+              "pleasure_craft": "Pleasure craft",
+              "high_speed": "High-speed craft",
+              "pilot": "Pilot vessel",
+              "search_and_rescue": "Search and rescue",
+              "tug": "Tug",
+              "port_tender": "Port tender",
+              "law_enforcement": "Law enforcement",
+              "medical": "Medical transport",
+              "passenger": "Passenger",
+              "cargo": "Cargo",
+              "tanker": "Tanker",
+              "other": "Other"
+            }
+          }
+        }
       },
       "closest_threat_tcpa": {
-        "name": "Closest threat TCPA"
+        "name": "Closest threat TCPA",
+        "state_attributes": {
+          "ship_type": {
+            "name": "Ship type",
+            "state": {
+              "wing_in_ground": "Wing in ground",
+              "fishing": "Fishing",
+              "towing": "Towing",
+              "dredging": "Dredging or underwater operations",
+              "diving": "Diving operations",
+              "military": "Military operations",
+              "sailing": "Sailing",
+              "pleasure_craft": "Pleasure craft",
+              "high_speed": "High-speed craft",
+              "pilot": "Pilot vessel",
+              "search_and_rescue": "Search and rescue",
+              "tug": "Tug",
+              "port_tender": "Port tender",
+              "law_enforcement": "Law enforcement",
+              "medical": "Medical transport",
+              "passenger": "Passenger",
+              "cargo": "Cargo",
+              "tanker": "Tanker",
+              "other": "Other"
+            }
+          }
+        }
       }
     },
     "binary_sensor": {
@@ -137,7 +215,63 @@
         "name": "Connected"
       },
       "collision_risk": {
-        "name": "Collision risk"
+        "name": "Collision risk",
+        "state_attributes": {
+          "ship_type": {
+            "name": "Ship type",
+            "state": {
+              "wing_in_ground": "Wing in ground",
+              "fishing": "Fishing",
+              "towing": "Towing",
+              "dredging": "Dredging or underwater operations",
+              "diving": "Diving operations",
+              "military": "Military operations",
+              "sailing": "Sailing",
+              "pleasure_craft": "Pleasure craft",
+              "high_speed": "High-speed craft",
+              "pilot": "Pilot vessel",
+              "search_and_rescue": "Search and rescue",
+              "tug": "Tug",
+              "port_tender": "Port tender",
+              "law_enforcement": "Law enforcement",
+              "medical": "Medical transport",
+              "passenger": "Passenger",
+              "cargo": "Cargo",
+              "tanker": "Tanker",
+              "other": "Other"
+            }
+          }
+        }
+      }
+    },
+    "device_tracker": {
+      "watched_target": {
+        "state_attributes": {
+          "ship_type": {
+            "name": "Ship type",
+            "state": {
+              "wing_in_ground": "Wing in ground",
+              "fishing": "Fishing",
+              "towing": "Towing",
+              "dredging": "Dredging or underwater operations",
+              "diving": "Diving operations",
+              "military": "Military operations",
+              "sailing": "Sailing",
+              "pleasure_craft": "Pleasure craft",
+              "high_speed": "High-speed craft",
+              "pilot": "Pilot vessel",
+              "search_and_rescue": "Search and rescue",
+              "tug": "Tug",
+              "port_tender": "Port tender",
+              "law_enforcement": "Law enforcement",
+              "medical": "Medical transport",
+              "passenger": "Passenger",
+              "cargo": "Cargo",
+              "tanker": "Tanker",
+              "other": "Other"
+            }
+          }
+        }
       }
     }
   },

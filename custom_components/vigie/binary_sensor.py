@@ -9,7 +9,7 @@ from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .coordinator import VigieConfigEntry, VigieCoordinator
+from .coordinator import STATIC_ATTRIBUTES, VigieConfigEntry, VigieCoordinator
 from .entity import VigieEntity
 
 
@@ -57,10 +57,12 @@ class CollisionRiskBinarySensor(VigieEntity, BinarySensorEntity):
         return self.coordinator.risk.active
 
     def gate_value(self) -> Any:
-        # Written when the state, the number of threats or the most urgent one changes
+        # Written when the state, the number of threats, the most urgent one or its static
+        # data changes
         picture = self.coordinator.picture
         urgent = picture.closest_threat
-        return (self.current_value(), len(picture.threats), urgent and urgent[0])
+        static = None if urgent is None else self.coordinator.statics.get(urgent[0])
+        return (self.current_value(), len(picture.threats), urgent and urgent[0], static)
 
     @property
     def is_on(self) -> bool:
@@ -70,8 +72,13 @@ class CollisionRiskBinarySensor(VigieEntity, BinarySensorEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         picture = self.coordinator.picture
         urgent = picture.closest_threat
+        if urgent is None:
+            none = dict.fromkeys(STATIC_ATTRIBUTES)
+            return {"threat_count": 0, "mmsi": None, "name": None, **none}
+        mmsi = urgent[0]
         return {
             "threat_count": len(picture.threats),
-            "mmsi": None if urgent is None else urgent[0],
-            "name": None if urgent is None else self.coordinator.target_name(urgent[0]),
+            "mmsi": mmsi,
+            "name": self.coordinator.target_name(mmsi),
+            **self.coordinator.static_attributes(mmsi),
         }

@@ -13,6 +13,7 @@ import contextlib
 import time
 from collections.abc import Callable
 from datetime import datetime, timedelta
+from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
@@ -49,6 +50,17 @@ from .traffic import (
 )
 
 type VigieConfigEntry = ConfigEntry[VigieCoordinator]
+
+STATIC_ATTRIBUTES = (
+    "ship_type",
+    "ship_type_code",
+    "callsign",
+    "imo",
+    "length_m",
+    "beam_m",
+    "draught_m",
+    "destination",
+)
 
 
 def _monotonic() -> float:
@@ -183,6 +195,22 @@ class VigieCoordinator:
 
     def static_info(self, mmsi: int) -> StaticInfo | None:
         return self.statics.get(mmsi)
+
+    def static_attributes(self, mmsi: int) -> dict[str, Any]:
+        """Static data shown on the entities of one target (SPEC §9.4, OD-17, OD-20)."""
+        info = self.statics.get(mmsi)
+        if info is None:
+            return dict.fromkeys(STATIC_ATTRIBUTES)
+        return {
+            "ship_type": info.ship_category,
+            "ship_type_code": info.ship_type,
+            "callsign": info.callsign,
+            "imo": info.imo,
+            "length_m": info.length_m,
+            "beam_m": info.beam_m,
+            "draught_m": info.draught_m,
+            "destination": info.destination,
+        }
 
     def target_name(self, mmsi: int) -> str | None:
         """Name from static data (types 5, 24, 19), else the last one a position carried."""
