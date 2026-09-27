@@ -15,6 +15,12 @@ versioning: SemVer.
   OD-13 and OD-14 stay open pending the receiver capture (#2).
 
 ### Added
+- Transport hub (#9): `hub.py` (pure asyncio) reads the serial port through an injectable
+  transport, frames lines (1 KiB cap, 82-char sentences), routes `$` to the GPS parsers and
+  `!` to the AIS decoder after a checksum pre-check, strips tag blocks, contains per-line
+  errors, keeps diagnostics counters, reconnects with 1 → 60 s backoff (one warning per
+  outage, one info line on recovery) and offers a 5 s probe for the config flow. D-04
+  malformed corpus fixture. F-HUB-01, 02, 04, 05.
 - Domain core (#7): `state.py` (`OwnBoatState` with per-field timestamp and source, GPS
   first and VDO fallback, own MMSI learned or configured; `AisTargetTable` with class-dependent
   expiry, own-MMSI exclusion and nearest-first listing; `WriteGate` throttle and dead-band,
