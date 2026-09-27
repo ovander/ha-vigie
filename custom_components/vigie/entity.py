@@ -61,6 +61,10 @@ class VigieEntity(Entity):
         """Value to show now, or None when there is none (the entity is then unavailable)."""
         raise NotImplementedError
 
+    def gate_value(self) -> Any:
+        """What the dead-band compares; the current value unless an entity needs more."""
+        return self.current_value()
+
     @property
     def available(self) -> bool:
         if self._always_available:
@@ -82,4 +86,4 @@ class VigieEntity(Entity):
         if available != self._written_available:
             self._gate.reset()
             self._written_available = available
-        return self._gate.should_write(self.current_value() if available else None)
+        return self._gate.should_write(self.gate_value() if available else None)

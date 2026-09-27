@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.11 (draft) |
+| Version | 0.12 (draft) |
 | Date | 2026-09-27 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.12 | 2026-09-27 | WP8 (#25): F-TRF-01, 02, 03, 04, 06, 07 implemented (`tests/integration/test_traffic_entities.py`, D-07 scenarios in simulated time); pure `assess()` unit-tested in `tests/domain/test_traffic.py`; nightly junit report now keeps the F-PERF-02 baseline (`junit_family = xunit1`). |
 | 0.11 | 2026-09-27 | WP7 (#23): U-TRF-01…11 and U-TRF-13 implemented (`tests/domain/test_traffic.py`) with the hand-computed values of §3.4; new U-TRF-14 (risk latch, SPEC OD-15) and U-TRF-15 (dead reckoning, SPEC OD-16); U-TRF-05 time advance made concrete; F-TRF-06 tied to the latch; Status column added to the scenario table. |
 | 0.10 | 2026-09-27 | WP6 (#17): `tests/tools/scenario.py` (D-07, presets for U-TRF-01 and U-TRF-03), `tests/tools/replay.py` (own PTY or existing device, speed factor, loop), `tests/tools/capture.py` (X-09) with tests, including an end-to-end PTY → `serial_transport` → hub check of the E-1 path; nightly workflow running F-PERF; §6 and §7 updated. |
 | 0.9 | 2026-09-27 | WP5 (#15): F-ENT-01…07, F-LIFE-08 and the entity halves of F-HUB-03 and F-LIFE-06 implemented (`tests/integration/test_entities.py`, `test_diagnostics.py`); F-PERF-01…03 implemented (`tests/integration/test_perf.py`, marker `perf`, excluded from the PR gate); D-08 committed as `tests/fixtures/burst_60s.nmea`; translation-consistency check (`tests/test_translations.py`). F-ENT-04 clarified: distances in `sensor.ais_targets` become `None` at the next list rebuild (≤ 5 s). Suite: 258 tests + 3 perf. |
@@ -207,13 +208,13 @@ Driven by D-07 scenarios replayed in accelerated time.
 
 | ID | Case | Expected | SPEC | Status |
 |---|---|---|---|---|
-| F-TRF-01 | U-TRF-05 scenario played over time | `binary_sensor.collision_risk` turns **on** when TCPA crosses 15 min, **off** after CPA passes | §8.2, §9.2 | To do |
-| F-TRF-02 | U-TRF-01 head-on | Closest threat CPA/TCPA sensors match U-TRF-01 values within tolerance | §9.2 | To do |
-| F-TRF-03 | 60 targets | `sensor.ais_targets` = 60, attribute list capped at 50 nearest | §9.2 | To do |
-| F-TRF-04 | Target stops reporting | Removed after expiry (Class A 10 min, Class B 15 min) | §9.4 | To do |
+| F-TRF-01 | U-TRF-05 scenario played over time | `binary_sensor.collision_risk` turns **on** when TCPA crosses 15 min, **off** after CPA passes | §8.2, §9.2 | Done |
+| F-TRF-02 | U-TRF-01 head-on | Closest threat CPA/TCPA sensors match U-TRF-01 values within tolerance | §9.2 | Done |
+| F-TRF-03 | 60 targets | `sensor.ais_targets` = 60, attribute list capped at 50 nearest | §9.2 | Done |
+| F-TRF-04 | Target stops reporting | Removed after expiry (Class A 10 min, Class B 15 min) | §9.4 | Done |
 | F-TRF-05 | Watch list with 2 MMSIs | Exactly 2 AIS trackers created; removal from list removes them | §9.3 | To do |
-| F-TRF-06 | Automation triggered on `collision_risk`; CPA hovering around the threshold during the episode | Automation runs once per risk episode (no flapping, latch of SPEC §8.2 / U-TRF-14) | §9.2 | To do |
-| F-TRF-07 | Anchored target exclusion toggled | Threat state follows the option | §8.2 | To do |
+| F-TRF-06 | Automation triggered on `collision_risk`; CPA hovering around the threshold during the episode | Automation runs once per risk episode (no flapping, latch of SPEC §8.2 / U-TRF-14) | §9.2 | Done |
+| F-TRF-07 | Anchored target exclusion toggled | Threat state follows the option | §8.2 | Done |
 
 ### 4.5 Load and recorder — `F-PERF`
 

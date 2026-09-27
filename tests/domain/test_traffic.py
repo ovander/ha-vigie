@@ -278,3 +278,38 @@ def test_u_trf_14_new_episode_after_clear():
     assert latch.active is False
     assert latch.update({2}, {2: _enc(0.1, 3.0)}) is True
     assert latch.active is True
+
+
+# --- Traffic picture (WP8: one pass over the table per tick) -------------------------------
+
+
+def test_assess_builds_the_picture():
+    from custom_components.vigie.traffic import TargetReport, assess
+
+    targets = [
+        TargetReport(1, SCENARIOS["U-TRF-01"][0], None),  # threat, TCPA 10 min, 2 NM
+        TargetReport(2, SCENARIOS["U-TRF-03"][0], None),  # threat, TCPA 4 min, 1 NM
+        TargetReport(3, SCENARIOS["U-TRF-02"][0], None),  # passes clear, 1 NM
+        TargetReport(4, target(0, 0.3, 0, 0), "at_anchor"),  # excluded; else TCPA 3 min, 0.3 NM
+        TargetReport(5, Kinematics(None, None, 5.0, 90.0, 0.0), None),  # no position yet
+    ]
+    picture = assess(own(), targets, DEFAULTS, now=0.0)
+    assert picture.own_known
+    assert set(picture.encounters) == {1, 2, 3, 4}
+    assert picture.threats == frozenset({1, 2})
+    assert picture.closest_target[0] == 4  # nearest by distance, threat or not
+    assert picture.closest_threat[0] == 2  # smallest TCPA
+    no_exclusion = assess(own(), targets, ThreatSettings(exclude_stationary=False), now=0.0)
+    assert no_exclusion.threats == frozenset({1, 2, 4})
+    assert no_exclusion.closest_threat[0] == 4  # TCPA 3.0 min beats 4.0 min
+
+
+def test_assess_without_own_position_is_empty():
+    from custom_components.vigie.traffic import TargetReport, assess
+
+    targets = [TargetReport(1, SCENARIOS["U-TRF-01"][0], None)]
+    for own_k in (None, Kinematics(None, None, 6.0, 0.0, 0.0)):
+        picture = assess(own_k, targets, DEFAULTS, now=0.0)
+        assert not picture.own_known
+        assert picture.encounters == {} and picture.threats == frozenset()
+        assert picture.closest_target is None and picture.closest_threat is None

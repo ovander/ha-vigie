@@ -1,6 +1,8 @@
-"""Connection binary sensor (SPEC §9.5)."""
+"""Binary sensors: connection (SPEC §9.5) and collision risk (SPEC §8.2, §9.2)."""
 
 from __future__ import annotations
+
+from typing import Any
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass, BinarySensorEntity
 from homeassistant.const import EntityCategory
@@ -16,7 +18,8 @@ async def async_setup_entry(
     entry: VigieConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    async_add_entities([ConnectedBinarySensor(entry.runtime_data)])
+    coordinator = entry.runtime_data
+    async_add_entities([ConnectedBinarySensor(coordinator), CollisionRiskBinarySensor(coordinator)])
 
 
 class ConnectedBinarySensor(VigieEntity, BinarySensorEntity):
@@ -35,3 +38,40 @@ class ConnectedBinarySensor(VigieEntity, BinarySensorEntity):
     @property
     def is_on(self) -> bool:
         return self.coordinator.connected
+
+
+class CollisionRiskBinarySensor(VigieEntity, BinarySensorEntity):
+    """On while a threat exists, with the anti-flapping latch (SPEC §8.2, OD-15).
+
+    Unavailable, never "off", when own position is unknown: the risk cannot be assessed.
+    """
+
+    _attr_device_class = BinarySensorDeviceClass.SAFETY
+
+    def __init__(self, coordinator: VigieCoordinator) -> None:
+        super().__init__(coordinator, "collision_risk")
+
+    def current_value(self) -> bool | None:
+        if not self.coordinator.picture.own_known:
+            return None
+        return self.coordinator.risk.active
+
+    def gate_value(self) -> Any:
+        # Written when the state, the number of threats or the most urgent one changes
+        picture = self.coordinator.picture
+        urgent = picture.closest_threat
+        return (self.current_value(), len(picture.threats), urgent and urgent[0])
+
+    @property
+    def is_on(self) -> bool:
+        return self.coordinator.risk.active
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        picture = self.coordinator.picture
+        urgent = picture.closest_threat
+        return {
+            "threat_count": len(picture.threats),
+            "mmsi": None if urgent is None else urgent[0],
+            "name": None if urgent is None else self.coordinator.target_name(urgent[0]),
+        }
