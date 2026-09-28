@@ -5,12 +5,12 @@ when the checks are run; the exit criterion is assessed once they are.
 
 | Item | Value |
 |---|---|
-| Phase | P3 Static data (SPEC HA-SAIL-SPEC-001 v0.12 §13) |
-| Documents | SPEC v0.12, TEST v0.18 |
-| Code state | `main` at `b30231e` (all P3 work packages merged) |
+| Phase | P3 Static data (SPEC HA-SAIL-SPEC-001 v0.13 §13) |
+| Documents | SPEC v0.13, TEST v0.19 |
+| Code state | `main` at `7d0c145` (all P3 work packages and follow-ups #40, #42 merged) |
 | Release | none yet; a beta tag is the owner's call |
 | CI | `lint`, `unit`, `hassfest`, `hacs` green on every P3 PR |
-| Automated tests | 438 passed, 1 skipped (U-GPS-08, #2), 3 `perf` tests run separately |
+| Automated tests | 448 passed, 1 skipped (U-GPS-08, #2), 3 `perf` tests run separately |
 | Coverage | 99 % of the pure modules (`nmea/`, `state.py`, `geo.py`, `hub.py`, `traffic.py`); gate ≥ 90 % |
 | Exit criterion | **Not met yet**: the bench check (§5), E-12 extended (§6) and U-AIS-13 on the receiver capture (#2) |
 
@@ -22,6 +22,8 @@ when the checks are run; the exit criterion is assessed once they are.
 | #35 | #34 | WP12: static store per MMSI (merge, 30 min, 2 000 MMSIs), hub routing, names from types 5/24 everywhere |
 | #37 | #36 | WP13: ship type (translated), call sign, IMO, length, beam, draught, destination on the entities; late static data written at once |
 | #39 | #38 | WP14: README map card and ship details (both tested against real entities), `named-traffic` scenario, this report |
+| #40 | #38 | Bench pre-run recorded (§5.1); map card labels watched targets with their ship name |
+| #42 | #41 | Every attribute label and the `nav_status` / `position_source` values translated (finding of §5.1); F-ENT-08 |
 
 ## 2. Test status (TEST §9, row P3)
 
@@ -29,7 +31,7 @@ when the checks are run; the exit criterion is assessed once they are.
 |---|---|
 | U-AIS-04, U-AIS-15…22 | Done (incl. the gpsd type 5 reference sentence and fuzz against pyais) |
 | U-STA-01…07 | Done |
-| F-HUB-01 (static routing), F-TRF-08…11 | Done |
+| F-HUB-01 (static routing), F-TRF-08…11, F-ENT-08 (attribute labels) | Done |
 | README map card | Done — every entity of the card exists and shows its target after the `named-traffic` scenario |
 | Bench check (`named-traffic`) | Pre-run in the official HA container passed (§5.1); formal run on the bench to do — §5.2 |
 | E-12 extended (names and ship types) | To run in port — §6 |
@@ -76,14 +78,15 @@ when the checks are run; the exit criterion is assessed once they are.
 
 Findings:
 
-- **Map card labels** (fixed in this PR): see check 6; the README map card test now requires
+- **Map card labels** (fixed in #40): see check 6; the README map card test now requires
   an attribute label on watched targets.
 - **Attribute labels not translated** (existing since P2): only `ship_type` had a translated
   label and values; the other attributes showed Home Assistant's automatic English labels
   ("Callsign", "Imo", "Length m", "Nav status", "Tcpa min") and `nav_status` showed raw
-  values (`under_way_engine`). **Fixed in #41**: every attribute has a label, and
+  values (`under_way_engine`). **Fixed in #42** (issue #41): every attribute has a label, and
   `nav_status` and `position_source` values are translated, in the three files; a test
-  fails when an attribute has no label.
+  fails when an attribute has no label. Checked in the French UI on the same bench
+  (2026-09-28): every label and value shown in French.
 - Entity names follow the server language (English here), not the user's: Home Assistant
   behaviour, not Vigie's.
 - Container CPU ≈ 0.4 %, memory ≈ 320 MiB; the only ERROR in the log is HA core's alerts
