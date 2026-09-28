@@ -78,11 +78,12 @@ Findings:
 
 - **Map card labels** (fixed in this PR): see check 6; the README map card test now requires
   an attribute label on watched targets.
-- **Attribute labels not translated** (not fixed, existing since P2): only `ship_type` has a
-  translated label and values. The other attributes show Home Assistant's automatic English
-  labels ("Callsign", "Imo", "Length m", "Nav status", "Tcpa min") and `nav_status` shows
-  raw values (`under_way_engine`), in English and French alike. Proposed follow-up: names
-  for every attribute and the `nav_status` values in the three translation files.
+- **Attribute labels not translated** (existing since P2): only `ship_type` had a translated
+  label and values; the other attributes showed Home Assistant's automatic English labels
+  ("Callsign", "Imo", "Length m", "Nav status", "Tcpa min") and `nav_status` showed raw
+  values (`under_way_engine`). **Fixed in #41**: every attribute has a label, and
+  `nav_status` and `position_source` values are translated, in the three files; a test
+  fails when an attribute has no label.
 - Entity names follow the server language (English here), not the user's: Home Assistant
   behaviour, not Vigie's.
 - Container CPU ≈ 0.4 %, memory ≈ 320 MiB; the only ERROR in the log is HA core's alerts
@@ -138,5 +139,4 @@ Pick at least one Class A and one Class B target.
 
 - #2 — receiver capture: U-AIS-13 over the type 5/24 lines, and the P1/P2 items it carries.
 - Formal bench check (§5.2; pre-run passed, §5.1) and E-12 extended (§6).
-- Translated labels for every attribute and `nav_status` values (finding of §5.1).
 - P2 items still open: TP-04, E-02 formal run, E-12/E-16, E-3.

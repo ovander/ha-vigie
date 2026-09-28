@@ -63,7 +63,7 @@ class OwnBoatTracker(VigieEntity, TrackerEntity):
         super().__init__(
             coordinator, "position", deadband=POSITION_DEADBAND_M, delta=position_delta_m
         )
-        self._attr_translation_key = None
+        # Translates the attributes; the entity keeps the device's name
 
     def current_value(self) -> tuple[float, float] | None:
         field = self.coordinator.own.get(POSITION)

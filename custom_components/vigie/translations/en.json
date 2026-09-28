@@ -148,6 +148,36 @@
               "tanker": "Tanker",
               "other": "Other"
             }
+          },
+          "mmsi": {
+            "name": "MMSI"
+          },
+          "name": {
+            "name": "Name"
+          },
+          "bearing": {
+            "name": "Bearing (°)"
+          },
+          "ship_type_code": {
+            "name": "AIS ship type code"
+          },
+          "callsign": {
+            "name": "Call sign"
+          },
+          "imo": {
+            "name": "IMO number"
+          },
+          "length_m": {
+            "name": "Length (m)"
+          },
+          "beam_m": {
+            "name": "Beam (m)"
+          },
+          "draught_m": {
+            "name": "Draught (m)"
+          },
+          "destination": {
+            "name": "Destination"
           }
         }
       },
@@ -177,6 +207,45 @@
               "tanker": "Tanker",
               "other": "Other"
             }
+          },
+          "mmsi": {
+            "name": "MMSI"
+          },
+          "name": {
+            "name": "Name"
+          },
+          "distance_nm": {
+            "name": "Distance (NM)"
+          },
+          "bearing": {
+            "name": "Bearing (°)"
+          },
+          "cpa_nm": {
+            "name": "CPA (NM)"
+          },
+          "tcpa_min": {
+            "name": "TCPA (min)"
+          },
+          "ship_type_code": {
+            "name": "AIS ship type code"
+          },
+          "callsign": {
+            "name": "Call sign"
+          },
+          "imo": {
+            "name": "IMO number"
+          },
+          "length_m": {
+            "name": "Length (m)"
+          },
+          "beam_m": {
+            "name": "Beam (m)"
+          },
+          "draught_m": {
+            "name": "Draught (m)"
+          },
+          "destination": {
+            "name": "Destination"
           }
         }
       },
@@ -206,6 +275,45 @@
               "tanker": "Tanker",
               "other": "Other"
             }
+          },
+          "mmsi": {
+            "name": "MMSI"
+          },
+          "name": {
+            "name": "Name"
+          },
+          "distance_nm": {
+            "name": "Distance (NM)"
+          },
+          "bearing": {
+            "name": "Bearing (°)"
+          },
+          "cpa_nm": {
+            "name": "CPA (NM)"
+          },
+          "tcpa_min": {
+            "name": "TCPA (min)"
+          },
+          "ship_type_code": {
+            "name": "AIS ship type code"
+          },
+          "callsign": {
+            "name": "Call sign"
+          },
+          "imo": {
+            "name": "IMO number"
+          },
+          "length_m": {
+            "name": "Length (m)"
+          },
+          "beam_m": {
+            "name": "Beam (m)"
+          },
+          "draught_m": {
+            "name": "Draught (m)"
+          },
+          "destination": {
+            "name": "Destination"
           }
         }
       }
@@ -240,6 +348,36 @@
               "tanker": "Tanker",
               "other": "Other"
             }
+          },
+          "threat_count": {
+            "name": "Threats"
+          },
+          "mmsi": {
+            "name": "MMSI"
+          },
+          "name": {
+            "name": "Name"
+          },
+          "ship_type_code": {
+            "name": "AIS ship type code"
+          },
+          "callsign": {
+            "name": "Call sign"
+          },
+          "imo": {
+            "name": "IMO number"
+          },
+          "length_m": {
+            "name": "Length (m)"
+          },
+          "beam_m": {
+            "name": "Beam (m)"
+          },
+          "draught_m": {
+            "name": "Draught (m)"
+          },
+          "destination": {
+            "name": "Destination"
           }
         }
       }
@@ -269,6 +407,99 @@
               "cargo": "Cargo",
               "tanker": "Tanker",
               "other": "Other"
+            }
+          },
+          "mmsi": {
+            "name": "MMSI"
+          },
+          "name": {
+            "name": "Name"
+          },
+          "class": {
+            "name": "AIS class"
+          },
+          "sog": {
+            "name": "Speed over ground (kn)"
+          },
+          "cog": {
+            "name": "Course over ground (°)"
+          },
+          "heading": {
+            "name": "Heading (°)"
+          },
+          "nav_status": {
+            "name": "Navigation status",
+            "state": {
+              "under_way_engine": "Under way using engine",
+              "at_anchor": "At anchor",
+              "not_under_command": "Not under command",
+              "restricted_manoeuvrability": "Restricted manoeuvrability",
+              "constrained_by_draught": "Constrained by her draught",
+              "moored": "Moored",
+              "aground": "Aground",
+              "fishing": "Engaged in fishing",
+              "under_way_sailing": "Under way sailing",
+              "towing_astern": "Towing astern",
+              "pushing_ahead": "Pushing ahead or towing alongside",
+              "ais_sart_active": "AIS-SART active",
+              "undefined": "Not defined",
+              "reserved": "Reserved"
+            }
+          },
+          "age_s": {
+            "name": "Report age (s)"
+          },
+          "distance_nm": {
+            "name": "Distance (NM)"
+          },
+          "bearing": {
+            "name": "Bearing (°)"
+          },
+          "cpa_nm": {
+            "name": "CPA (NM)"
+          },
+          "tcpa_min": {
+            "name": "TCPA (min)"
+          },
+          "ship_type_code": {
+            "name": "AIS ship type code"
+          },
+          "callsign": {
+            "name": "Call sign"
+          },
+          "imo": {
+            "name": "IMO number"
+          },
+          "length_m": {
+            "name": "Length (m)"
+          },
+          "beam_m": {
+            "name": "Beam (m)"
+          },
+          "draught_m": {
+            "name": "Draught (m)"
+          },
+          "destination": {
+            "name": "Destination"
+          }
+        }
+      },
+      "position": {
+        "state_attributes": {
+          "sog": {
+            "name": "Speed over ground (kn)"
+          },
+          "cog": {
+            "name": "Course over ground (°)"
+          },
+          "heading": {
+            "name": "Heading (°)"
+          },
+          "position_source": {
+            "name": "Position source",
+            "state": {
+              "gps": "GPS",
+              "vdo": "AIS (own ship)"
             }
           }
         }
