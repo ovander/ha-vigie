@@ -5,14 +5,11 @@ versioning: SemVer.
 
 ## [Unreleased]
 
-### Changed
-- Docs: SPEC v0.5 and TEST v0.3 record the P1 decisions (#3). OD-03 own GPS parsers; OD-06
-  minimum Home Assistant 2026.2.0; OD-07 GPS first, VDO fallback, `include_own_vdo` option;
-  OD-10 COG/heading without device class, state class `measurement_angle`; OD-12, TP-01 and
-  TP-02 external replay tool and E-1 on HA Container. Pure `state.py`, `geo.py` and HA-free
-  `hub.py`; availability, dead-band, config-flow and options details clarified; F-ENT-02
-  corrected (knots are not auto-converted). Status columns added to the TEST tables.
-  OD-13 and OD-14 stay open pending the receiver capture (#2).
+## [0.1.0-beta.1] - 2026-09-28
+
+First beta, the release candidate for the bench and on-board checks: serial AIS receiver,
+own boat, AIS traffic, CPA/TCPA collision alerts, watch list and AIS static data (phases
+P1–P3). Tested on synthetic data only; see `docs/test-reports/`.
 
 ### Added
 - P3 bench material (#38): README map card configuration (own boat and watched targets)
@@ -94,9 +91,21 @@ versioning: SemVer.
   checksum and length validation, multi-fragment reassembly, tag blocks, own-ship `VDO`
   flag, injectable clock. 39 tests, 98.5 % coverage.
 
+### Changed
+- Docs: SPEC v0.5 and TEST v0.3 record the P1 decisions (#3). OD-03 own GPS parsers; OD-06
+  minimum Home Assistant 2026.2.0; OD-07 GPS first, VDO fallback, `include_own_vdo` option;
+  OD-10 COG/heading without device class, state class `measurement_angle`; OD-12, TP-01 and
+  TP-02 external replay tool and E-1 on HA Container. Pure `state.py`, `geo.py` and HA-free
+  `hub.py`; availability, dead-band, config-flow and options details clarified; F-ENT-02
+  corrected (knots are not auto-converted). Status columns added to the TEST tables.
+  OD-13 and OD-14 stay open pending the receiver capture (#2).
+
 ### Fixed
 - Attribute labels (#41): every entity attribute has an English and French label, and
   navigation status and position source values are translated (they showed raw keys).
 - Nightly report: the F-PERF-02 write baseline was dropped from the junit XML (#25).
 - AIS decoder rejects payload armoring characters 0x58–0x5F (`X`…`_`), which the AIVDM
   specification does not allow; they were decoded as six-bit values 40–47 (#11).
+
+[Unreleased]: https://github.com/ovander/ha-vigie/compare/v0.1.0-beta.1...HEAD
+[0.1.0-beta.1]: https://github.com/ovander/ha-vigie/releases/tag/v0.1.0-beta.1
