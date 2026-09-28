@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.18 (draft) |
+| Version | 0.19 (draft) |
 | Date | 2026-09-27 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.19 | 2026-09-28 | #41: new F-ENT-08 (every attribute of every entity has a translated label, enumerated values translated), after the P3 bench pre-run found untranslated labels. |
 | 0.18 | 2026-09-27 | WP14 (#38): D-07 targets can carry static data (type 5 or type 24 A/B, offset and 6 min interval, JSON keys) and the new preset `named-traffic` for the P3 bench check; the E-02 presets send none. E-12 extended to names and ship types (P3). README map card checked against real entities. P3 report template `docs/test-reports/P3-report.md`. |
 | 0.17 | 2026-09-27 | WP13 (#36): F-TRF-09 (static data on every entity that describes a target, `None` when unknown; `targets` list), F-TRF-10 (static data after the position, and a later change, written without any other change), F-TRF-11 (19 ship-type categories translated in the three files, French strings loaded by HA). |
 | 0.16 | 2026-09-27 | WP12 (#34): new §3.6 `U-STA` (static store: type 5, type 24 parts merged, merge without erasing, type 19 and auxiliary craft, independence from the target table, 30 min expiry, 2 000-MMSI cap, own ship refused); F-HUB-01 extended to static routing and the `ais_static` counter; new F-TRF-08 (names from types 5/24 in every entity, static data before or after the first position; diagnostics). |
@@ -229,6 +230,7 @@ F-HUB-01, 02, 04 and 05 prove hub behaviour (routing, counters, backoff, framing
 | F-ENT-05 | Heading never provided | `heading` unavailable, no error | §7.4 | Done |
 | F-ENT-06 | Two config entries (two boats, two fake ports) | No unique-ID collision | NFR-06 | Done |
 | F-ENT-07 | Every entity checked in the entity registry | Unique ID prefixed by entry ID | NFR-06 | Done |
+| F-ENT-08 | Every entity filled by the `named-traffic` scenario (threat, watched targets) | Every attribute has a label in `strings.json`, `en.json` and `fr.json`; `nav_status` and `position_source` values translated; the own-boat tracker keeps its name and entity ID | §9, CLAUDE.md | Done |
 
 ### 4.4 Traffic behaviour — `F-TRF`
 

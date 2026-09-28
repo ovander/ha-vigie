@@ -95,6 +95,8 @@ versioning: SemVer.
   flag, injectable clock. 39 tests, 98.5 % coverage.
 
 ### Fixed
+- Attribute labels (#41): every entity attribute has an English and French label, and
+  navigation status and position source values are translated (they showed raw keys).
 - Nightly report: the F-PERF-02 write baseline was dropped from the junit XML (#25).
 - AIS decoder rejects payload armoring characters 0x58–0x5F (`X`…`_`), which the AIVDM
   specification does not allow; they were decoded as six-bit values 40–47 (#11).

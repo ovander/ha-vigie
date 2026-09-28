@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.12 (draft) |
+| Version | 0.13 (draft) |
 | Date | 2026-09-27 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.13 | 2026-09-28 | #41: §9 — every attribute has a translated label; enumerated attribute values (`nav_status`, `position_source`, `ship_type`) are translated; the own-boat tracker has translation key `position`. |
 | 0.12 | 2026-09-27 | WP13 (#36): static data on the entities (§9.2, §9.3, §9.4): ship type (translated category and code), call sign, IMO, length, beam, draught, destination on the closest target/threat sensors, `collision_risk` and the watch-list trackers; ship type and length in the `targets` list; static data that changes is written at once. |
 | 0.11 | 2026-09-27 | WP12 (#34): §9.4 static store implemented; the hub delivers static reports separately (§6) and counts them (`ais_static`, §9.5); names from static data are preferred wherever a target's name is shown. |
 | 0.10 | 2026-09-27 | P3 decisions and WP11 (#32). New OD-17, resolved: ship type as code plus category key. New OD-18, resolved: static data kept 30 min after its last report, at most 2 000 MMSIs. New OD-19, resolved: built-in map card configuration (own boat, watched targets); a custom card is left for after v1. New OD-20, resolved: fields name, call sign, IMO, ship type, length, beam, draught, destination (no ETA, no EPFD). §7.3 extended to types 5 and 24 and the static fields of type 19; §9.4 static data; §13 P3 exit criterion. |
@@ -266,7 +267,7 @@ CPA/TCPA assume straight-line constant-speed motion from the last report (both v
 
 ## 9. Entity model
 
-All entities belong to one HA device per config entry ("the boat"), except watched AIS targets, which get one device each. `has_entity_name = True`, translation keys, entry-scoped unique IDs (`{entry_id}_{key}`).
+All entities belong to one HA device per config entry ("the boat"), except watched AIS targets, which get one device each. `has_entity_name = True`, translation keys, entry-scoped unique IDs (`{entry_id}_{key}`). Every attribute has a translated label, and attributes whose values are keys (`nav_status`, `position_source`, `ship_type`) have translated values; the trackers carry a translation key for this while their name comes from their device.
 
 ### 9.1 Own-boat sensors
 

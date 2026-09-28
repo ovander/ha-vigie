@@ -148,6 +148,36 @@
               "tanker": "Navire-citerne",
               "other": "Autre"
             }
+          },
+          "mmsi": {
+            "name": "MMSI"
+          },
+          "name": {
+            "name": "Nom"
+          },
+          "bearing": {
+            "name": "Relèvement (°)"
+          },
+          "ship_type_code": {
+            "name": "Code AIS du type de navire"
+          },
+          "callsign": {
+            "name": "Indicatif d'appel"
+          },
+          "imo": {
+            "name": "Numéro OMI"
+          },
+          "length_m": {
+            "name": "Longueur (m)"
+          },
+          "beam_m": {
+            "name": "Largeur (m)"
+          },
+          "draught_m": {
+            "name": "Tirant d'eau (m)"
+          },
+          "destination": {
+            "name": "Destination"
           }
         }
       },
@@ -177,6 +207,45 @@
               "tanker": "Navire-citerne",
               "other": "Autre"
             }
+          },
+          "mmsi": {
+            "name": "MMSI"
+          },
+          "name": {
+            "name": "Nom"
+          },
+          "distance_nm": {
+            "name": "Distance (NM)"
+          },
+          "bearing": {
+            "name": "Relèvement (°)"
+          },
+          "cpa_nm": {
+            "name": "CPA (NM)"
+          },
+          "tcpa_min": {
+            "name": "TCPA (min)"
+          },
+          "ship_type_code": {
+            "name": "Code AIS du type de navire"
+          },
+          "callsign": {
+            "name": "Indicatif d'appel"
+          },
+          "imo": {
+            "name": "Numéro OMI"
+          },
+          "length_m": {
+            "name": "Longueur (m)"
+          },
+          "beam_m": {
+            "name": "Largeur (m)"
+          },
+          "draught_m": {
+            "name": "Tirant d'eau (m)"
+          },
+          "destination": {
+            "name": "Destination"
           }
         }
       },
@@ -206,6 +275,45 @@
               "tanker": "Navire-citerne",
               "other": "Autre"
             }
+          },
+          "mmsi": {
+            "name": "MMSI"
+          },
+          "name": {
+            "name": "Nom"
+          },
+          "distance_nm": {
+            "name": "Distance (NM)"
+          },
+          "bearing": {
+            "name": "Relèvement (°)"
+          },
+          "cpa_nm": {
+            "name": "CPA (NM)"
+          },
+          "tcpa_min": {
+            "name": "TCPA (min)"
+          },
+          "ship_type_code": {
+            "name": "Code AIS du type de navire"
+          },
+          "callsign": {
+            "name": "Indicatif d'appel"
+          },
+          "imo": {
+            "name": "Numéro OMI"
+          },
+          "length_m": {
+            "name": "Longueur (m)"
+          },
+          "beam_m": {
+            "name": "Largeur (m)"
+          },
+          "draught_m": {
+            "name": "Tirant d'eau (m)"
+          },
+          "destination": {
+            "name": "Destination"
           }
         }
       }
@@ -240,6 +348,36 @@
               "tanker": "Navire-citerne",
               "other": "Autre"
             }
+          },
+          "threat_count": {
+            "name": "Menaces"
+          },
+          "mmsi": {
+            "name": "MMSI"
+          },
+          "name": {
+            "name": "Nom"
+          },
+          "ship_type_code": {
+            "name": "Code AIS du type de navire"
+          },
+          "callsign": {
+            "name": "Indicatif d'appel"
+          },
+          "imo": {
+            "name": "Numéro OMI"
+          },
+          "length_m": {
+            "name": "Longueur (m)"
+          },
+          "beam_m": {
+            "name": "Largeur (m)"
+          },
+          "draught_m": {
+            "name": "Tirant d'eau (m)"
+          },
+          "destination": {
+            "name": "Destination"
           }
         }
       }
@@ -269,6 +407,99 @@
               "cargo": "Cargo",
               "tanker": "Navire-citerne",
               "other": "Autre"
+            }
+          },
+          "mmsi": {
+            "name": "MMSI"
+          },
+          "name": {
+            "name": "Nom"
+          },
+          "class": {
+            "name": "Classe AIS"
+          },
+          "sog": {
+            "name": "Vitesse fond (nd)"
+          },
+          "cog": {
+            "name": "Route fond (°)"
+          },
+          "heading": {
+            "name": "Cap (°)"
+          },
+          "nav_status": {
+            "name": "Statut de navigation",
+            "state": {
+              "under_way_engine": "En route au moteur",
+              "at_anchor": "Au mouillage",
+              "not_under_command": "Non maître de sa manœuvre",
+              "restricted_manoeuvrability": "Manœuvrabilité restreinte",
+              "constrained_by_draught": "Handicapé par son tirant d'eau",
+              "moored": "Amarré",
+              "aground": "Échoué",
+              "fishing": "En pêche",
+              "under_way_sailing": "En route à la voile",
+              "towing_astern": "Remorquage à l'arrière",
+              "pushing_ahead": "Poussage ou remorquage à couple",
+              "ais_sart_active": "AIS-SART actif",
+              "undefined": "Non défini",
+              "reserved": "Réservé"
+            }
+          },
+          "age_s": {
+            "name": "Âge du rapport (s)"
+          },
+          "distance_nm": {
+            "name": "Distance (NM)"
+          },
+          "bearing": {
+            "name": "Relèvement (°)"
+          },
+          "cpa_nm": {
+            "name": "CPA (NM)"
+          },
+          "tcpa_min": {
+            "name": "TCPA (min)"
+          },
+          "ship_type_code": {
+            "name": "Code AIS du type de navire"
+          },
+          "callsign": {
+            "name": "Indicatif d'appel"
+          },
+          "imo": {
+            "name": "Numéro OMI"
+          },
+          "length_m": {
+            "name": "Longueur (m)"
+          },
+          "beam_m": {
+            "name": "Largeur (m)"
+          },
+          "draught_m": {
+            "name": "Tirant d'eau (m)"
+          },
+          "destination": {
+            "name": "Destination"
+          }
+        }
+      },
+      "position": {
+        "state_attributes": {
+          "sog": {
+            "name": "Vitesse fond (nd)"
+          },
+          "cog": {
+            "name": "Route fond (°)"
+          },
+          "heading": {
+            "name": "Cap (°)"
+          },
+          "position_source": {
+            "name": "Source de la position",
+            "state": {
+              "gps": "GPS",
+              "vdo": "AIS (propre navire)"
             }
           }
         }
