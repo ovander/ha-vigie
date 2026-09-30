@@ -5,6 +5,11 @@ versioning: SemVer.
 
 ## [Unreleased]
 
+### Fixed
+- README install section (#45): turn on beta versions in HACS (the only release is a
+  pre-release), hard-reload the browser after the restart, minimum Home Assistant version,
+  and what to check when Vigie does not appear in "Add integration".
+
 ## [0.1.0-beta.1] - 2026-09-28
 
 First beta, the release candidate for the bench and on-board checks: serial AIS receiver,
