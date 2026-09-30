@@ -136,6 +136,7 @@ attribute of `sensor.<boat>_ais_targets`, for cards that read attributes.
 
 ## Requirements
 
+- Home Assistant 2026.2.0 or later.
 - Home Assistant OS or Container with access to the receiver's serial port
   (USB adapter; prefer `/dev/serial/by-id/...`).
 - An AIS receiver or Class B transponder with NMEA 0183 output (typically 38 400 baud).
@@ -143,9 +144,26 @@ attribute of `sensor.<boat>_ais_targets`, for cards that read attributes.
 
 ## Installation (HACS)
 
-1. HACS → ⋮ → Custom repositories → add `https://github.com/ovander/ha-vigie`, category *Integration*.
-2. Install **Vigie**, restart Home Assistant.
-3. Settings → Devices & services → Add integration → **Vigie**.
+1. HACS → ⋮ → Custom repositories → add `https://github.com/ovander/ha-vigie`, category
+   *Integration*.
+2. Open **Vigie** in HACS and download it. Vigie is in beta and HACS hides beta versions by
+   default: in the download dialog, turn on **Show beta versions** and pick the latest
+   `v…-beta.N`. Without it, HACS finds no release to install.
+3. Restart Home Assistant (Settings → System → ⋮ → Restart Home Assistant).
+4. Reload the browser page with a hard refresh (Ctrl+F5, or Cmd+Shift+R on a Mac); in the
+   companion app, Settings → Companion app → Troubleshooting → Reset frontend cache.
+   Otherwise the list of integrations can come from the browser's cache and miss Vigie.
+5. Settings → Devices & services → Add integration → **Vigie**.
+
+### If Vigie does not appear in "Add integration"
+
+- **Version in HACS:** HACS → Vigie should show a `v…-beta.N` version. A commit ID or nothing
+  installed means step 2 missed the beta version: ⋮ → Redownload with beta versions shown.
+- **Files:** `/config/custom_components/vigie/` must exist and contain `manifest.json` with
+  that version (check with the File editor, Samba or SSH add-on).
+- **Home Assistant version:** Settings → About must show 2026.2.0 or later.
+- **Log:** Settings → System → Logs, search for `vigie`. Include those lines if you open an
+  issue.
 
 ## Roadmap
 
