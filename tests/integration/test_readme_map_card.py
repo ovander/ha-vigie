@@ -13,7 +13,7 @@ from freezegun.api import FrozenDateTimeFactory
 from homeassistant.const import STATE_UNAVAILABLE
 from homeassistant.core import HomeAssistant
 
-from custom_components.vigie.const import CONF_WATCH_LIST
+from custom_components.vigie.const import CONF_WATCH_LIST, DOMAIN
 from tests.helpers import BY_ID_PORT, FakePorts
 from tests.integration.common import make_entry, setup
 from tests.integration.test_traffic_entities import play
@@ -22,9 +22,18 @@ from tests.tools import scenario
 README = Path(__file__).parents[2] / "README.md"
 
 
-def readme_map_card() -> dict:
+def readme_map_cards() -> list[dict]:
     blocks = re.findall(r"```yaml\n(.*?)```", README.read_text(encoding="utf-8"), re.S)
-    return next(yaml.safe_load(b) for b in blocks if b.lstrip().startswith("type: map"))
+    return [yaml.safe_load(b) for b in blocks if b.lstrip().startswith("type: map")]
+
+
+def readme_map_card() -> dict:
+    """The traffic card: the one with watched targets."""
+    return next(c for c in readme_map_cards() if "device_tracker.ais_" in str(c["entities"]))
+
+
+def readme_anchor_card() -> dict:
+    return next(c for c in readme_map_cards() if "anchor" in str(c["entities"]))
 
 
 async def test_readme_map_card_entities_exist_and_show_the_boats(
@@ -57,3 +66,29 @@ async def test_readme_map_card_entities_exist_and_show_the_boats(
         if item["entity"].startswith("device_tracker.ais_"):
             assert item.get("label_mode") == "attribute", item
             assert hass.states.get(item["entity"]).attributes.get(item["attribute"]), item
+
+
+async def test_readme_anchor_map_card_shows_boat_and_anchor(
+    hass: HomeAssistant, fake_ports: FakePorts, freezer: FrozenDateTimeFactory
+):
+    """P5 bench pre-run: the boat and the anchor are metres apart, so the card must not
+    cluster them and must be allowed to zoom in (TEST E-07)."""
+    card = readme_anchor_card()
+    assert (card["type"], card["cluster"], card["default_zoom"]) == ("map", False, 18)
+    entry = make_entry(hass)
+    await setup(hass, entry)
+    await hass.services.async_call(
+        DOMAIN,
+        "drop_anchor",
+        {"config_entry_id": entry.entry_id, "latitude": 43.5, "longitude": 7.25},
+        blocking=True,
+    )
+    lines = scenario.generate(scenario.Scenario(scenario.ANCHOR_DRAG, (), 30))
+    await play(hass, freezer, fake_ports[BY_ID_PORT], lines)
+    for item in card["entities"]:
+        state = hass.states.get(item["entity"])
+        assert state is not None, item
+        assert state.state != STATE_UNAVAILABLE, item
+        assert "latitude" in state.attributes and "longitude" in state.attributes, item
+    anchor = hass.states.get("sensor.garnet_anchor_distance")
+    assert (anchor.attributes["latitude"], anchor.attributes["longitude"]) == (43.5, 7.25)

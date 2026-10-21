@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.22 (draft) |
+| Version | 0.23 (draft) |
 | Date | 2026-10-21 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.23 | 2026-10-21 | WP18 (#55): E-07 checklist in `docs/test-reports/P5-report.md`, pre-run recorded; README anchor map card checked against real entities (`tests/integration/test_readme_map_card.py`); P5 report template. |
 | 0.22 | 2026-10-21 | WP17 (#53): F-ANC-01…09 implemented (`tests/integration/test_anchor_watch.py`); F-ANC-06 made concrete (state injected in Home Assistant's storage, saved about 1 s after a change, invalid state starts disarmed, deleted with the entry); F-ENT-08 extended to the anchor entities (watch armed); D-07 preset `anchor-drag` implemented (`AnchorSwing`, checked in `tests/tools/test_scenario.py`); E-07 drops the anchor with the preset's coordinates. |
 | 0.21 | 2026-10-21 | WP16 (#49): U-ANC-01…12 implemented (`tests/domain/test_anchor.py`) after SPEC OD-21…OD-26 were resolved (SPEC v0.15); U-ANC-06 and U-ANC-07 made precise (radius change restarts the timer; a position returning outside keeps `no_position` until inside or `drag`); U-ANC-10 names `restore()`; §7 gate 2 covers `anchor.py`. |
 | 0.20 | 2026-10-21 | WP15 (#47): anchor watch tests planned (SPEC v0.14 §8.4, §9.6, §10.4): new §3.7 `U-ANC`, §4.6 `F-ANC`, E-07 (bench `anchor-drag`), E-17 (in port overnight), E-24 (at an anchorage); D-07 preset `anchor-drag` planned; §7 gate 2 and 4 to cover `anchor.py`; §9 row P5. All Planned; values follow the recommended options of SPEC OD-21…OD-26, re-checked once the owner decides. |
@@ -321,7 +322,7 @@ Setup (TP-01, TP-02, SPEC OD-12 — resolved v0.3):
 | E-04 | Kill the replay tool (or the feed side of `socat`), restart after 30 s | Unavailable → recovered without HA restart |
 | E-05 | D-08 burst at real speed on the Pi | CPU and event-loop lag within F-PERF-01 limits on the target hardware |
 | E-06 | HA restart during replay | Integration reloads, entities come back, no duplicates |
-| E-07 | P5: replay `anchor-drag` at real speed, drop the anchor at the start with `vigie.drop_anchor` (latitude 43.5, longitude 7.25, radius 50), README anchor automation installed; restart HA once while armed | Anchor shown on the map card; no alarm while swinging; alarm `drag` where `--list` says (± 2 s) and one notification on the phone; armed state and anchor point survive the restart |
+| E-07 | P5: replay `anchor-drag` at real speed, drop the anchor at the start with `vigie.drop_anchor` (latitude 43.5, longitude 7.25, radius 50), README anchor automation installed; restart HA once while armed | Anchor shown on the map card; no alarm while swinging; alarm `drag` where `--list` says (± 2 s) and one notification on the phone; armed state and anchor point survive the restart. Checklist in `docs/test-reports/P5-report.md` |
 
 ### 5.2 Stage E-2 — On board, in port (real receiver)
 

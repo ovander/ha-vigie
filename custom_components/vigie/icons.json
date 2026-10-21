@@ -1,0 +1,27 @@
+{
+  "entity": {
+    "number": {
+      "anchor_radius": {
+        "default": "mdi:radius-outline"
+      }
+    },
+    "sensor": {
+      "anchor_distance": {
+        "default": "mdi:anchor"
+      }
+    },
+    "switch": {
+      "anchor_watch": {
+        "default": "mdi:anchor"
+      }
+    }
+  },
+  "services": {
+    "drop_anchor": {
+      "service": "mdi:anchor"
+    },
+    "raise_anchor": {
+      "service": "mdi:arrow-up-bold-circle-outline"
+    }
+  }
+}

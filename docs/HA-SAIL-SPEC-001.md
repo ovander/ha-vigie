@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.17 (draft) |
+| Version | 0.18 (draft) |
 | Date | 2026-10-21 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.18 | 2026-10-21 | WP18 (#55), after the E-07 pre-run: §9.6 anchor icons (`icons.json`) and a documented map card for the anchor (no clustering, zoom 18), since the built-in card merged the boat and the anchor into one marker. |
 | 0.17 | 2026-10-21 | WP17 (#53): anchor watch entities, services and options implemented (§9.6, §11.2). §10.4: the state is kept with Home Assistant's storage helper, written about 1 s after a change, instead of `RestoreEntity` (saved only every 15 min, too slow for a power cut); deleted with the entry; an invalid stored state starts disarmed. §9.6: entity IDs follow the boat name; the distance sensor writes a new anchor point or radius at once. §9.5: the diagnostics download carries the anchor watch without its position. C-11 adds `services.py`. |
 | 0.16 | 2026-10-21 | #51: noforeignland tracking contract added as X-12 (`docs/NFL-TRACK-API-001.md`). Owner requirement: positions buffered during an internet outage and sent at recovery (X-12 §8.5, R-1). New OD-28, open: where the buffering producer lives. §2.2 updated. No change to Vigie's behaviour. |
 | 0.15 | 2026-10-21 | P5 decisions (owner, "following your recommendations") and WP16 (#49). OD-21…OD-26 resolved with the recommended options. New OD-27, resolved: sharing the boat's track online is done by Home Assistant from `device_tracker.<boat>`, never by Vigie (§2.2). §8.4: a radius change restarts the drag timer; a position that returns outside keeps the `no_position` alarm on until the boat is inside or the drag alarm takes over. `anchor.py` implemented (C-11). |
@@ -367,7 +368,9 @@ Services (registered once for the domain, target a config entry):
 - `vigie.drop_anchor`: optional `latitude`, `longitude` (both or none) and `radius` (m). Arms or re-drops (§8.4).
 - `vigie.raise_anchor`: disarms and clears the alarm.
 
-Every service field and error has a translated label and description (`strings.json`, `en.json`, `fr.json`).
+Every service field and error has a translated label and description (`strings.json`, `en.json`, `fr.json`). The switch and the distance sensor show an anchor icon, the radius a radius icon (`icons.json`).
+
+Map card: the README documents a built-in map card with the boat and `sensor.<boat>_anchor_distance` (whose `latitude`/`longitude` are the anchor point), with `cluster: false` and `default_zoom: 18`. Without them the card merges the boat and the anchor, metres apart, into one numbered marker (found in the E-07 pre-run).
 
 ## 10. Runtime behaviour
 

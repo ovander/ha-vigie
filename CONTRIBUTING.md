@@ -81,6 +81,15 @@ Same bench, with the MMSIs 235000011 and 235000012 on the watch list and the REA
 card on a dashboard: replay `--preset named-traffic` once and fill in
 `docs/test-reports/P3-report.md` §5.
 
+### P5 bench (anchor watch, E-07)
+
+Same bench, with the README's anchor-alarm automation installed and
+`sensor.<boat>_anchor_distance` added to the map card. The simulated boat lies 30 m from
+its anchor, so drop the anchor at the preset's coordinates, not with the switch: in
+Developer tools → Actions, run `vigie.drop_anchor` with latitude 43.5, longitude 7.25 and
+radius 50, then replay `--preset anchor-drag` once at real speed (15 min). The alarm is due
+at 698 s (`--list`). Fill in `docs/test-reports/P5-report.md` §5.
+
 ## Workflow
 
 1. Open or pick an issue (label it with its phase and layer).
