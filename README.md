@@ -135,8 +135,25 @@ automation:
               interruption-level: critical
 ```
 
-The anchor point appears on the map card when you add `sensor.<boat>_anchor_distance` to
-its entities. As for collisions, the anchor watch is an aid: keep a watch on deck.
+To see the boat swing around its anchor, add a map card with the boat and the anchor
+point (the `latitude`/`longitude` of `sensor.<boat>_anchor_distance`). The boat and the
+anchor are only metres apart: `cluster: false` keeps two markers instead of one numbered
+bubble, and `default_zoom: 18` lets the card zoom in close enough to separate them:
+
+```yaml
+type: map
+title: Anchor
+hours_to_show: 2
+auto_fit: true
+cluster: false
+default_zoom: 18
+entities:
+  - entity: device_tracker.garnet
+  - entity: sensor.garnet_anchor_distance
+    label_mode: icon
+```
+
+As for collisions, the anchor watch is an aid: keep a watch on deck.
 
 ## Ship details
 
@@ -225,7 +242,7 @@ attribute of `sensor.<boat>_ais_targets`, for cards that read attributes.
 | P2 | CPA/TCPA, collision-risk alert, watch-list trackers | built; bench and on-board checks pending |
 | P3 | AIS static data (names, types, dimensions), map card | built; on-board checks pending |
 | P4 | Additional instruments (wind, depth) and sailing performance | later |
-| P5 | Anchor watch | in progress |
+| P5 | Anchor watch | built; bench and on-board checks pending |
 
 ## Documentation
 
