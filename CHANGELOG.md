@@ -5,31 +5,41 @@ versioning: SemVer.
 
 ## [Unreleased]
 
+## [0.2.0-beta.1] - 2026-10-21
+
+Second beta: the anchor watch (phase P5) on top of 0.1.0-beta.1. Tested on synthetic data
+and in a bench pre-run in the official Home Assistant 2026.2.3 container; the formal bench
+check and the on-board checks (in port overnight, at an anchorage) are still to do — see
+`docs/test-reports/P5-report.md`. No change to the existing entities.
+
 ### Added
-- Anchor watch specified (#47), not implemented yet: SPEC v0.14 §8.4, §9.6, §10.4 (switch,
-  radius, drag and position-loss alarm, distance to the anchor, `drop_anchor` /
-  `raise_anchor` services, restored after a restart) and TEST v0.20 (U-ANC, F-ANC, E-07,
-  E-17, E-24).
-- Anchor watch logic (#49), not yet visible in Home Assistant: pure module `anchor.py`
-  (drop and raise, swing radius, drag alarm after 20 s outside and latched, position-loss
-  alarm after 60 s, maximum distance, state kept across a restart). Decisions OD-21…OD-26
-  resolved; OD-27: the boat's track is shared online by Home Assistant, Vigie stays offline.
-- noforeignland tracking API contract (`docs/NFL-TRACK-API-001.md`, #51), with the owner's
-  requirement to buffer positions during an internet outage; OD-28 (where the uploader
-  lives) open.
-- Anchor watch in Home Assistant (#53): `switch.<boat>_anchor_watch`, radius
-  (`number.<boat>_anchor_radius`, 10–500 m), `binary_sensor.<boat>_anchor_alarm` (dragging or
-  position lost), `sensor.<boat>_anchor_distance` (shows the anchor on the map card),
-  actions `vigie.drop_anchor` and `vigie.raise_anchor`, options for both alarm delays. The
-  watch is saved about a second after each change, so it survives a power cut. README
-  alert example; `anchor-drag` bench scenario.
-- P5 bench material (#55): README anchor map card, anchor icons, bench recipe in
-  `CONTRIBUTING.md`, P5 report with the bench pre-run.
+- Anchor watch (#49, #53): turn on `switch.<boat>_anchor_watch` when the anchor is down,
+  or use the actions `vigie.drop_anchor` (at the boat's position or at a given point, with
+  an optional radius) and `vigie.raise_anchor`. New entities:
+  - `number.<boat>_anchor_radius`: swing radius, 10–500 m, default 50 m;
+  - `binary_sensor.<boat>_anchor_alarm`: on when the boat has stayed outside the radius
+    for 20 s (*Dragging*, stays on until the watch is turned off or the anchor dropped
+    again) or when no position has been received for 60 s (*Position lost*);
+  - `sensor.<boat>_anchor_distance`: distance and bearing to the anchor, largest distance
+    since the drop, and the anchor point for the map card.
+- Options for both alarm delays (`anchor_confirm`, `anchor_position_timeout`).
+- The anchor watch is saved about a second after each change and comes back after a
+  restart or a power cut, with an alarm that was on.
+- README: anchor alert automation and anchor map card (boat and anchor kept apart),
+  both tested as published (#53, #55). Anchor icons (#55).
+- Diagnostics download: anchor watch state, without the anchor's position (#53).
+- Bench: `anchor-drag` scenario preset, P5 bench recipe in `CONTRIBUTING.md`, P5 report
+  with the bench pre-run (#53, #55).
+- Specification: anchor watch (SPEC v0.14–v0.18, decisions OD-21…OD-26 and OD-27) and its
+  tests (TEST v0.20–v0.23) (#47, #49); noforeignland tracking API contract
+  (`docs/NFL-TRACK-API-001.md`), with the requirement to buffer positions during an
+  internet outage; where the uploader lives (OD-28) is still open (#51). Vigie itself
+  still makes no network connection.
 
 ### Fixed
-- README install section (#45): turn on beta versions in HACS (the only release is a
-  pre-release), hard-reload the browser after the restart, minimum Home Assistant version,
-  and what to check when Vigie does not appear in "Add integration".
+- README install section (#45): turn on beta versions in HACS (the only releases are
+  pre-releases), hard-reload the browser after the restart, minimum Home Assistant
+  version, and what to check when Vigie does not appear in "Add integration".
 
 ## [0.1.0-beta.1] - 2026-09-28
 
@@ -133,5 +143,6 @@ P1–P3). Tested on synthetic data only; see `docs/test-reports/`.
 - AIS decoder rejects payload armoring characters 0x58–0x5F (`X`…`_`), which the AIVDM
   specification does not allow; they were decoded as six-bit values 40–47 (#11).
 
-[Unreleased]: https://github.com/ovander/ha-vigie/compare/v0.1.0-beta.1...HEAD
+[Unreleased]: https://github.com/ovander/ha-vigie/compare/v0.2.0-beta.1...HEAD
+[0.2.0-beta.1]: https://github.com/ovander/ha-vigie/compare/v0.1.0-beta.1...v0.2.0-beta.1
 [0.1.0-beta.1]: https://github.com/ovander/ha-vigie/releases/tag/v0.1.0-beta.1
