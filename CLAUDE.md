@@ -24,8 +24,8 @@ roadmap, one phase at a time.
 - **Clean room (SPEC §3.1).** Never copy code, structure or data files from
   `ha-smart0183serial` or any non-permissively licensed project. pyais (MIT) is allowed
   **only** as a test oracle/generator, never as a runtime dependency.
-- **Layering (SPEC §5.1).** `custom_components/vigie/nmea/`, `state.py`, `geo.py`, `hub.py`
-  and `traffic.py` are pure Python: **no `homeassistant` import**, not even indirectly. The CI test
+- **Layering (SPEC §5.1).** `custom_components/vigie/nmea/`, `state.py`, `geo.py`, `hub.py`,
+  `traffic.py` and `anchor.py` are pure Python: **no `homeassistant` import**, not even indirectly. The CI test
   `tests/nmea/test_no_ha_import.py` enforces this; extend it to every new pure module.
   HA types in `__init__.py` stay under `TYPE_CHECKING`.
 - **Scope.** Implement only what the current phase requires. No wind, depth, STW or

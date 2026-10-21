@@ -13,6 +13,7 @@ PURE_MODULES = [
     "custom_components.vigie.state",
     "custom_components.vigie.hub",
     "custom_components.vigie.traffic",
+    "custom_components.vigie.anchor",
 ]
 
 

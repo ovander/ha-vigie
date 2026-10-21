@@ -9,7 +9,11 @@ versioning: SemVer.
 - Anchor watch specified (#47), not implemented yet: SPEC v0.14 §8.4, §9.6, §10.4 (switch,
   radius, drag and position-loss alarm, distance to the anchor, `drop_anchor` /
   `raise_anchor` services, restored after a restart) and TEST v0.20 (U-ANC, F-ANC, E-07,
-  E-17, E-24). Decisions OD-21…OD-26 open.
+  E-17, E-24).
+- Anchor watch logic (#49), not yet visible in Home Assistant: pure module `anchor.py`
+  (drop and raise, swing radius, drag alarm after 20 s outside and latched, position-loss
+  alarm after 60 s, maximum distance, state kept across a restart). Decisions OD-21…OD-26
+  resolved; OD-27: the boat's track is shared online by Home Assistant, Vigie stays offline.
 
 ### Fixed
 - README install section (#45): turn on beta versions in HACS (the only release is a

@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.14 (draft) |
+| Version | 0.15 (draft) |
 | Date | 2026-10-21 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.15 | 2026-10-21 | P5 decisions (owner, "following your recommendations") and WP16 (#49). OD-21…OD-26 resolved with the recommended options. New OD-27, resolved: sharing the boat's track online is done by Home Assistant from `device_tracker.<boat>`, never by Vigie (§2.2). §8.4: a radius change restarts the drag timer; a position that returns outside keeps the `no_position` alarm on until the boat is inside or the drag alarm takes over. `anchor.py` implemented (C-11). |
 | 0.14 | 2026-10-21 | WP15 (#47): anchor watch specified, not implemented. New §8.4 (logic, pure module `anchor.py`, C-11), §9.6 (entities and services), §10.4 (restart), §11.2 options `anchor_confirm` and `anchor_position_timeout`, §13 phase P5, §2.1 scope line. New open decisions OD-21…OD-26 with recommendations. |
 | 0.13 | 2026-09-28 | #41: §9 — every attribute has a translated label; enumerated attribute values (`nav_status`, `position_source`, `ship_type`) are translated; the own-boat tracker has translation key `position`. |
 | 0.12 | 2026-09-27 | WP13 (#36): static data on the entities (§9.2, §9.3, §9.4): ship type (translated category and code), call sign, IMO, length, beam, draught, destination on the closest target/threat sensors, `collision_risk` and the watch-list trackers; ship type and length in the `targets` list; static data that changes is written at once. |
@@ -52,7 +53,7 @@ The integration must run standalone on a boat-mounted Home Assistant instance (t
 - AIS target table with expiry; aggregate traffic sensor; opt-in tracking of selected MMSIs.
 - CPA/TCPA computation for each target and a closest-threat alert (§8).
 - UI configuration (config flow + options flow), HACS-installable.
-- Anchor watch on own position: swing radius, drag and position-loss alarm (§8.4, §9.6). Specified in v0.14; phase P5 (OD-21, open).
+- Anchor watch on own position: swing radius, drag and position-loss alarm (§8.4, §9.6). Phase P5 (OD-21, resolved v0.15).
 
 ### 2.2 Out of scope (v1)
 
@@ -60,7 +61,7 @@ The integration must run standalone on a boat-mounted Home Assistant instance (t
 - Navigation / charting (OpenCPN covers this).
 - Transmitting NMEA or AIS (read-only integration).
 - Multiple ports, TCP/UDP input, NMEA 2000.
-- Cloud services of any kind.
+- Cloud services of any kind. Sharing the boat's track online (for example with friends and family on a tracking site) is done by Home Assistant itself, from `device_tracker.<boat>`, with an automation documented in the README; Vigie opens no connection (OD-27).
 
 ## 3. Context and constraints
 
@@ -274,7 +275,7 @@ CPA/TCPA assume straight-line constant-speed motion from the last report (both v
 
 ### 8.4 Anchor watch (C-11, P5)
 
-Specified in v0.14, not implemented. Every decision below marked OD-21…OD-26 is **open** (§14); the text describes the recommended option.
+Decisions OD-21…OD-26 resolved v0.15. The logic (`anchor.py`) is implemented in WP16 (#49); the entities, services and restore (§9.6, §10.4) follow in WP17.
 
 The anchor watch uses own position only (RMC/GGA, VDO fallback, §7.4). It needs no new source and no AIS target. Logic lives in the pure module `anchor.py` (no HA import, NFR-02; mypy strict, coverage gate), driven by the coordinator tick with the injectable clock.
 
@@ -284,9 +285,9 @@ The anchor watch uses own position only (RMC/GGA, VDO fallback, §7.4). It needs
 
 **Distance.** At each tick, distance and bearing from the boat to the anchor point with `geo.py` (haversine). The raw own position is used, not the 5 m dead-banded tracker state (§10.2), and it is not dead-reckoned: at anchor SOG is mostly GPS noise.
 
-**Drag alarm.** The boat is *outside* when distance > radius. The alarm turns on with reason `drag` once the boat has been outside continuously for `anchor_confirm` (default 20 s, OD-25). Returning inside before that resets the timer. GPS noise (±5–10 m) and swinging therefore do not raise it while the radius leaves a margin. A drag alarm latches (OD-23): it stays on when the boat comes back inside, until the watch is disarmed or the anchor is re-dropped. Changing the radius while armed applies at once, and does not clear a latched alarm.
+**Drag alarm.** The boat is *outside* when distance > radius. The alarm turns on with reason `drag` once the boat has been outside continuously for `anchor_confirm` (default 20 s, OD-25). Returning inside before that resets the timer. GPS noise (±5–10 m) and swinging therefore do not raise it while the radius leaves a margin. At the anchor point itself (distance < 1 cm) the bearing is `None`. A drag alarm latches (OD-23): it stays on when the boat comes back inside, until the watch is disarmed or the anchor is re-dropped. Changing the radius while armed applies at once and restarts the drag timer (the boat must then be outside the new radius for `anchor_confirm`); it does not clear a latched alarm.
 
-**Position-loss alarm.** While armed, when no own position has been received for `anchor_position_timeout` (default 60 s, OD-24), the alarm turns on with reason `no_position`. A port disconnect counts the same. This alarm clears by itself when a position returns and the boat is inside; if it is outside, the drag rule applies from that moment. The watch must never stay silent because its input is gone.
+**Position-loss alarm.** While armed, when no own position has been received for `anchor_position_timeout` (default 60 s, OD-24), the alarm turns on with reason `no_position`. A port disconnect counts the same. This alarm clears by itself when a position returns and the boat is inside. If the position returns outside, the alarm stays on (`no_position`) and the drag timer starts; after `anchor_confirm` outside it becomes a latched `drag` alarm. A position whose fix is older than the timeout counts as no position. The watch must never stay silent because its input is gone.
 
 **Clean room (§3.1).** `ha-smart-anchor` (X-06) is prior art only: nothing is read from it or reused.
 
@@ -349,7 +350,7 @@ Static data (§7.3) is kept per MMSI apart from the positions and merged into a 
 
 ### 9.6 Anchor watch (P5)
 
-Specified in v0.14, not implemented; controls per OD-22 (open, recommended option shown). All on the boat's device, translation keys, unique IDs `{entry_id}_{key}`.
+Controls per OD-22 (resolved v0.15); to be implemented in WP17. All on the boat's device, translation keys, unique IDs `{entry_id}_{key}`.
 
 | Entity | Content |
 |---|---|
@@ -458,12 +459,13 @@ Changing an option reloads the entry. The anchor radius is not an option: it cha
 | ~~OD-19~~ | ~~Map card~~ | **Resolved v0.10:** document a built-in map card configuration (own boat, watched targets); the full picture stays in the `targets` attribute; a custom card (separate HACS plugin) is left for after v1 (§13) | — |
 | ~~OD-20~~ | ~~Static fields exposed~~ | **Resolved v0.10:** name, call sign, IMO, ship type, length, beam, draught, destination; no ETA (no year, often stale), no EPFD (§7.3, §9.4) | — |
 | OD-14 | Serial baud rate | 38 400 (typical AIS) vs 4 800; confirmed by X-09 and by the current smart0183serial setting. Baud rate is configurable, the probe suggests the other rate (§11.1) | P1 (from X-09, issue #2) |
-| OD-21 | Anchor watch: phase | (a) new phase P5, after P3 and independent of P4 (no new hardware) — **recommended**; (b) part of v1 before the first stable release; (c) separate integration | WP16 |
-| OD-22 | Anchor watch: controls | (a) switch + radius number + services `drop_anchor` / `raise_anchor` — **recommended** (dashboard tile, automations, explicit coordinates); (b) services only; (c) options flow only (too slow at an anchorage) | WP16 |
-| OD-23 | Anchor watch: drag alarm latch | (a) latched until disarmed or re-dropped — **recommended** (a drag is never cleared by a swing back inside); (b) clears when the boat returns inside | WP16 |
-| OD-24 | Anchor watch: position lost while armed | (a) alarm `no_position` after 60 s without position, cleared when it returns inside — **recommended**; (b) distance unavailable only, no alarm (silent failure) | WP16 |
-| OD-25 | Anchor watch: anchor point and defaults | (a) own position at arming, optional explicit coordinates in the service, no bow offset; radius 50 m (10–500), confirmation 20 s continuously outside — **recommended**; (b) also a bow offset or a radius from chain length and depth (no depth source, §3.3) | WP16 |
-| OD-26 | Anchor watch: HA restart while armed | (a) restore armed state, anchor point, radius, maximum distance and a latched alarm — **recommended** (intermittent power, §3.2); (b) disarm on restart | WP17 |
+| ~~OD-21~~ | ~~Anchor watch: phase~~ | **Resolved v0.15:** new phase P5, after P3 and independent of P4 (§13) | — |
+| ~~OD-22~~ | ~~Anchor watch: controls~~ | **Resolved v0.15:** switch + radius number + services `drop_anchor` / `raise_anchor` (§9.6) | — |
+| ~~OD-23~~ | ~~Anchor watch: drag alarm latch~~ | **Resolved v0.15:** latched until disarmed or re-dropped (§8.4) | — |
+| ~~OD-24~~ | ~~Anchor watch: position lost while armed~~ | **Resolved v0.15:** alarm `no_position` after 60 s without position, cleared when a position inside returns (§8.4) | — |
+| ~~OD-25~~ | ~~Anchor watch: anchor point and defaults~~ | **Resolved v0.15:** own position at arming or explicit coordinates, no bow offset; radius 50 m (10–500), 20 s continuously outside (§8.4, §11.2) | — |
+| ~~OD-26~~ | ~~Anchor watch: HA restart while armed~~ | **Resolved v0.15:** armed state, anchor point, radius, maximum distance and a latched drag alarm restored (§10.4) | — |
+| ~~OD-27~~ | ~~Sharing the boat's track online (tracking site for friends and family)~~ | **Resolved v0.15:** Vigie stays offline (§2.2, §12); Home Assistant uploads `device_tracker.<boat>` with its own automation, documented and tested as a README recipe in a later work package | — |
 
 (OD-05 and OD-09 from v0.1 were tied to NMEA 2000 and polars; both moved to P4 and are no longer open for v1.)
 
