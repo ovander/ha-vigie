@@ -23,6 +23,8 @@ versioning: SemVer.
   actions `vigie.drop_anchor` and `vigie.raise_anchor`, options for both alarm delays. The
   watch is saved about a second after each change, so it survives a power cut. README
   alert example; `anchor-drag` bench scenario.
+- P5 bench material (#55): README anchor map card, anchor icons, bench recipe in
+  `CONTRIBUTING.md`, P5 report with the bench pre-run.
 
 ### Fixed
 - README install section (#45): turn on beta versions in HACS (the only release is a
