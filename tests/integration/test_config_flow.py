@@ -7,6 +7,8 @@ from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.vigie.const import (
+    CONF_ANCHOR_CONFIRM,
+    CONF_ANCHOR_POSITION_TIMEOUT,
     CONF_BAUDRATE,
     CONF_CPA_THRESHOLD,
     CONF_EXCLUDE_STATIONARY,
@@ -163,6 +165,8 @@ OPTIONS = {
     CONF_TCPA_THRESHOLD: 20,
     CONF_EXCLUDE_STATIONARY: False,
     CONF_WATCH_LIST: ["235000101", "235000101"],  # duplicate dropped
+    CONF_ANCHOR_CONFIRM: 30,
+    CONF_ANCHOR_POSITION_TIMEOUT: 90,
 }
 
 
@@ -186,6 +190,7 @@ async def test_f_life_07_every_option_round_trips(hass: HomeAssistant, fake_port
     assert coordinator.watch_list == (235000101,)
     settings = coordinator.threat_settings
     assert (settings.cpa_nm, settings.tcpa_min, settings.exclude_stationary) == (0.3, 20, False)
+    assert (coordinator.anchor.confirm_s, coordinator.anchor.position_timeout_s) == (30, 90)
 
     # The form shows the stored values next time; clearing the MMSI removes it
     result = await hass.config_entries.options.async_init(entry.entry_id)

@@ -79,4 +79,12 @@ async def async_get_config_entry_diagnostics(
             "class_b": classes.count("B"),
             "static": len(coordinator.statics),
         },
+        # The anchor point is a position: not exported
+        "anchor": {
+            "armed": coordinator.anchor.armed,
+            "alarm": coordinator.anchor_status.reason,
+            "radius_m": coordinator.anchor.radius_m,
+            "distance_m": coordinator.anchor_status.distance_m,
+            "max_distance_m": coordinator.anchor_status.max_distance_m,
+        },
     }

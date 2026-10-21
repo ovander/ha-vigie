@@ -43,7 +43,9 @@
           "cpa_threshold": "Seuil de CPA",
           "tcpa_threshold": "Seuil de TCPA",
           "exclude_stationary": "Ignorer les cibles au mouillage ou amarrées",
-          "watch_list": "Liste de suivi (MMSI)"
+          "watch_list": "Liste de suivi (MMSI)",
+          "anchor_confirm": "Délai de l'alarme de mouillage",
+          "anchor_position_timeout": "Veille au mouillage : position perdue après"
         },
         "data_description": {
           "update_interval": "Les entités écrivent leur état au plus une fois par intervalle.",
@@ -55,7 +57,9 @@
           "cpa_threshold": "Une cible est une menace si son point de rapprochement maximal est plus proche que cette valeur…",
           "tcpa_threshold": "…et si ce point est atteint dans ce délai.",
           "exclude_stationary": "Les cibles de classe A au mouillage ou amarrées, à moins de 0,5 nd, ne déclenchent jamais de risque de collision.",
-          "watch_list": "Bateaux à suivre individuellement, par exemple des amis ou votre annexe : saisissez chaque MMSI à 9 chiffres puis Entrée. Chacun a son propre suivi sur la carte."
+          "watch_list": "Bateaux à suivre individuellement, par exemple des amis ou votre annexe : saisissez chaque MMSI à 9 chiffres puis Entrée. Chacun a son propre suivi sur la carte.",
+          "anchor_confirm": "L'alarme de mouillage se déclenche quand le bateau est resté hors du rayon pendant cette durée.",
+          "anchor_position_timeout": "Pendant la veille au mouillage, l'alarme se déclenche quand aucune position n'a été reçue pendant cette durée."
         }
       }
     },
@@ -316,6 +320,20 @@
             "name": "Destination"
           }
         }
+      },
+      "anchor_distance": {
+        "name": "Distance à l'ancre",
+        "state_attributes": {
+          "bearing_to_anchor": {
+            "name": "Relèvement de l'ancre (°)"
+          },
+          "max_distance_m": {
+            "name": "Distance maximale (m)"
+          },
+          "radius_m": {
+            "name": "Rayon (m)"
+          }
+        }
       }
     },
     "binary_sensor": {
@@ -378,6 +396,18 @@
           },
           "destination": {
             "name": "Destination"
+          }
+        }
+      },
+      "anchor_alarm": {
+        "name": "Alarme de mouillage",
+        "state_attributes": {
+          "reason": {
+            "name": "Cause",
+            "state": {
+              "drag": "Dérapage",
+              "no_position": "Position perdue"
+            }
           }
         }
       }
@@ -504,11 +534,80 @@
           }
         }
       }
+    },
+    "switch": {
+      "anchor_watch": {
+        "name": "Veille au mouillage",
+        "state_attributes": {
+          "anchor_latitude": {
+            "name": "Latitude de l'ancre"
+          },
+          "anchor_longitude": {
+            "name": "Longitude de l'ancre"
+          },
+          "radius_m": {
+            "name": "Rayon (m)"
+          },
+          "armed_at": {
+            "name": "Mouillé à"
+          }
+        }
+      }
+    },
+    "number": {
+      "anchor_radius": {
+        "name": "Rayon d'évitage"
+      }
     }
   },
   "device": {
     "watched_target": {
       "name": "AIS {mmsi}"
+    }
+  },
+  "exceptions": {
+    "no_own_position": {
+      "message": "Pas de position du bateau : attendez un point GPS, ou donnez la latitude et la longitude de l'ancre."
+    },
+    "unknown_entry": {
+      "message": "Aucun bateau Vigie n'a l'identifiant {entry_id}."
+    },
+    "entry_not_loaded": {
+      "message": "{boat} n'est pas démarré : vérifiez son port série."
+    }
+  },
+  "services": {
+    "drop_anchor": {
+      "name": "Mouiller l'ancre",
+      "description": "Démarre la veille au mouillage à la position du bateau, ou au point donné, avec le rayon donné. Mouiller à nouveau déplace l'ancre et efface l'alarme.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Bateau",
+          "description": "Le bateau Vigie dont la veille au mouillage change."
+        },
+        "latitude": {
+          "name": "Latitude",
+          "description": "Latitude de l'ancre, par exemple lue sur le traceur. À donner avec la longitude, ou laisser les deux vides pour la position du bateau."
+        },
+        "longitude": {
+          "name": "Longitude",
+          "description": "Longitude de l'ancre ; donnée avec la latitude."
+        },
+        "radius": {
+          "name": "Rayon",
+          "description": "Rayon d'évitage en mètres (10–500). Vide : le rayon actuel est gardé."
+        }
+      }
+    },
+    "raise_anchor": {
+      "name": "Lever l'ancre",
+      "description": "Arrête la veille au mouillage et efface son alarme.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Bateau",
+          "description": "Le bateau Vigie dont la veille au mouillage change."
+        }
+      }
     }
   }
 }

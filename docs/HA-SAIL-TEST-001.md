@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.21 (draft) |
+| Version | 0.22 (draft) |
 | Date | 2026-10-21 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.22 | 2026-10-21 | WP17 (#53): F-ANC-01…09 implemented (`tests/integration/test_anchor_watch.py`); F-ANC-06 made concrete (state injected in Home Assistant's storage, saved about 1 s after a change, invalid state starts disarmed, deleted with the entry); F-ENT-08 extended to the anchor entities (watch armed); D-07 preset `anchor-drag` implemented (`AnchorSwing`, checked in `tests/tools/test_scenario.py`); E-07 drops the anchor with the preset's coordinates. |
 | 0.21 | 2026-10-21 | WP16 (#49): U-ANC-01…12 implemented (`tests/domain/test_anchor.py`) after SPEC OD-21…OD-26 were resolved (SPEC v0.15); U-ANC-06 and U-ANC-07 made precise (radius change restarts the timer; a position returning outside keeps `no_position` until inside or `drag`); U-ANC-10 names `restore()`; §7 gate 2 covers `anchor.py`. |
 | 0.20 | 2026-10-21 | WP15 (#47): anchor watch tests planned (SPEC v0.14 §8.4, §9.6, §10.4): new §3.7 `U-ANC`, §4.6 `F-ANC`, E-07 (bench `anchor-drag`), E-17 (in port overnight), E-24 (at an anchorage); D-07 preset `anchor-drag` planned; §7 gate 2 and 4 to cover `anchor.py`; §9 row P5. All Planned; values follow the recommended options of SPEC OD-21…OD-26, re-checked once the owner decides. |
 | 0.19 | 2026-09-28 | #41: new F-ENT-08 (every attribute of every entity has a translated label, enumerated values translated), after the P3 bench pre-run found untranslated labels. |
@@ -71,7 +72,7 @@ Principles:
 | D-07 | Traffic scenarios | Scripted generator (`python -m tests.tools.scenario`; one preset per §3.4 geometry: `head-on`, `clear-crossing`, `crossing`, `overtaking`, `not-urgent`, `diverging`, `parallel`, `anchored`, `multi-target`; `named-traffic` for P3; `--list` prints their expected values) | Own boat + targets on defined tracks, emitted as timed RMC + VDM sentences; targets with static data also send type 5 (Class A) or type 24 A/B (Class B) | U-TRF, F-TRF, E-02, P3 bench |
 | D-08 | Burst file | Derived from D-03 | ≥ 50 sentences/s for 60 s | F-PERF, E-05 |
 
-From P5 (planned), D-07 also gets the preset `anchor-drag`: own boat at anchor swinging on a 30 m circle with ± 8 m position noise (fixed seed) for 10 min, then drifting downwind at 0.5 kn; RMC only, no AIS target. `--list` prints the time the boat leaves a 50 m radius and the time the alarm is expected (+ 20 s).
+From P5, D-07 also has the preset `anchor-drag`: own boat at anchor (43.5° N, 7.25° E) swinging on a 30 m circle with ± 8 m position noise on each axis (fixed seed) for 10 min, then dragging straight out at 0.5 kn without noise; RMC only, no AIS target. `--list` prints the time the boat leaves a 50 m radius (678 s) and the time the alarm is expected (698 s, + 20 s). Drop the anchor at the preset's coordinates, not at the boat's position (the boat starts 30 m from the anchor).
 
 Until X-09 exists (issue #2), tests that name D-05/D-06 run on synthetic stand-ins: a mixed stream built from D-03/D-07 for F-HUB-01 and F-ENT-01, a 10-minute D-07 scenario for F-PERF-02. Each is re-run on the real capture under issue #2. Synthetic sentences are never presented as captured data. D-04 lives in `tests/fixtures/malformed.nmea` and D-08 in `tests/fixtures/burst_60s.nmea` (generated from D-03 with a fixed seed).
 
@@ -253,7 +254,7 @@ F-HUB-01, 02, 04 and 05 prove hub behaviour (routing, counters, backoff, framing
 | F-ENT-05 | Heading never provided | `heading` unavailable, no error | §7.4 | Done |
 | F-ENT-06 | Two config entries (two boats, two fake ports) | No unique-ID collision | NFR-06 | Done |
 | F-ENT-07 | Every entity checked in the entity registry | Unique ID prefixed by entry ID | NFR-06 | Done |
-| F-ENT-08 | Every entity filled by the `named-traffic` scenario (threat, watched targets) | Every attribute has a label in `strings.json`, `en.json` and `fr.json`; `nav_status` and `position_source` values translated; the own-boat tracker keeps its name and entity ID | §9, CLAUDE.md | Done |
+| F-ENT-08 | Every entity filled by the `named-traffic` scenario (threat, watched targets), anchor watch armed (P5) | Every attribute has a label in `strings.json`, `en.json` and `fr.json`; `nav_status` and `position_source` values translated; the own-boat tracker keeps its name and entity ID | §9, CLAUDE.md | Done |
 
 ### 4.4 Traffic behaviour — `F-TRF`
 
@@ -285,19 +286,19 @@ Marked `@pytest.mark.perf`, excluded from the default run and executed by the ni
 
 ### 4.6 Anchor watch — `F-ANC` (SPEC §9.6, §10.4, P5)
 
-Planned. Fake serial transport and simulated time; the `anchor-drag` preset (D-07) for the drag cases.
+`tests/integration/test_anchor_watch.py`. Fake serial transport and simulated time; the `anchor-drag` preset (D-07) for the drag case.
 
 | ID | Case | Expected | SPEC | Status |
 |---|---|---|---|---|
-| F-ANC-01 | Entry set up | `switch.anchor_watch`, `number.anchor_radius` (config, 50 m), `binary_sensor.anchor_alarm` (safety, off), `sensor.anchor_distance` (distance, m, unavailable while disarmed) on the boat's device with translation keys and entry-scoped unique IDs | §9.6 | Planned |
-| F-ANC-02 | Switch turned on with own position; without own position | Armed at the current position, attributes set, distance 0; without position the call fails with a translated error and the switch stays off | §9.6 | Planned |
-| F-ANC-03 | `anchor-drag` preset played, README anchor automation installed | Alarm on with reason `drag` at the time `--list` gives (± 1 tick); the automation runs once; distance written ≤ 1/s with a 1 m dead-band | §8.4, §9.6, §10.2 | Planned |
-| F-ANC-04 | `vigie.drop_anchor` with latitude, longitude and radius; with radius only; with only latitude; `vigie.raise_anchor` | Anchor at the given point with the given radius (number updated); at own position; refused; disarmed and alarm off | §9.6 | Planned |
-| F-ANC-05 | Armed, GPS silent; port disconnected | Alarm `no_position` after 60 s in both cases (not unavailable); cleared when the position returns inside | §8.4 | Planned |
-| F-ANC-06 | Armed with a latched drag alarm, HA restarted (restore state injected) | Armed again with the same point, radius, maximum distance and alarm on; with no position after the restart, `no_position` after 60 s | §10.4 | Planned |
-| F-ANC-07 | Radius changed on `number.anchor_radius` while armed | Applied at the next tick; restored after a restart | §9.6 | Planned |
-| F-ANC-08 | Translations | `reason` values, attribute labels, service fields and errors in `strings.json`, `en.json`, `fr.json` (F-ENT-08 extended to the anchor entities) | §9.6, CLAUDE.md | Planned |
-| F-ANC-09 | Two boats (two entries) armed at different points | Independent watches; a service call targets one entry only | §9.6, NFR-06 | Planned |
+| F-ANC-01 | Entry set up | `switch.anchor_watch`, `number.anchor_radius` (config, 50 m), `binary_sensor.anchor_alarm` (safety, off), `sensor.anchor_distance` (distance, m, unavailable while disarmed) on the boat's device with translation keys and entry-scoped unique IDs | §9.6 | Done |
+| F-ANC-02 | Switch turned on with own position; without own position | Armed at the current position, attributes set, distance 0; without position the call fails with a translated error and the switch stays off | §9.6 | Done |
+| F-ANC-03 | `anchor-drag` preset played, README anchor automation installed | Alarm on with reason `drag` at the time `--list` gives (± 1 tick); the automation runs once; distance written ≤ 1/s with a 1 m dead-band | §8.4, §9.6, §10.2 | Done |
+| F-ANC-04 | `vigie.drop_anchor` with latitude, longitude and radius; with radius only; with only latitude; `vigie.raise_anchor` | Anchor at the given point with the given radius (number updated); at own position; refused; disarmed and alarm off | §9.6 | Done |
+| F-ANC-05 | Armed, GPS silent; port disconnected | Alarm `no_position` after 60 s in both cases (not unavailable); cleared when the position returns inside | §8.4 | Done |
+| F-ANC-06 | Armed with a latched drag alarm, HA restarted (state injected in Home Assistant's storage); same without an alarm; a change, then 2 s; invalid stored state; entry deleted | Armed again with the same point, radius, maximum distance and alarm on; without an alarm and with no position after the restart, `no_position` after 60 s; the change is in the storage within 2 s; invalid state starts disarmed (radius kept); the stored state is deleted with the entry | §10.4 | Done |
+| F-ANC-07 | Radius changed on `number.anchor_radius` while armed | Applied at the next tick; restored after a restart | §9.6 | Done |
+| F-ANC-08 | Translations | `reason` values, attribute labels, service fields and errors in `strings.json`, `en.json`, `fr.json` (F-ENT-08 extended to the anchor entities) | §9.6, CLAUDE.md | Done |
+| F-ANC-09 | Two boats (two entries) armed at different points | Independent watches; a service call targets one entry only | §9.6, NFR-06 | Done |
 
 ## 5. End-to-end tests
 
@@ -320,7 +321,7 @@ Setup (TP-01, TP-02, SPEC OD-12 — resolved v0.3):
 | E-04 | Kill the replay tool (or the feed side of `socat`), restart after 30 s | Unavailable → recovered without HA restart |
 | E-05 | D-08 burst at real speed on the Pi | CPU and event-loop lag within F-PERF-01 limits on the target hardware |
 | E-06 | HA restart during replay | Integration reloads, entities come back, no duplicates |
-| E-07 | P5: replay `anchor-drag` at real speed, arm before the drift starts, README anchor automation installed; restart HA once while armed | Anchor shown on the map card; no alarm while swinging; alarm `drag` where `--list` says (± 2 s) and one notification on the phone; armed state and anchor point survive the restart |
+| E-07 | P5: replay `anchor-drag` at real speed, drop the anchor at the start with `vigie.drop_anchor` (latitude 43.5, longitude 7.25, radius 50), README anchor automation installed; restart HA once while armed | Anchor shown on the map card; no alarm while swinging; alarm `drag` where `--list` says (± 2 s) and one notification on the phone; armed state and anchor point survive the restart |
 
 ### 5.2 Stage E-2 — On board, in port (real receiver)
 

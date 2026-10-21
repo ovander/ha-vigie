@@ -22,6 +22,8 @@ CONF_CPA_THRESHOLD = "cpa_threshold"  # NM
 CONF_TCPA_THRESHOLD = "tcpa_threshold"  # minutes
 CONF_EXCLUDE_STATIONARY = "exclude_stationary"  # anchored/moored Class A never threats
 CONF_WATCH_LIST = "watch_list"  # MMSIs with their own device_tracker (SPEC §9.3)
+CONF_ANCHOR_CONFIRM = "anchor_confirm"  # seconds outside the radius before the alarm
+CONF_ANCHOR_POSITION_TIMEOUT = "anchor_position_timeout"  # seconds without position
 
 DEFAULT_OPTIONS: dict[str, int | float | bool] = {
     CONF_UPDATE_INTERVAL: 1,
@@ -32,4 +34,14 @@ DEFAULT_OPTIONS: dict[str, int | float | bool] = {
     CONF_CPA_THRESHOLD: 0.5,
     CONF_TCPA_THRESHOLD: 15,
     CONF_EXCLUDE_STATIONARY: True,
+    CONF_ANCHOR_CONFIRM: 20,  # OD-25
+    CONF_ANCHOR_POSITION_TIMEOUT: 60,  # OD-24
 }
+
+# Services (SPEC §9.6)
+SERVICE_DROP_ANCHOR = "drop_anchor"
+SERVICE_RAISE_ANCHOR = "raise_anchor"
+ATTR_CONFIG_ENTRY_ID = "config_entry_id"
+ATTR_LATITUDE = "latitude"
+ATTR_LONGITUDE = "longitude"
+ATTR_RADIUS = "radius"

@@ -1,4 +1,5 @@
-"""Binary sensors: connection (SPEC §9.5) and collision risk (SPEC §8.2, §9.2)."""
+"""Binary sensors: connection (SPEC §9.5), collision risk (SPEC §8.2, §9.2), anchor alarm
+(SPEC §8.4, §9.6)."""
 
 from __future__ import annotations
 
@@ -19,7 +20,13 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     coordinator = entry.runtime_data
-    async_add_entities([ConnectedBinarySensor(coordinator), CollisionRiskBinarySensor(coordinator)])
+    async_add_entities(
+        [
+            ConnectedBinarySensor(coordinator),
+            CollisionRiskBinarySensor(coordinator),
+            AnchorAlarmBinarySensor(coordinator),
+        ]
+    )
 
 
 class ConnectedBinarySensor(VigieEntity, BinarySensorEntity):
@@ -82,3 +89,29 @@ class CollisionRiskBinarySensor(VigieEntity, BinarySensorEntity):
             "name": self.coordinator.target_name(mmsi),
             **self.coordinator.static_attributes(mmsi),
         }
+
+
+class AnchorAlarmBinarySensor(VigieEntity, BinarySensorEntity):
+    """On while the anchor alarm is on: drag (latched) or no position (SPEC §8.4).
+
+    Always available: while armed, a missing position is itself an alarm, so "unavailable"
+    never hides one. Off when disarmed.
+    """
+
+    _attr_device_class = BinarySensorDeviceClass.SAFETY
+    _always_available = True
+
+    def __init__(self, coordinator: VigieCoordinator) -> None:
+        super().__init__(coordinator, "anchor_alarm")
+
+    def current_value(self) -> Any:
+        status = self.coordinator.anchor_status
+        return (status.alarm, status.reason)
+
+    @property
+    def is_on(self) -> bool:
+        return self.coordinator.anchor_status.alarm
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        return {"reason": self.coordinator.anchor_status.reason}

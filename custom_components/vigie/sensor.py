@@ -1,4 +1,4 @@
-"""Sensors: own boat (SPEC §9.1), AIS traffic (§9.2), diagnostics (§9.5)."""
+"""Sensors: own boat (SPEC §9.1), AIS traffic (§9.2), diagnostics (§9.5), anchor (§9.6)."""
 
 from __future__ import annotations
 
@@ -109,6 +109,19 @@ def _threat_attrs(c: VigieCoordinator) -> dict[str, Any]:
     }
 
 
+def _anchor_attrs(c: VigieCoordinator) -> dict[str, Any]:
+    status = c.anchor_status
+    lat, lon = c.anchor.anchor or (None, None)
+    return {
+        "bearing_to_anchor": _round(status.bearing_to_anchor, 0),
+        "max_distance_m": _round(status.max_distance_m, 1),
+        "radius_m": status.radius_m,
+        # The anchor point, so the built-in map card can show the anchor
+        "latitude": lat,
+        "longitude": lon,
+    }
+
+
 @dataclass(frozen=True, kw_only=True)
 class VigieSensorDescription(SensorEntityDescription):
     value_fn: Callable[[VigieCoordinator], Any]
@@ -211,6 +224,20 @@ SENSORS: tuple[VigieSensorDescription, ...] = (
         deadband=0.1,
         attrs_fn=_threat_attrs,
         identity_fn=_mmsi(_closest_threat),
+    ),
+    # Anchor watch (SPEC §9.6): unavailable when disarmed or without own position
+    VigieSensorDescription(
+        key="anchor_distance",
+        translation_key="anchor_distance",
+        device_class=SensorDeviceClass.DISTANCE,
+        native_unit_of_measurement=UnitOfLength.METERS,
+        state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
+        value_fn=lambda c: c.anchor_status.distance_m,
+        deadband=1.0,
+        attrs_fn=_anchor_attrs,
+        # A new anchor point or radius is written at once, whatever the distance does
+        identity_fn=lambda c: (c.anchor.anchor, c.anchor.radius_m),
     ),
     # Diagnostics (SPEC §9.5)
     VigieSensorDescription(

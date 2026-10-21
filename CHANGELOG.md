@@ -17,6 +17,12 @@ versioning: SemVer.
 - noforeignland tracking API contract (`docs/NFL-TRACK-API-001.md`, #51), with the owner's
   requirement to buffer positions during an internet outage; OD-28 (where the uploader
   lives) open.
+- Anchor watch in Home Assistant (#53): `switch.<boat>_anchor_watch`, radius
+  (`number.<boat>_anchor_radius`, 10–500 m), `binary_sensor.<boat>_anchor_alarm` (dragging or
+  position lost), `sensor.<boat>_anchor_distance` (shows the anchor on the map card),
+  actions `vigie.drop_anchor` and `vigie.raise_anchor`, options for both alarm delays. The
+  watch is saved about a second after each change, so it survives a power cut. README
+  alert example; `anchor-drag` bench scenario.
 
 ### Fixed
 - README install section (#45): turn on beta versions in HACS (the only release is a

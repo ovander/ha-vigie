@@ -14,7 +14,7 @@ from freezegun.api import FrozenDateTimeFactory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
-from custom_components.vigie.const import CONF_WATCH_LIST
+from custom_components.vigie.const import CONF_WATCH_LIST, DOMAIN
 from custom_components.vigie.nmea.ais_decoder import NAV_STATUS
 from custom_components.vigie.state import Source
 from tests.helpers import BY_ID_PORT, FakePorts
@@ -37,12 +37,18 @@ HA_ATTRIBUTES = {
     "longitude",
     "gps_accuracy",
     "options",
+    # number entities (anchor radius)
+    "min",
+    "max",
+    "step",
+    "mode",
 }
 
 # Attributes whose values are keys shown to the user: (platform, translation key, attribute)
 ENUMERATED = {
     ("device_tracker", "watched_target", "nav_status"): {*NAV_STATUS.values(), "reserved"},
     ("device_tracker", "position", "position_source"): {str(s) for s in Source},
+    ("binary_sensor", "anchor_alarm", "reason"): {"drag", "no_position"},
 }
 
 
@@ -51,12 +57,17 @@ def _entity_strings(name: str) -> dict:
 
 
 async def _filled_boat(hass: HomeAssistant, fake_ports: FakePorts, freezer) -> list:
-    """Every Vigie entity with its attributes filled: named traffic, a threat at 60 s."""
+    """Every Vigie entity with its attributes filled: named traffic, a threat at 60 s, the
+    anchor watch armed (P5)."""
     named = scenario.PRESETS["named-traffic"]
     entry = make_entry(hass, **{CONF_WATCH_LIST: [t.mmsi for t in named.targets]})
     await setup(hass, entry)
     lines = scenario.generate(scenario.Scenario(named.own, named.targets, 70))
     await play(hass, freezer, fake_ports[BY_ID_PORT], lines)
+    await hass.services.async_call(
+        DOMAIN, "drop_anchor", {"config_entry_id": entry.entry_id}, blocking=True
+    )
+    await hass.async_block_till_done()
     return er.async_entries_for_config_entry(er.async_get(hass), entry.entry_id)
 
 
