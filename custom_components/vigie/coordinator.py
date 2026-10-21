@@ -4,12 +4,17 @@ Push-based (`iot_class: local_push`): the hub delivers records as they arrive an
 domain state is updated immediately. Entities are notified once per `update_interval`
 by an internal tick, which also expires targets and lets stale values age out, and at
 once when the connection changes (SPEC §10.1, §10.2). Home Assistant never polls.
+
+The tick also runs the anchor watch (SPEC §8.4). Its state is kept with Home Assistant's
+storage helper and written within a second of a change, so it survives a power cut
+(SPEC §10.4, OD-26).
 """
 
 from __future__ import annotations
 
 import asyncio
 import contextlib
+import logging
 import time
 from collections.abc import Callable
 from datetime import datetime, timedelta
@@ -18,8 +23,13 @@ from typing import Any
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.storage import Store
+from homeassistant.util import dt as dt_util
 
+from .anchor import AnchorStatus, AnchorWatch
 from .const import (
+    CONF_ANCHOR_CONFIRM,
+    CONF_ANCHOR_POSITION_TIMEOUT,
     CONF_BAUDRATE,
     CONF_CPA_THRESHOLD,
     CONF_EXCLUDE_STATIONARY,
@@ -51,6 +61,11 @@ from .traffic import (
 
 type VigieConfigEntry = ConfigEntry[VigieCoordinator]
 
+_LOGGER = logging.getLogger(__name__)
+
+ANCHOR_STORE_VERSION = 1
+ANCHOR_SAVE_DELAY_S = 1  # power on board can be cut at any time (SPEC §3.2)
+
 STATIC_ATTRIBUTES = (
     "ship_type",
     "ship_type_code",
@@ -61,6 +76,14 @@ STATIC_ATTRIBUTES = (
     "draught_m",
     "destination",
 )
+
+
+class NoOwnPosition(ValueError):
+    """The anchor cannot be dropped at own position: there is none."""
+
+
+def anchor_store(hass: HomeAssistant, entry_id: str) -> Store[dict[str, Any]]:
+    return Store(hass, ANCHOR_STORE_VERSION, f"{DOMAIN}.anchor.{entry_id}")
 
 
 def _monotonic() -> float:
@@ -109,6 +132,13 @@ class VigieCoordinator:
         self.watch_list: tuple[int, ...] = tuple(int(m) for m in options.get(CONF_WATCH_LIST, ()))
         self.picture: TrafficPicture = EMPTY_PICTURE
         self.risk = RiskLatch(clock=_monotonic)
+        self.anchor = AnchorWatch(
+            confirm_s=float(options[CONF_ANCHOR_CONFIRM]),
+            position_timeout_s=float(options[CONF_ANCHOR_POSITION_TIMEOUT]),
+            clock=_monotonic,
+        )
+        self._anchor_store = anchor_store(hass, entry.entry_id)
+        self._anchor_saved: Any = None
         self.reader_task: asyncio.Task[None] | None = None
         self._listeners: list[Callable[[], None]] = []
         self._unsub_tick: CALLBACK_TYPE | None = None
@@ -123,7 +153,8 @@ class VigieCoordinator:
         return _monotonic()
 
     async def async_start(self) -> None:
-        """Open the port (raises HubConnectionError) and start reading."""
+        """Restore the anchor watch, open the port (raises HubConnectionError), read."""
+        await self._async_restore_anchor()
         await self.hub.connect()
         self._unsub_tick = async_track_time_interval(
             self.hass, self._tick, timedelta(seconds=self.update_interval_s)
@@ -182,7 +213,78 @@ class VigieCoordinator:
         self.targets.expire()
         self.statics.expire()
         self.update_traffic()
+        self.update_anchor()
         self._notify()
+
+    @property
+    def anchor_status(self) -> AnchorStatus:
+        return self.anchor.status
+
+    def update_anchor(self) -> None:
+        """Check the anchor watch against own position (SPEC §8.4); save what changed."""
+        position = self.own.get(POSITION) if self.connected else None
+        if position is None:
+            self.anchor.update(None)
+        else:
+            self.anchor.update(position.value, fix_at=position.updated_at)
+        self._save_anchor()
+
+    def drop_anchor(
+        self,
+        latitude: float | None = None,
+        longitude: float | None = None,
+        radius_m: float | None = None,
+    ) -> None:
+        """Arm or re-drop the anchor at the given point, else at own position.
+
+        Raises NoOwnPosition without either, ValueError for invalid values.
+        """
+        if latitude is None and longitude is None:
+            position = self.own.get(POSITION) if self.connected else None
+            if position is None:
+                raise NoOwnPosition("no own position to drop the anchor at")
+            latitude, longitude = position.value
+        self.anchor.arm(latitude, longitude, radius_m, armed_at=dt_util.utcnow().timestamp())
+        self._anchor_changed()
+
+    def raise_anchor(self) -> None:
+        self.anchor.disarm()
+        self._anchor_changed()
+
+    def set_anchor_radius(self, radius_m: float) -> None:
+        """Raises ValueError outside 10–500 m."""
+        self.anchor.set_radius(radius_m)
+        self._anchor_changed()
+
+    def _anchor_changed(self) -> None:
+        self.update_anchor()
+        self._notify()
+
+    def _anchor_data(self) -> dict[str, Any]:
+        return {"radius_m": self.anchor.radius_m, "watch": self.anchor.to_dict()}
+
+    def _save_anchor(self) -> None:
+        key = self._anchor_key()
+        if key != self._anchor_saved:
+            self._anchor_saved = key
+            self._anchor_store.async_delay_save(self._anchor_data, ANCHOR_SAVE_DELAY_S)
+
+    async def _async_restore_anchor(self) -> None:
+        data = await self._anchor_store.async_load()
+        if data:
+            try:
+                self.anchor.set_radius(data["radius_m"])
+                self.anchor.restore(data.get("watch"))
+            except (KeyError, TypeError, ValueError) as err:
+                _LOGGER.warning("Anchor watch not restored, stored state invalid: %s", err)
+        self._anchor_saved = self._anchor_key()
+
+    def _anchor_key(self) -> Any:
+        """What decides a save: the maximum distance grows at every swing, so whole metres."""
+        watch = self.anchor.to_dict()
+        if watch is not None:
+            watch["max_distance_m"] = int(watch["max_distance_m"])
+        return (self.anchor.radius_m, watch)
 
     def update_traffic(self) -> None:
         """Recompute CPA/TCPA for every target and the collision risk (SPEC §8)."""

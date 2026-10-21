@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
     from .coordinator import VigieConfigEntry
 
-PLATFORMS: list[Platform | str] = ["binary_sensor", "device_tracker", "sensor"]
+PLATFORMS: list[Platform | str] = ["binary_sensor", "device_tracker", "number", "sensor", "switch"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: VigieConfigEntry) -> bool:
@@ -24,6 +24,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: VigieConfigEntry) -> boo
 
     from .coordinator import VigieCoordinator
     from .hub import HubConnectionError
+    from .services import async_register_services
 
     coordinator = VigieCoordinator(hass, entry)
     try:
@@ -33,6 +34,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: VigieConfigEntry) -> boo
         raise ConfigEntryNotReady(str(err)) from err
     entry.runtime_data = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    async_register_services(hass)
     return True
 
 
@@ -42,3 +44,10 @@ async def async_unload_entry(hass: HomeAssistant, entry: VigieConfigEntry) -> bo
     if unloaded:
         await entry.runtime_data.async_stop()
     return unloaded
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: VigieConfigEntry) -> None:
+    """Entry deleted: forget its anchor watch state (SPEC §10.4)."""
+    from .coordinator import anchor_store
+
+    await anchor_store(hass, entry.entry_id).async_remove()

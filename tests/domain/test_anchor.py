@@ -116,7 +116,8 @@ def test_u_anc_04_drag_after_confirmation(watch, clock):
 
 
 def test_u_anc_04_confirmation_configurable(clock):
-    w = AnchorWatch(confirm_s=5, clock=clock)
+    w = AnchorWatch(confirm_s=5, position_timeout_s=30, clock=clock)
+    assert (w.confirm_s, w.position_timeout_s) == (5.0, 30.0)
     w.arm(*ANCHOR)
     w.update(north(60))
     assert not hold(w, clock, north(60), 4).alarm

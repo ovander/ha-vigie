@@ -28,6 +28,8 @@ from homeassistant.helpers.selector import (
 
 from .const import (
     BAUDRATES,
+    CONF_ANCHOR_CONFIRM,
+    CONF_ANCHOR_POSITION_TIMEOUT,
     CONF_BAUDRATE,
     CONF_CPA_THRESHOLD,
     CONF_EXCLUDE_STATIONARY,
@@ -196,11 +198,11 @@ class VigieOptionsFlow(OptionsFlowWithReload):
         own_mmsi = current.get(CONF_OWN_MMSI)
         watched = [str(m).strip() for m in current.get(CONF_WATCH_LIST, [])]
 
-        def number(maximum: int, unit: str) -> vol.All:
+        def number(maximum: int, unit: str, minimum: int = 1) -> vol.All:
             return vol.All(
                 NumberSelector(
                     NumberSelectorConfig(
-                        min=1,
+                        min=minimum,
                         max=maximum,
                         step=1,
                         unit_of_measurement=unit,
@@ -245,6 +247,12 @@ class VigieOptionsFlow(OptionsFlowWithReload):
                 vol.Required(
                     CONF_EXCLUDE_STATIONARY, default=current[CONF_EXCLUDE_STATIONARY]
                 ): BooleanSelector(),
+                vol.Required(CONF_ANCHOR_CONFIRM, default=current[CONF_ANCHOR_CONFIRM]): number(
+                    120, "s", minimum=5
+                ),
+                vol.Required(
+                    CONF_ANCHOR_POSITION_TIMEOUT, default=current[CONF_ANCHOR_POSITION_TIMEOUT]
+                ): number(600, "s", minimum=10),
                 vol.Optional(
                     CONF_OWN_MMSI,
                     description={"suggested_value": str(own_mmsi) if own_mmsi else None},

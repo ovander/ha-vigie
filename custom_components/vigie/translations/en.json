@@ -43,7 +43,9 @@
           "cpa_threshold": "CPA threshold",
           "tcpa_threshold": "TCPA threshold",
           "exclude_stationary": "Ignore anchored and moored targets",
-          "watch_list": "Watch list (MMSIs)"
+          "watch_list": "Watch list (MMSIs)",
+          "anchor_confirm": "Anchor alarm delay",
+          "anchor_position_timeout": "Anchor watch: position lost after"
         },
         "data_description": {
           "update_interval": "Entities write their state at most once per interval.",
@@ -55,7 +57,9 @@
           "cpa_threshold": "A target is a threat when its closest point of approach is nearer than this…",
           "tcpa_threshold": "…and that point is reached within this time.",
           "exclude_stationary": "Class A targets reporting at anchor or moored, and slower than 0.5 kn, never raise a collision risk.",
-          "watch_list": "Boats to follow individually, e.g. friends or your tender: type each 9-digit MMSI and press Enter. Each gets its own device tracker on the map."
+          "watch_list": "Boats to follow individually, e.g. friends or your tender: type each 9-digit MMSI and press Enter. Each gets its own device tracker on the map.",
+          "anchor_confirm": "The anchor alarm goes off when the boat has stayed outside the radius this long.",
+          "anchor_position_timeout": "While the anchor watch is on, the alarm goes off when no position has been received for this long."
         }
       }
     },
@@ -316,6 +320,20 @@
             "name": "Destination"
           }
         }
+      },
+      "anchor_distance": {
+        "name": "Anchor distance",
+        "state_attributes": {
+          "bearing_to_anchor": {
+            "name": "Bearing to anchor (°)"
+          },
+          "max_distance_m": {
+            "name": "Maximum distance (m)"
+          },
+          "radius_m": {
+            "name": "Radius (m)"
+          }
+        }
       }
     },
     "binary_sensor": {
@@ -378,6 +396,18 @@
           },
           "destination": {
             "name": "Destination"
+          }
+        }
+      },
+      "anchor_alarm": {
+        "name": "Anchor alarm",
+        "state_attributes": {
+          "reason": {
+            "name": "Reason",
+            "state": {
+              "drag": "Dragging",
+              "no_position": "Position lost"
+            }
           }
         }
       }
@@ -504,11 +534,80 @@
           }
         }
       }
+    },
+    "switch": {
+      "anchor_watch": {
+        "name": "Anchor watch",
+        "state_attributes": {
+          "anchor_latitude": {
+            "name": "Anchor latitude"
+          },
+          "anchor_longitude": {
+            "name": "Anchor longitude"
+          },
+          "radius_m": {
+            "name": "Radius (m)"
+          },
+          "armed_at": {
+            "name": "Dropped at"
+          }
+        }
+      }
+    },
+    "number": {
+      "anchor_radius": {
+        "name": "Anchor radius"
+      }
     }
   },
   "device": {
     "watched_target": {
       "name": "AIS {mmsi}"
+    }
+  },
+  "exceptions": {
+    "no_own_position": {
+      "message": "No own position: wait for a GPS fix, or give the anchor's latitude and longitude."
+    },
+    "unknown_entry": {
+      "message": "No Vigie boat has the entry ID {entry_id}."
+    },
+    "entry_not_loaded": {
+      "message": "{boat} is not running: check its serial port."
+    }
+  },
+  "services": {
+    "drop_anchor": {
+      "name": "Drop anchor",
+      "description": "Starts the anchor watch at the boat's position, or at the given point, with the given radius. Dropping again moves the anchor and clears the alarm.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Boat",
+          "description": "The Vigie boat whose anchor watch to change."
+        },
+        "latitude": {
+          "name": "Latitude",
+          "description": "Anchor latitude, for example read on the chartplotter. Give it with the longitude, or leave both empty for the boat's position."
+        },
+        "longitude": {
+          "name": "Longitude",
+          "description": "Anchor longitude; given with the latitude."
+        },
+        "radius": {
+          "name": "Radius",
+          "description": "Swing radius in metres (10–500). Leave empty to keep the current one."
+        }
+      }
+    },
+    "raise_anchor": {
+      "name": "Raise anchor",
+      "description": "Stops the anchor watch and clears its alarm.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Boat",
+          "description": "The Vigie boat whose anchor watch to change."
+        }
+      }
     }
   }
 }

@@ -29,6 +29,7 @@ it as your only alarm.
 - Collision risk: CPA/TCPA of the most urgent target and a `collision_risk` binary sensor.
 - Watch list: device trackers for chosen MMSIs (friends' boats, tender…).
 - Ship details from AIS static data: name, ship type, size, call sign, destination.
+- Anchor watch: swing radius, dragging and position-lost alarm, distance to the anchor.
 
 ## Collision alert automation
 
@@ -86,6 +87,56 @@ recorder:
 ```
 
 Keep `binary_sensor.<boat>_collision_risk` recorded: its history shows when alerts fired.
+
+## Anchor watch
+
+Turn on `switch.<boat>_anchor_watch` when the anchor is down: the anchor point is the
+boat's position at that moment, so turn it on while you are above the anchor, or give the
+anchor's position yourself with the `vigie.drop_anchor` action (for example read on the
+chartplotter). Set the swing radius on `number.<boat>_anchor_radius` (10–500 m, default
+50 m): chain out plus boat length plus a margin for GPS noise.
+
+`binary_sensor.<boat>_anchor_alarm` turns on when
+
+- the boat has stayed outside the radius for 20 s (*Dragging*). It stays on until you
+  turn the watch off or drop the anchor again, even if the boat swings back inside;
+- no position has been received for 60 s while the watch is on (*Position lost*). It
+  clears by itself when a position inside the radius comes back.
+
+Both delays are options. `sensor.<boat>_anchor_distance` shows the distance to the anchor,
+with the bearing and the largest distance since the anchor was dropped. The watch, the
+anchor point and an alarm that is on survive a restart of Home Assistant or a power cut.
+
+Example alert (same phone as above):
+
+```yaml
+automation:
+  - alias: "Vigie: anchor alarm"
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.garnet_anchor_alarm
+        to: "on"
+    actions:
+      - action: notify.mobile_app_my_phone
+        data:
+          title: "⚓ Anchor alarm"
+          message: >-
+            {% if state_attr('binary_sensor.garnet_anchor_alarm', 'reason') == 'drag' %}
+            Dragging: {{ states('sensor.garnet_anchor_distance', rounded=True) }} m
+            from the anchor (radius {{ states('number.garnet_anchor_radius') | int }} m).
+            {% else %}
+            No position from the receiver: check the GPS and the power.
+            {% endif %}
+          data:
+            ttl: 0
+            priority: high
+            push:
+              interruption-level: critical
+```
+
+The anchor point appears on the map card when you add `sensor.<boat>_anchor_distance` to
+its entities. As for collisions, the anchor watch is an aid: keep a watch on deck.
 
 ## Ship details
 
@@ -174,6 +225,7 @@ attribute of `sensor.<boat>_ais_targets`, for cards that read attributes.
 | P2 | CPA/TCPA, collision-risk alert, watch-list trackers | built; bench and on-board checks pending |
 | P3 | AIS static data (names, types, dimensions), map card | built; on-board checks pending |
 | P4 | Additional instruments (wind, depth) and sailing performance | later |
+| P5 | Anchor watch | in progress |
 
 ## Documentation
 

@@ -110,6 +110,14 @@ class AnchorWatch:
         return self._radius
 
     @property
+    def confirm_s(self) -> float:
+        return self._confirm
+
+    @property
+    def position_timeout_s(self) -> float:
+        return self._timeout
+
+    @property
     def armed_at(self) -> float | None:
         return self._armed_at
 

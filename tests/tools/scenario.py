@@ -1,6 +1,7 @@
 """D-07 traffic scenario generator (TEST-001 §2, §6).
 
-Own boat and targets move in straight lines at constant speed. Output is the timed format
+Own boat and targets move in straight lines at constant speed; the `anchor-drag` preset
+(P5) has the own boat swinging at anchor, then dragging. Output is the timed format
 of TEST-001 §2 (`<epoch> <sentence>`, CRLF): own boat as `$GPRMC` every second, each target
 as `!AIVDM` position reports at its own interval. Every sentence is synthetic.
 
@@ -32,6 +33,7 @@ import functools
 import json
 import math
 import operator
+import random
 import sys
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -59,6 +61,59 @@ class Track:
         return relative(
             self.lat, self.lon, distance * math.sin(course), distance * math.cos(course)
         )
+
+    def motion(self, t: float) -> tuple[float, float]:
+        """SOG (kn) and COG (°) at `t`."""
+        return self.sog_kn, self.cog_deg
+
+
+@dataclass(frozen=True)
+class AnchorSwing:
+    """Own boat at anchor (SPEC §8.4, TEST D-07 `anchor-drag`).
+
+    Swings on a circle of `radius_m` around the anchor (one turn per `period_s`) with
+    uniform GPS noise of ± `noise_m` on each axis (fixed seed), then from `drift_after_s`
+    drags in a straight line at `drift_kn` on `drift_cog_deg`, without noise.
+    """
+
+    lat: float  # anchor
+    lon: float
+    radius_m: float = 30.0
+    period_s: float = 600.0
+    noise_m: float = 8.0
+    seed: int = 7
+    drift_after_s: float = 600.0
+    drift_kn: float = 0.5
+    drift_cog_deg: float = 0.0
+
+    def _circle(self, t: float) -> tuple[float, float]:
+        angle = math.radians(360.0 * t / self.period_s)
+        return self.radius_m * math.cos(angle), self.radius_m * math.sin(angle)  # north, east
+
+    def at(self, t: float) -> tuple[float, float]:
+        if t < self.drift_after_s:
+            north, east = self._circle(t)
+            rng = random.Random(self.seed * 1_000_003 + round(t * 10))
+            north += rng.uniform(-self.noise_m, self.noise_m)
+            east += rng.uniform(-self.noise_m, self.noise_m)
+        else:
+            north, east = self._circle(self.drift_after_s)
+            run = self.drift_kn * 1852.0 / 3600.0 * (t - self.drift_after_s)
+            course = math.radians(self.drift_cog_deg)
+            north += run * math.cos(course)
+            east += run * math.sin(course)
+        return relative(self.lat, self.lon, east / 1852.0, north / 1852.0)
+
+    def motion(self, t: float) -> tuple[float, float]:
+        if t < self.drift_after_s:
+            return 0.0, 0.0
+        return self.drift_kn, self.drift_cog_deg
+
+    def leaves_radius_at(self, radius_m: float) -> float:
+        """Time the boat crosses `radius_m` from the anchor while dragging (straight out:
+        the drag starts on the circle and heads away from the anchor)."""
+        speed = self.drift_kn * 1852.0 / 3600.0
+        return self.drift_after_s + (radius_m - self.radius_m) / speed
 
 
 @dataclass(frozen=True)
@@ -96,7 +151,7 @@ class Target:
 
 @dataclass(frozen=True)
 class Scenario:
-    own: Track
+    own: Track | AnchorSwing
     targets: tuple[Target, ...] = field(default_factory=tuple)
     duration_s: int = 900
     start_epoch: float = DEFAULT_START_EPOCH
@@ -192,12 +247,8 @@ def generate(scenario: Scenario) -> list[tuple[float, str]]:
     for i in range(steps + 1):
         t = i * scenario.own_interval_s
         lat, lon = scenario.own.at(t)
-        lines.append(
-            (
-                scenario.start_epoch + t,
-                rmc(scenario.start_epoch + t, lat, lon, scenario.own.sog_kn, scenario.own.cog_deg),
-            )
-        )
+        sog, cog = scenario.own.motion(t)
+        lines.append((scenario.start_epoch + t, rmc(scenario.start_epoch + t, lat, lon, sog, cog)))
     for target in scenario.targets:
         for i in range(int(scenario.duration_s / target.interval_s) + 1):
             t = i * target.interval_s
@@ -303,6 +354,10 @@ def _named_traffic() -> Scenario:
 
 PRESETS["named-traffic"] = _named_traffic()
 
+# P5 bench (TEST §5.1 E-07): anchor at 43.5 N 7.25 E, no AIS target
+ANCHOR_DRAG = AnchorSwing(43.5, 7.25)
+PRESETS["anchor-drag"] = Scenario(ANCHOR_DRAG, (), 900)
+
 # What the bench operator should see at the start (TEST §3.4, default thresholds 0.5 NM, 15 min)
 PRESET_REFERENCE: dict[str, str] = {
     "head-on": "U-TRF-01  CPA 0.00 NM, TCPA 10.0 min, threat",
@@ -317,6 +372,10 @@ PRESET_REFERENCE: dict[str, str] = {
     "then 235000001 (head-on), then 235000004 (overtaking); 235000003 anchored, never a threat",
     "named-traffic": "P3 bench  names from 30 s: CARGO ONE (cargo, 180 m, threat from 1 min), "
     "ALBATROS (sailing, 12 m) and ALBATROS TENDER (pleasure craft); 235000014 unnamed",
+    "anchor-drag": "P5 bench  drop anchor at 43.5, 7.25, radius 50 m, before 10 min: swinging "
+    f"30 m (± 8 m noise), then dragging 0.5 kn; leaves 50 m at "
+    f"{ANCHOR_DRAG.leaves_radius_at(50):.0f} s, drag alarm at "
+    f"{ANCHOR_DRAG.leaves_radius_at(50) + 20:.0f} s",
 }
 
 

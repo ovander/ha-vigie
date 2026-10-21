@@ -1,0 +1,41 @@
+drop_anchor:
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        config_entry:
+          integration: vigie
+    latitude:
+      example: 43.5
+      selector:
+        number:
+          min: -90
+          max: 90
+          step: any
+          unit_of_measurement: "°"
+          mode: box
+    longitude:
+      example: 7.25
+      selector:
+        number:
+          min: -180
+          max: 180
+          step: any
+          unit_of_measurement: "°"
+          mode: box
+    radius:
+      example: 50
+      selector:
+        number:
+          min: 10
+          max: 500
+          step: 5
+          unit_of_measurement: m
+          mode: box
+raise_anchor:
+  fields:
+    config_entry_id:
+      required: true
+      selector:
+        config_entry:
+          integration: vigie

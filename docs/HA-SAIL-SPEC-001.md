@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.16 (draft) |
+| Version | 0.17 (draft) |
 | Date | 2026-10-21 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.17 | 2026-10-21 | WP17 (#53): anchor watch entities, services and options implemented (§9.6, §11.2). §10.4: the state is kept with Home Assistant's storage helper, written about 1 s after a change, instead of `RestoreEntity` (saved only every 15 min, too slow for a power cut); deleted with the entry; an invalid stored state starts disarmed. §9.6: entity IDs follow the boat name; the distance sensor writes a new anchor point or radius at once. §9.5: the diagnostics download carries the anchor watch without its position. C-11 adds `services.py`. |
 | 0.16 | 2026-10-21 | #51: noforeignland tracking contract added as X-12 (`docs/NFL-TRACK-API-001.md`). Owner requirement: positions buffered during an internet outage and sent at recovery (X-12 §8.5, R-1). New OD-28, open: where the buffering producer lives. §2.2 updated. No change to Vigie's behaviour. |
 | 0.15 | 2026-10-21 | P5 decisions (owner, "following your recommendations") and WP16 (#49). OD-21…OD-26 resolved with the recommended options. New OD-27, resolved: sharing the boat's track online is done by Home Assistant from `device_tracker.<boat>`, never by Vigie (§2.2). §8.4: a radius change restarts the drag timer; a position that returns outside keeps the `no_position` alarm on until the boat is inside or the drag alarm takes over. `anchor.py` implemented (C-11). |
 | 0.14 | 2026-10-21 | WP15 (#47): anchor watch specified, not implemented. New §8.4 (logic, pure module `anchor.py`, C-11), §9.6 (entities and services), §10.4 (restart), §11.2 options `anchor_confirm` and `anchor_position_timeout`, §13 phase P5, §2.1 scope line. New open decisions OD-21…OD-26 with recommendations. |
@@ -145,7 +146,7 @@ Pure-Python modules (no `homeassistant` import, `mypy --strict`, covered by the 
 | C-08 | Trackers | `device_tracker.py` | Own boat position; watched AIS targets (§9.3). |
 | C-10 | Entity base | `entity.py` | Shared device info, unique IDs and availability rule for all entities. |
 | C-09 | Diagnostics | `sensor.py`, `diagnostics.py` | Health counters; HA diagnostics download. |
-| C-11 | Anchor watch (P5) | `anchor.py` (pure), `switch.py`, `number.py`, `services.yaml` | Anchor point, swing radius, drag and position-loss alarm (§8.4); entities and services (§9.6). `anchor.py` has no HA import. |
+| C-11 | Anchor watch (P5) | `anchor.py` (pure), `switch.py`, `number.py`, `services.py`, `services.yaml` | Anchor point, swing radius, drag and position-loss alarm (§8.4); entities and services (§9.6). `anchor.py` has no HA import. |
 
 ### 5.3 File layout
 
@@ -167,7 +168,8 @@ custom_components/vigie/
 ├── device_tracker.py
 ├── switch.py           # P5: anchor watch on/off
 ├── number.py           # P5: anchor radius
-├── services.yaml       # P5: drop_anchor, raise_anchor
+├── services.py         # P5: drop_anchor, raise_anchor
+├── services.yaml
 ├── diagnostics.py
 ├── strings.json
 ├── translations/{en,fr}.json
@@ -276,7 +278,7 @@ CPA/TCPA assume straight-line constant-speed motion from the last report (both v
 
 ### 8.4 Anchor watch (C-11, P5)
 
-Decisions OD-21…OD-26 resolved v0.15. The logic (`anchor.py`) is implemented in WP16 (#49); the entities, services and restore (§9.6, §10.4) follow in WP17.
+Decisions OD-21…OD-26 resolved v0.15. The logic (`anchor.py`) is implemented in WP16 (#49); the entities, services and restore (§9.6, §10.4) in WP17 (#53).
 
 The anchor watch uses own position only (RMC/GGA, VDO fallback, §7.4). It needs no new source and no AIS target. Logic lives in the pure module `anchor.py` (no HA import, NFR-02; mypy strict, coverage gate), driven by the coordinator tick with the injectable clock.
 
@@ -341,7 +343,7 @@ Static data (§7.3) is kept per MMSI apart from the positions and merged into a 
 
 ### 9.5 Diagnostics (entity_category: diagnostic)
 
-`sentences_per_min`, `checksum_errors`, `ais_rejected`, `last_sentence_age`, `own_position_source` (GPS / VDO), and a `connected` binary sensor (device class connectivity). `diagnostics.py` exports config (redacted) and counters for bug reports. From P3 the download also counts static reports (`ais_static`) and the MMSIs held in the static store.
+`sentences_per_min`, `checksum_errors`, `ais_rejected`, `last_sentence_age`, `own_position_source` (GPS / VDO), and a `connected` binary sensor (device class connectivity). `diagnostics.py` exports config (redacted) and counters for bug reports. From P3 the download also counts static reports (`ais_static`) and the MMSIs held in the static store; from P5 it carries the anchor watch (armed, alarm reason, radius, distance, maximum distance), never the anchor point.
 
 - `checksum_errors` and `ais_rejected` are counters (state class `total_increasing`).
 - `sentences_per_min` and `last_sentence_age` change constantly; they are disabled by default and written with a dead-band of 1 unit.
@@ -351,14 +353,14 @@ Static data (§7.3) is kept per MMSI apart from the positions and merged into a 
 
 ### 9.6 Anchor watch (P5)
 
-Controls per OD-22 (resolved v0.15); to be implemented in WP17. All on the boat's device, translation keys, unique IDs `{entry_id}_{key}`.
+Controls per OD-22 (resolved v0.15); implemented in WP17 (#53). All on the boat's device, translation keys, unique IDs `{entry_id}_{key}`; entity IDs follow the boat's name (`switch.garnet_anchor_watch` for a boat named Garnet).
 
 | Entity | Content |
 |---|---|
 | `switch.anchor_watch` | On = armed. Turning it on drops the anchor at the current own position with the radius of `number.anchor_radius`; refused (error shown in the UI, stays off) without own position. Turning it off disarms and clears the alarm. Attributes: `anchor_latitude`, `anchor_longitude`, `radius_m`, `armed_at`. Always available. |
 | `number.anchor_radius` | Swing radius, m (device_class distance, 10–500, step 5, default 50, OD-25), `entity_category: config`. A change applies at once while armed. Restored after a restart. |
 | `binary_sensor.anchor_alarm` | On while the alarm is on (device_class safety). Off when disarmed. Attribute `reason`: `drag` or `no_position` (translated), `None` when off. Designed to drive automations (README example; trigger on `to: "on"`). Always available: while armed, a missing position is itself an alarm (§8.4), so "unavailable" is never used to hide one. |
-| `sensor.anchor_distance` | Distance from the boat to the anchor point, m (device_class distance, state_class measurement, dead-band 1 m, at most one write per `update_interval`). Attributes: `bearing_to_anchor`, `max_distance_m`, `radius_m`, and `latitude`/`longitude` of the anchor point, so the built-in map card can show the anchor. Unavailable when disarmed or without own position. |
+| `sensor.anchor_distance` | Distance from the boat to the anchor point, m (device_class distance, state_class measurement, dead-band 1 m, at most one write per `update_interval`; a new anchor point or radius is written at once). Attributes: `bearing_to_anchor`, `max_distance_m`, `radius_m`, and `latitude`/`longitude` of the anchor point, so the built-in map card can show the anchor. Unavailable when disarmed or without own position. |
 
 Services (registered once for the domain, target a config entry):
 
@@ -386,7 +388,7 @@ Exponential backoff (1, 2, 4 … 60 s max) on serial errors and end-of-stream, l
 
 ### 10.4 Restart (P5)
 
-Power on board can be intermittent (§3.2). The armed state, anchor point, radius, arming time, maximum distance and a latched drag alarm are restored after a Home Assistant restart or an entry reload (`RestoreEntity`), not reset (OD-26). After the restart the position-loss timer starts from zero, so a GPS that does not come back still raises the alarm after `anchor_position_timeout`.
+Power on board can be intermittent (§3.2). The armed state, anchor point, radius, arming time, maximum distance and a latched drag alarm are restored after a Home Assistant restart or an entry reload, not reset (OD-26). They are kept with Home Assistant's storage helper (`.storage/vigie.anchor.<entry_id>`), written about 1 s after each change (the maximum distance per whole metre); `RestoreEntity` is not used, as it saves only every 15 min and a power cut right after anchoring would lose the watch. The file is deleted with the entry; a stored state that fails validation is logged once and the watch starts disarmed. After the restart the position-loss timer starts from zero, so a GPS that does not come back still raises the alarm after `anchor_position_timeout`.
 
 ## 11. Configuration
 

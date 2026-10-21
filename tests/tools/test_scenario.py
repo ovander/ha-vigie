@@ -178,7 +178,8 @@ def _first_picture(s: Scenario, after_s: float = 0.0):
 
 
 def test_e_02_every_u_trf_geometry_has_a_preset():
-    assert set(E02_EXPECTED) == set(PRESETS) - {"named-traffic"}  # P3 bench, not a U-TRF case
+    # P3 and P5 benches, not U-TRF cases
+    assert set(E02_EXPECTED) == set(PRESETS) - {"named-traffic", "anchor-drag"}
     assert set(scenario.PRESET_REFERENCE) == set(PRESETS)
 
 
@@ -338,3 +339,32 @@ def test_presets_for_e02_send_no_static_data():
     for name, preset in PRESETS.items():
         if name != "named-traffic":
             assert _statics(preset) == [], name
+
+
+# --- P5: anchor-drag (TEST D-07, E-07, F-ANC-03) ---------------------------------------------
+
+
+def test_anchor_drag_preset_swings_inside_then_leaves_at_678_s():
+    """Distances from the RMC sentences as Vigie parses them, against the anchor point."""
+    preset = PRESETS["anchor-drag"]
+    lines = generate(preset)
+    assert all(sentence.startswith("$GPRMC") for _, sentence in lines)  # no AIS target
+    gps = GpsParser()
+    distance = {}
+    for t, sentence in lines:
+        rec = gps.feed(sentence)
+        assert isinstance(rec, Rmc)
+        distance[round(t - preset.start_epoch)] = (
+            distance_nm(43.5, 7.25, rec.latitude, rec.longitude) * 1852.0,
+            rec.sog_knots,
+        )
+    swinging = [d for t, (d, _) in distance.items() if t < 600]
+    assert max(swinging) < 42.0  # 30 m circle + 8 m noise on each axis: inside 50 m
+    assert min(swinging) > 18.0
+    assert distance[677][0] < 50.0 < distance[678][0]
+    assert scenario.ANCHOR_DRAG.leaves_radius_at(50) == pytest.approx(677.8, abs=0.1)
+    assert (distance[300][1], distance[700][1]) == (0.0, 0.5)
+
+
+def test_anchor_drag_preset_is_reproducible():
+    assert generate(PRESETS["anchor-drag"]) == generate(PRESETS["anchor-drag"])
