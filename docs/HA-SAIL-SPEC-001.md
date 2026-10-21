@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.15 (draft) |
+| Version | 0.16 (draft) |
 | Date | 2026-10-21 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.16 | 2026-10-21 | #51: noforeignland tracking contract added as X-12 (`docs/NFL-TRACK-API-001.md`). Owner requirement: positions buffered during an internet outage and sent at recovery (X-12 §8.5, R-1). New OD-28, open: where the buffering producer lives. §2.2 updated. No change to Vigie's behaviour. |
 | 0.15 | 2026-10-21 | P5 decisions (owner, "following your recommendations") and WP16 (#49). OD-21…OD-26 resolved with the recommended options. New OD-27, resolved: sharing the boat's track online is done by Home Assistant from `device_tracker.<boat>`, never by Vigie (§2.2). §8.4: a radius change restarts the drag timer; a position that returns outside keeps the `no_position` alarm on until the boat is inside or the drag alarm takes over. `anchor.py` implemented (C-11). |
 | 0.14 | 2026-10-21 | WP15 (#47): anchor watch specified, not implemented. New §8.4 (logic, pure module `anchor.py`, C-11), §9.6 (entities and services), §10.4 (restart), §11.2 options `anchor_confirm` and `anchor_position_timeout`, §13 phase P5, §2.1 scope line. New open decisions OD-21…OD-26 with recommendations. |
 | 0.13 | 2026-09-28 | #41: §9 — every attribute has a translated label; enumerated attribute values (`nav_status`, `position_source`, `ship_type`) are translated; the own-boat tracker has translation key `position`. |
@@ -61,7 +62,7 @@ The integration must run standalone on a boat-mounted Home Assistant instance (t
 - Navigation / charting (OpenCPN covers this).
 - Transmitting NMEA or AIS (read-only integration).
 - Multiple ports, TCP/UDP input, NMEA 2000.
-- Cloud services of any kind. Sharing the boat's track online (for example with friends and family on a tracking site) is done by Home Assistant itself, from `device_tracker.<boat>`, with an automation documented in the README; Vigie opens no connection (OD-27).
+- Cloud services of any kind. Sharing the boat's track online (for example with friends and family on a tracking site) is done by Home Assistant itself, from `device_tracker.<boat>`, Vigie opens no connection (OD-27). Positions logged during an internet outage are buffered and sent when it recovers (X-12 §8.5, R-1); where that producer lives is OD-28.
 
 ## 3. Context and constraints
 
@@ -466,6 +467,7 @@ Changing an option reloads the entry. The anchor radius is not an option: it cha
 | ~~OD-25~~ | ~~Anchor watch: anchor point and defaults~~ | **Resolved v0.15:** own position at arming or explicit coordinates, no bow offset; radius 50 m (10–500), 20 s continuously outside (§8.4, §11.2) | — |
 | ~~OD-26~~ | ~~Anchor watch: HA restart while armed~~ | **Resolved v0.15:** armed state, anchor point, radius, maximum distance and a latched drag alarm restored (§10.4) | — |
 | ~~OD-27~~ | ~~Sharing the boat's track online (tracking site for friends and family)~~ | **Resolved v0.15:** Vigie stays offline (§2.2, §12); Home Assistant uploads `device_tracker.<boat>` with its own automation, documented and tested as a README recipe in a later work package | — |
+| OD-28 | Sharing the track with outage buffering (X-12 §8.5, R-1): where does the producer live? | (a) Home Assistant YAML only: buffer in a trigger-based template sensor (restored at restart), automation sends it with `rest_command` and clears it on 2xx — no code, but fragile, size-limited, no thinning; (b) **recommended:** a separate small integration in its own repository (pure buffer/sender logic, HA `Store` persistence, sensors per X-12 §8.4), reading any `device_tracker` — Vigie stays offline and the uploader is reusable; (c) an optional, off-by-default platform inside Vigie — reverses OD-27 and the no-outbound-traffic rule; (d) standalone Go service on the boat computer (X-12 §11), outside Home Assistant | Before #51 work; integration key from noforeignland needed first (X-12 OD-8) |
 
 (OD-05 and OD-09 from v0.1 were tied to NMEA 2000 and polars; both moved to P4 and are no longer open for v1.)
 
@@ -483,3 +485,4 @@ Changing an option reloads the entry. The anchor radius is not an option: it cha
 | X-09 | Raw capture of the AIS receiver's serial output (to be produced; ≥ 15 min, ideally in port and under way; tracked in issue #2) | §3.3, §7.2, OD-13, OD-14, tests |
 | X-10 | HA-SAIL-TEST-001 — Test protocol (unit, functional, end-to-end) | §12, §13 |
 | X-11 | Repository `ha-vigie` — bootstrap kit (skeleton, CI, GitHub setup script) | §5.3, §12 |
+| X-12 | NFL-TRACK-API-001 — noforeignland boat tracking API, reverse-engineered contract (`docs/NFL-TRACK-API-001.md`) | §2.2, OD-27, OD-28 |

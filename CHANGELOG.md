@@ -14,6 +14,9 @@ versioning: SemVer.
   (drop and raise, swing radius, drag alarm after 20 s outside and latched, position-loss
   alarm after 60 s, maximum distance, state kept across a restart). Decisions OD-21…OD-26
   resolved; OD-27: the boat's track is shared online by Home Assistant, Vigie stays offline.
+- noforeignland tracking API contract (`docs/NFL-TRACK-API-001.md`, #51), with the owner's
+  requirement to buffer positions during an internet outage; OD-28 (where the uploader
+  lives) open.
 
 ### Fixed
 - README install section (#45): turn on beta versions in HACS (the only release is a
