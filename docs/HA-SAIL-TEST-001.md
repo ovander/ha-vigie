@@ -5,8 +5,8 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.19 (draft) |
-| Date | 2026-09-27 |
+| Version | 0.20 (draft) |
+| Date | 2026-10-21 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open points in §10 |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.20 | 2026-10-21 | WP15 (#47): anchor watch tests planned (SPEC v0.14 §8.4, §9.6, §10.4): new §3.7 `U-ANC`, §4.6 `F-ANC`, E-07 (bench `anchor-drag`), E-17 (in port overnight), E-24 (at an anchorage); D-07 preset `anchor-drag` planned; §7 gate 2 and 4 to cover `anchor.py`; §9 row P5. All Planned; values follow the recommended options of SPEC OD-21…OD-26, re-checked once the owner decides. |
 | 0.19 | 2026-09-28 | #41: new F-ENT-08 (every attribute of every entity has a translated label, enumerated values translated), after the P3 bench pre-run found untranslated labels. |
 | 0.18 | 2026-09-27 | WP14 (#38): D-07 targets can carry static data (type 5 or type 24 A/B, offset and 6 min interval, JSON keys) and the new preset `named-traffic` for the P3 bench check; the E-02 presets send none. E-12 extended to names and ship types (P3). README map card checked against real entities. P3 report template `docs/test-reports/P3-report.md`. |
 | 0.17 | 2026-09-27 | WP13 (#36): F-TRF-09 (static data on every entity that describes a target, `None` when unknown; `targets` list), F-TRF-10 (static data after the position, and a later change, written without any other change), F-TRF-11 (19 ship-type categories translated in the three files, French strings loaded by HA). |
@@ -68,6 +69,8 @@ Principles:
 | D-06 | Raw capture — under way | SPEC X-09 | ≥ 30 min under way, ideally with traffic | F, E |
 | D-07 | Traffic scenarios | Scripted generator (`python -m tests.tools.scenario`; one preset per §3.4 geometry: `head-on`, `clear-crossing`, `crossing`, `overtaking`, `not-urgent`, `diverging`, `parallel`, `anchored`, `multi-target`; `named-traffic` for P3; `--list` prints their expected values) | Own boat + targets on defined tracks, emitted as timed RMC + VDM sentences; targets with static data also send type 5 (Class A) or type 24 A/B (Class B) | U-TRF, F-TRF, E-02, P3 bench |
 | D-08 | Burst file | Derived from D-03 | ≥ 50 sentences/s for 60 s | F-PERF, E-05 |
+
+From P5 (planned), D-07 also gets the preset `anchor-drag`: own boat at anchor swinging on a 30 m circle with ± 8 m position noise (fixed seed) for 10 min, then drifting downwind at 0.5 kn; RMC only, no AIS target. `--list` prints the time the boat leaves a 50 m radius and the time the alarm is expected (+ 20 s).
 
 Until X-09 exists (issue #2), tests that name D-05/D-06 run on synthetic stand-ins: a mixed stream built from D-03/D-07 for F-HUB-01 and F-ENT-01, a 10-minute D-07 scenario for F-PERF-02. Each is re-run on the real capture under issue #2. Synthetic sentences are never presented as captured data. D-04 lives in `tests/fixtures/malformed.nmea` and D-08 in `tests/fixtures/burst_60s.nmea` (generated from D-03 with a fixed seed).
 
@@ -190,6 +193,25 @@ The merge logic is written as plain classes in `state.py` (no HA) wrapped by the
 | U-STA-06 | Capacity (default 2 000, tested with 3) | The MMSI updated longest ago is dropped; an update makes an MMSI the newest | Done |
 | U-STA-07 | Own-ship report; own MMSI | Refused | Done |
 
+### 3.7 Anchor watch — `U-ANC` (SPEC §8.4, P5)
+
+`AnchorWatch` in `anchor.py` (`tests/domain/test_anchor.py`), fake clock. Positions are built from metres so the expected distances are exact by hand: a point *d* m due north of the anchor is at Δlat = *d* / R rad (R = 6 371 008.8 m, `geo.py`), so its haversine distance is *d* and its bearing to the anchor 180°. Defaults: radius 50 m, confirmation 20 s, position timeout 60 s. Planned: values follow the recommended options of SPEC OD-22…OD-26.
+
+| ID | Case | Expected | Status |
+|---|---|---|---|
+| U-ANC-01 | Arm at own position; update at the same point | Armed; distance 0; alarm off; maximum distance 0 | Planned |
+| U-ANC-02 | Boat 60.0 m due north; 30.0 m due east (Δlon = 30 / (R·cos φ) rad) | Distance 60.0 m ± 0.01, bearing to anchor 180° ± 0.1; 30.0 m ± 0.01, bearing 270° ± 0.1 | Planned |
+| U-ANC-03 | Outside (60 m) for 19 s, back inside (40 m), outside again 19 s | No alarm: the timer restarts each time the boat comes back inside | Planned |
+| U-ANC-04 | Outside continuously from t = 0 | Alarm off at 19 s, on with reason `drag` at 20 s | Planned |
+| U-ANC-05 | Drag alarm on, boat back inside; then disarm; then arm again | Still on (latched, OD-23); off on disarm; off after re-arming, with a new anchor point and maximum distance reset | Planned |
+| U-ANC-06 | Radius changed while armed: 50 → 80 m with the boat at 60 m after 10 s outside; then 80 → 40 m with the boat at 60 m | No alarm (inside again); then the timer starts from the change and the alarm comes 20 s later; a latched alarm is not cleared by a radius change | Planned |
+| U-ANC-07 | No position for 59 s, then 60 s, then a position inside; same with the position returning outside | Off at 59 s; on with reason `no_position` at 60 s; cleared when the position returns inside; returning outside switches to the drag rule from that moment | Planned |
+| U-ANC-08 | Disarmed | Updates change nothing; alarm off; distance `None` | Planned |
+| U-ANC-09 | Boat at 20, 45, 30 m | Maximum distance 45 m; reset by a re-arm | Planned |
+| U-ANC-10 | Snapshot (`to_dict` / `from_dict`) armed with a latched alarm | Round trip keeps point, radius, arming time, maximum distance and alarm; the position-loss timer restarts from the restore time | Planned |
+| U-ANC-11 | Arm without position and without coordinates; latitude outside ±90, longitude outside ±180; only one of latitude/longitude; radius outside 10–500 m | Refused (`ValueError`), state unchanged | Planned |
+| U-ANC-12 | 10 min of positions on a 30 m circle with ± 8 m noise (fixed seed), radius 50 m | No alarm; maximum distance < 50 m | Planned |
+
 ## 4. Functional tests (`tests/integration/`)
 
 Run inside Home Assistant's test harness (`pytest-homeassistant-custom-component==0.13.316`, HA 2026.2.3 — SPEC OD-06). The serial port is replaced by a **fake transport** that feeds lines from a fixture or scenario (D-04 to D-08), under control of the test (pause, disconnect, burst). Time is controlled with the harness's time-travel helpers, so no test sleeps in real time.
@@ -260,6 +282,22 @@ Marked `@pytest.mark.perf`, excluded from the default run and executed by the ni
 | F-PERF-02 | 10 min of D-06 at real rate (synthetic D-07 stream until #2) | State writes per entity ≤ 1/s; total writes counted and recorded as baseline | NFR-04, §10.2 | Done (synthetic baseline; D-06: #2) |
 | F-PERF-03 | `sensor.ais_targets` attributes | Rebuilt ≤ every 5 s; serialized size under HA's attribute limit | §10.2 | Done |
 
+### 4.6 Anchor watch — `F-ANC` (SPEC §9.6, §10.4, P5)
+
+Planned. Fake serial transport and simulated time; the `anchor-drag` preset (D-07) for the drag cases.
+
+| ID | Case | Expected | SPEC | Status |
+|---|---|---|---|---|
+| F-ANC-01 | Entry set up | `switch.anchor_watch`, `number.anchor_radius` (config, 50 m), `binary_sensor.anchor_alarm` (safety, off), `sensor.anchor_distance` (distance, m, unavailable while disarmed) on the boat's device with translation keys and entry-scoped unique IDs | §9.6 | Planned |
+| F-ANC-02 | Switch turned on with own position; without own position | Armed at the current position, attributes set, distance 0; without position the call fails with a translated error and the switch stays off | §9.6 | Planned |
+| F-ANC-03 | `anchor-drag` preset played, README anchor automation installed | Alarm on with reason `drag` at the time `--list` gives (± 1 tick); the automation runs once; distance written ≤ 1/s with a 1 m dead-band | §8.4, §9.6, §10.2 | Planned |
+| F-ANC-04 | `vigie.drop_anchor` with latitude, longitude and radius; with radius only; with only latitude; `vigie.raise_anchor` | Anchor at the given point with the given radius (number updated); at own position; refused; disarmed and alarm off | §9.6 | Planned |
+| F-ANC-05 | Armed, GPS silent; port disconnected | Alarm `no_position` after 60 s in both cases (not unavailable); cleared when the position returns inside | §8.4 | Planned |
+| F-ANC-06 | Armed with a latched drag alarm, HA restarted (restore state injected) | Armed again with the same point, radius, maximum distance and alarm on; with no position after the restart, `no_position` after 60 s | §10.4 | Planned |
+| F-ANC-07 | Radius changed on `number.anchor_radius` while armed | Applied at the next tick; restored after a restart | §9.6 | Planned |
+| F-ANC-08 | Translations | `reason` values, attribute labels, service fields and errors in `strings.json`, `en.json`, `fr.json` (F-ENT-08 extended to the anchor entities) | §9.6, CLAUDE.md | Planned |
+| F-ANC-09 | Two boats (two entries) armed at different points | Independent watches; a service call targets one entry only | §9.6, NFR-06 | Planned |
+
 ## 5. End-to-end tests
 
 E2E runs on a real Home Assistant instance, in three stages of increasing realism. Each stage has a written checklist; results are recorded in the test report (§9).
@@ -281,6 +319,7 @@ Setup (TP-01, TP-02, SPEC OD-12 — resolved v0.3):
 | E-04 | Kill the replay tool (or the feed side of `socat`), restart after 30 s | Unavailable → recovered without HA restart |
 | E-05 | D-08 burst at real speed on the Pi | CPU and event-loop lag within F-PERF-01 limits on the target hardware |
 | E-06 | HA restart during replay | Integration reloads, entities come back, no duplicates |
+| E-07 | P5: replay `anchor-drag` at real speed, arm before the drift starts, README anchor automation installed; restart HA once while armed | Anchor shown on the map card; no alarm while swinging; alarm `drag` where `--list` says (± 2 s) and one notification on the phone; armed state and anchor point survive the restart |
 
 ### 5.2 Stage E-2 — On board, in port (real receiver)
 
@@ -295,6 +334,7 @@ Prerequisite: smart0183serial removed (SPEC §3.1).
 | E-14 | Cut the 12 V supply to the receiver only | Entities unavailable; recovery on power-up |
 | E-15 | Cut power to the Pi (simulated brown-out) | HA restarts, integration recovers, no database corruption reported |
 | E-16 | 24 h soak in port | No memory growth trend (> 10 % after warm-up), no error flood in logs, target table size stable |
+| E-17 | P5: armed at the berth, radius 20 m, overnight (≥ 8 h); then unplug the receiver 2 min | No false drag alarm; maximum distance recorded (GPS noise at the berth); `no_position` alarm after 60 s, cleared on replug |
 
 ### 5.3 Stage E-3 — Under way (acceptance)
 
@@ -306,6 +346,7 @@ Performed in daylight, good visibility, with a crew member responsible for navig
 | E-21 | Crossing encounters with real traffic (at least 3, opportunistic) | CPA/TCPA consistent with the chartplotter's AIS target page (± 0.1 NM, ± 1 min) |
 | E-22 | `collision_risk` alert | Fires when a real target meets the thresholds; alert reaches the phone; clears after passage |
 | E-23 | Record a new D-06 capture during the sail | Added to fixtures (after anonymisation) as a regression dataset |
+| E-24 | P5: at an anchorage, drop anchor (switch or chartplotter position), radius 30 m; later motor slowly out of the radius | No alarm while lying at anchor; alarm within confirmation time + 2 s after leaving the radius; phone notification; raise anchor clears it |
 
 ## 6. Tooling
 
@@ -330,6 +371,8 @@ Every PR must pass:
 4. No HA import in any pure module (NFR-02 check).
 5. `hassfest` and HACS validation pass.
 
+From P5, `anchor.py` joins the pure modules of gates 2 and 4 and the mypy strict list.
+
 A release tag additionally requires: nightly `F-PERF` green on the last commit, and the E-1 checklist completed for the release candidate.
 
 ## 8. Traceability — SPEC NFRs to tests
@@ -346,7 +389,7 @@ A release tag additionally requires: nightly `F-PERF` green on the last commit, 
 | NFR-08 Coverage ≥ 90 % | CI gate 2 |
 | NFR-09 Burst handling | F-PERF-01, E-05 |
 
-Functional requirements map by SPEC section: §7.2 → U-GPS; §7.3 → U-AIS; §7.4 → U-COO; §8 → U-TRF, F-TRF; §9 → F-ENT, F-TRF; §10 → F-HUB, F-PERF; §11 → F-LIFE.
+Functional requirements map by SPEC section: §7.2 → U-GPS; §7.3 → U-AIS; §7.4 → U-COO; §8 → U-TRF, F-TRF; §9 → F-ENT, F-TRF; §10 → F-HUB, F-PERF; §11 → F-LIFE; from P5, §8.4 → U-ANC, §9.6 and §10.4 → F-ANC.
 
 ## 9. Phase exit criteria and reporting
 
@@ -356,6 +399,7 @@ Functional requirements map by SPEC section: §7.2 → U-GPS; §7.3 → U-AIS; �
 | P1 Base | U-NMEA, U-GPS, U-AIS-13, U-COO, U-TRF-12, F-LIFE, F-HUB, F-ENT, F-PERF, E-1 (E-01, E-03…E-06), E-2 (E-10, E-11, E-13) | All green; D-05 replay matches receiver display. Tests needing X-09 (U-GPS-08, U-AIS-13, real-data runs of F-HUB-01, F-ENT-01, F-PERF-02) tracked in issue #2 |
 | P2 Traffic | U-TRF, F-TRF, E-02, E-12, E-16, E-3 | All green; at least 3 real encounters in E-21 consistent with the chartplotter |
 | P3 Static data | U-AIS-04, U-AIS-15…22; U-STA (static store, WP12); F-TRF static checks (entities, WP13); E-12 extended to names and ship types | All green; on board, names and ship types of 5 targets match the chartplotter (E-12); U-AIS-13 on the receiver capture (#2) decodes its type 5/24 lines without rejects |
+| P5 Anchor watch (planned, SPEC OD-21) | U-ANC, F-ANC, E-07, E-17, E-24 | All green; on board, no false alarm overnight (E-17) and the alarm fires when motoring out of the radius (E-24) |
 
 **Test report** per release: version, commit, CI run link, coverage figures, E-stage checklists with date/location/conditions, deviations and their tickets. Stored in the repository under `docs/test-reports/`.
 

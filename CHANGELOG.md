@@ -5,6 +5,12 @@ versioning: SemVer.
 
 ## [Unreleased]
 
+### Added
+- Anchor watch specified (#47), not implemented yet: SPEC v0.14 §8.4, §9.6, §10.4 (switch,
+  radius, drag and position-loss alarm, distance to the anchor, `drop_anchor` /
+  `raise_anchor` services, restored after a restart) and TEST v0.20 (U-ANC, F-ANC, E-07,
+  E-17, E-24). Decisions OD-21…OD-26 open.
+
 ### Fixed
 - README install section (#45): turn on beta versions in HACS (the only release is a
   pre-release), hard-reload the browser after the restart, minimum Home Assistant version,

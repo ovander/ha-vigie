@@ -5,8 +5,8 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.13 (draft) |
-| Date | 2026-09-27 |
+| Version | 0.14 (draft) |
+| Date | 2026-10-21 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
 | Project name / domain | **Vigie** / `vigie` (OD-01 resolved) |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.14 | 2026-10-21 | WP15 (#47): anchor watch specified, not implemented. New §8.4 (logic, pure module `anchor.py`, C-11), §9.6 (entities and services), §10.4 (restart), §11.2 options `anchor_confirm` and `anchor_position_timeout`, §13 phase P5, §2.1 scope line. New open decisions OD-21…OD-26 with recommendations. |
 | 0.13 | 2026-09-28 | #41: §9 — every attribute has a translated label; enumerated attribute values (`nav_status`, `position_source`, `ship_type`) are translated; the own-boat tracker has translation key `position`. |
 | 0.12 | 2026-09-27 | WP13 (#36): static data on the entities (§9.2, §9.3, §9.4): ship type (translated category and code), call sign, IMO, length, beam, draught, destination on the closest target/threat sensors, `collision_risk` and the watch-list trackers; ship type and length in the `targets` list; static data that changes is written at once. |
 | 0.11 | 2026-09-27 | WP12 (#34): §9.4 static store implemented; the hub delivers static reports separately (§6) and counts them (`ais_static`, §9.5); names from static data are preferred wherever a target's name is shown. |
@@ -51,6 +52,7 @@ The integration must run standalone on a boat-mounted Home Assistant instance (t
 - AIS target table with expiry; aggregate traffic sensor; opt-in tracking of selected MMSIs.
 - CPA/TCPA computation for each target and a closest-threat alert (§8).
 - UI configuration (config flow + options flow), HACS-installable.
+- Anchor watch on own position: swing radius, drag and position-loss alarm (§8.4, §9.6). Specified in v0.14; phase P5 (OD-21, open).
 
 ### 2.2 Out of scope (v1)
 
@@ -141,6 +143,7 @@ Pure-Python modules (no `homeassistant` import, `mypy --strict`, covered by the 
 | C-08 | Trackers | `device_tracker.py` | Own boat position; watched AIS targets (§9.3). |
 | C-10 | Entity base | `entity.py` | Shared device info, unique IDs and availability rule for all entities. |
 | C-09 | Diagnostics | `sensor.py`, `diagnostics.py` | Health counters; HA diagnostics download. |
+| C-11 | Anchor watch (P5) | `anchor.py` (pure), `switch.py`, `number.py`, `services.yaml` | Anchor point, swing radius, drag and position-loss alarm (§8.4); entities and services (§9.6). `anchor.py` has no HA import. |
 
 ### 5.3 File layout
 
@@ -155,10 +158,14 @@ custom_components/vigie/
 ├── state.py            # pure: OwnBoatState, AisTargetTable, WriteGate
 ├── geo.py              # pure: distance, bearing
 ├── traffic.py          # pure (P2)
+├── anchor.py           # pure (P5): anchor watch
 ├── entity.py
 ├── sensor.py
 ├── binary_sensor.py
 ├── device_tracker.py
+├── switch.py           # P5: anchor watch on/off
+├── number.py           # P5: anchor radius
+├── services.yaml       # P5: drop_anchor, raise_anchor
 ├── diagnostics.py
 ├── strings.json
 ├── translations/{en,fr}.json
@@ -185,7 +192,7 @@ tests/
    - GPS records and `VDO` reports → `OwnBoatState` (per-field timestamp and source).
    - `VDM` reports → `AisTargetTable` upsert.
    - Static reports (types 5, 24, and the static part of type 19) → `AisStaticStore` (§9.4); own-ship ones and the own MMSI are refused.
-5. C-05 recomputes CPA/TCPA for affected targets whenever own state or a target changes.
+5. C-05 recomputes CPA/TCPA for affected targets whenever own state or a target changes. From P5, C-11 checks the anchor watch against own position at every tick (§8.4).
 6. C-04 notifies entities, each throttled per NFR-04 (§10.2). A connection change is pushed immediately, without waiting for the next tick.
 
 Reading runs as one long-lived task created in `async_setup_entry` and cancelled in `async_unload_entry`. No polling: `iot_class: local_push`, entities have `should_poll = False`.
@@ -265,6 +272,26 @@ The most urgent threat is the one with the smallest TCPA, then the smallest CPA.
 
 CPA/TCPA assume straight-line constant-speed motion from the last report (both vessels are dead-reckoned to now, §8.1). Class B targets report every 30 s to 3 min, so their predictions are coarser; the report age is exposed so the user can judge. This is an aid, not a collision-avoidance system (documented in the README).
 
+### 8.4 Anchor watch (C-11, P5)
+
+Specified in v0.14, not implemented. Every decision below marked OD-21…OD-26 is **open** (§14); the text describes the recommended option.
+
+The anchor watch uses own position only (RMC/GGA, VDO fallback, §7.4). It needs no new source and no AIS target. Logic lives in the pure module `anchor.py` (no HA import, NFR-02; mypy strict, coverage gate), driven by the coordinator tick with the injectable clock.
+
+**State.** Disarmed, or armed with: anchor point (latitude, longitude), radius (m), arming time, maximum distance seen since arming, and the alarm (off, or on with a reason).
+
+**Arming ("drop anchor").** The anchor point is the own position at arming (OD-25). A service call may give an explicit latitude and longitude instead, for example the position where the anchor was actually let go, read on the chartplotter. Arming without a valid own position and without explicit coordinates is refused. There is no bow-to-antenna offset: the radius absorbs it. Arming again re-drops the anchor: new point, maximum distance reset, alarm cleared.
+
+**Distance.** At each tick, distance and bearing from the boat to the anchor point with `geo.py` (haversine). The raw own position is used, not the 5 m dead-banded tracker state (§10.2), and it is not dead-reckoned: at anchor SOG is mostly GPS noise.
+
+**Drag alarm.** The boat is *outside* when distance > radius. The alarm turns on with reason `drag` once the boat has been outside continuously for `anchor_confirm` (default 20 s, OD-25). Returning inside before that resets the timer. GPS noise (±5–10 m) and swinging therefore do not raise it while the radius leaves a margin. A drag alarm latches (OD-23): it stays on when the boat comes back inside, until the watch is disarmed or the anchor is re-dropped. Changing the radius while armed applies at once, and does not clear a latched alarm.
+
+**Position-loss alarm.** While armed, when no own position has been received for `anchor_position_timeout` (default 60 s, OD-24), the alarm turns on with reason `no_position`. A port disconnect counts the same. This alarm clears by itself when a position returns and the boat is inside; if it is outside, the drag rule applies from that moment. The watch must never stay silent because its input is gone.
+
+**Clean room (§3.1).** `ha-smart-anchor` (X-06) is prior art only: nothing is read from it or reused.
+
+**Limits.** An aid, not a substitute for an anchor watch kept by the crew (README, as §8.3). The alarm is only as fast as the confirmation time plus one tick. The receiver's GNSS antenna position defines the boat's position.
+
 ## 9. Entity model
 
 All entities belong to one HA device per config entry ("the boat"), except watched AIS targets, which get one device each. `has_entity_name = True`, translation keys, entry-scoped unique IDs (`{entry_id}_{key}`). Every attribute has a translated label, and attributes whose values are keys (`nav_status`, `position_source`, `ship_type`) have translated values; the trackers carry a translation key for this while their name comes from their device.
@@ -320,6 +347,24 @@ Static data (§7.3) is kept per MMSI apart from the positions and merged into a 
 - The diagnostics download also carries the hub's other counters (GPS rejects, framing errors, internal errors, reconnects) and the own-boat fields with their source and age.
 - Diagnostics redact the serial port path (by-id paths contain the adapter's serial number), `own_mmsi` and own position.
 
+### 9.6 Anchor watch (P5)
+
+Specified in v0.14, not implemented; controls per OD-22 (open, recommended option shown). All on the boat's device, translation keys, unique IDs `{entry_id}_{key}`.
+
+| Entity | Content |
+|---|---|
+| `switch.anchor_watch` | On = armed. Turning it on drops the anchor at the current own position with the radius of `number.anchor_radius`; refused (error shown in the UI, stays off) without own position. Turning it off disarms and clears the alarm. Attributes: `anchor_latitude`, `anchor_longitude`, `radius_m`, `armed_at`. Always available. |
+| `number.anchor_radius` | Swing radius, m (device_class distance, 10–500, step 5, default 50, OD-25), `entity_category: config`. A change applies at once while armed. Restored after a restart. |
+| `binary_sensor.anchor_alarm` | On while the alarm is on (device_class safety). Off when disarmed. Attribute `reason`: `drag` or `no_position` (translated), `None` when off. Designed to drive automations (README example; trigger on `to: "on"`). Always available: while armed, a missing position is itself an alarm (§8.4), so "unavailable" is never used to hide one. |
+| `sensor.anchor_distance` | Distance from the boat to the anchor point, m (device_class distance, state_class measurement, dead-band 1 m, at most one write per `update_interval`). Attributes: `bearing_to_anchor`, `max_distance_m`, `radius_m`, and `latitude`/`longitude` of the anchor point, so the built-in map card can show the anchor. Unavailable when disarmed or without own position. |
+
+Services (registered once for the domain, target a config entry):
+
+- `vigie.drop_anchor`: optional `latitude`, `longitude` (both or none) and `radius` (m). Arms or re-drops (§8.4).
+- `vigie.raise_anchor`: disarms and clears the alarm.
+
+Every service field and error has a translated label and description (`strings.json`, `en.json`, `fr.json`).
+
 ## 10. Runtime behaviour
 
 ### 10.1 Availability
@@ -336,6 +381,10 @@ Each state field carries its last-update time. Own-boat entities become `unavail
 ### 10.3 Reconnection
 
 Exponential backoff (1, 2, 4 … 60 s max) on serial errors and end-of-stream, logged once per outage (one warning at start, one info line on recovery). The backoff resets after a successful reopen. On first setup with the port unavailable, raise `ConfigEntryNotReady` so HA retries.
+
+### 10.4 Restart (P5)
+
+Power on board can be intermittent (§3.2). The armed state, anchor point, radius, arming time, maximum distance and a latched drag alarm are restored after a Home Assistant restart or an entry reload (`RestoreEntity`), not reset (OD-26). After the restart the position-loss timer starts from zero, so a GPS that does not come back still raises the alarm after `anchor_position_timeout`.
 
 ## 11. Configuration
 
@@ -361,8 +410,10 @@ Exponential backoff (1, 2, 4 … 60 s max) on serial errors and end-of-stream, l
 | `tcpa_threshold` | 15 min (1–60) | P2 |
 | `exclude_stationary` (anchored/moored Class A below 0.5 kn) | on | P2 |
 | `watch_list` (9-digit MMSIs, duplicates dropped) | empty | P2 |
+| `anchor_confirm` (time continuously outside the radius before the alarm, 5–120 s) | 20 s (OD-25) | P5 |
+| `anchor_position_timeout` (no own position while armed before the alarm, 10–600 s) | 60 s (OD-24) | P5 |
 
-Changing an option reloads the entry.
+Changing an option reloads the entry. The anchor radius is not an option: it changes from one anchorage to the next and is set with `number.anchor_radius` or the `drop_anchor` service (§9.6).
 
 ## 12. Quality, packaging, security
 
@@ -382,6 +433,7 @@ Changing an option reloads the entry.
 | P1 | Raw capture (X-09); transport, GPS parsers, coordinator, own-boat entities, AIS target table, `sensor.ais_targets`, diagnostics | Capture replayed; own-boat entities match the receiver/chartplotter display |
 | P2 | Traffic logic: CPA/TCPA, closest target/threat, `binary_sensor.collision_risk`, watched-target trackers | Scenario tests green; on-water check against a chartplotter's AIS page |
 | P3 | AIS static data (types 5, 24): names, ship type, dimensions; Lovelace map card configuration (built-in map card: own boat and watched targets, OD-19) | U-AIS static tests, U-STA and the F-TRF static checks green; on board, names and ship types of 5 targets match the chartplotter (E-12); the receiver capture (#2) decodes its type 5/24 lines without rejects |
+| P5 | Anchor watch (§8.4, §9.6, §10.4): `anchor.py`, switch, radius, alarm, distance, services, restore; independent of P4 (OD-21) | U-ANC and F-ANC green; bench `anchor-drag` scenario raises the alarm where the preset says (E-07); in port, armed overnight at 20 m without a false alarm (E-17); at an anchorage, motoring out of the radius raises the alarm and the phone notification (E-24) |
 | P4 | Optional additional sources if instruments are added (wind, depth, log) and the performance layer (true wind, VMG, polars), via a second port or TCP | Requires new hardware; re-opens §2.2 |
 
 ## 14. Open decisions
@@ -406,6 +458,12 @@ Changing an option reloads the entry.
 | ~~OD-19~~ | ~~Map card~~ | **Resolved v0.10:** document a built-in map card configuration (own boat, watched targets); the full picture stays in the `targets` attribute; a custom card (separate HACS plugin) is left for after v1 (§13) | — |
 | ~~OD-20~~ | ~~Static fields exposed~~ | **Resolved v0.10:** name, call sign, IMO, ship type, length, beam, draught, destination; no ETA (no year, often stale), no EPFD (§7.3, §9.4) | — |
 | OD-14 | Serial baud rate | 38 400 (typical AIS) vs 4 800; confirmed by X-09 and by the current smart0183serial setting. Baud rate is configurable, the probe suggests the other rate (§11.1) | P1 (from X-09, issue #2) |
+| OD-21 | Anchor watch: phase | (a) new phase P5, after P3 and independent of P4 (no new hardware) — **recommended**; (b) part of v1 before the first stable release; (c) separate integration | WP16 |
+| OD-22 | Anchor watch: controls | (a) switch + radius number + services `drop_anchor` / `raise_anchor` — **recommended** (dashboard tile, automations, explicit coordinates); (b) services only; (c) options flow only (too slow at an anchorage) | WP16 |
+| OD-23 | Anchor watch: drag alarm latch | (a) latched until disarmed or re-dropped — **recommended** (a drag is never cleared by a swing back inside); (b) clears when the boat returns inside | WP16 |
+| OD-24 | Anchor watch: position lost while armed | (a) alarm `no_position` after 60 s without position, cleared when it returns inside — **recommended**; (b) distance unavailable only, no alarm (silent failure) | WP16 |
+| OD-25 | Anchor watch: anchor point and defaults | (a) own position at arming, optional explicit coordinates in the service, no bow offset; radius 50 m (10–500), confirmation 20 s continuously outside — **recommended**; (b) also a bow offset or a radius from chain length and depth (no depth source, §3.3) | WP16 |
+| OD-26 | Anchor watch: HA restart while armed | (a) restore armed state, anchor point, radius, maximum distance and a latched alarm — **recommended** (intermittent power, §3.2); (b) disarm on restart | WP17 |
 
 (OD-05 and OD-09 from v0.1 were tied to NMEA 2000 and polars; both moved to P4 and are no longer open for v1.)
 
@@ -418,7 +476,7 @@ Changing an option reloads the entry.
 | X-03 | Code review of `SmartBoatInnovations/ha-smart0183serial` @ `5854e94` (license, sensor.py L334, checksum handling) | §3.1, §3.3 |
 | X-04 | Home Assistant developer docs — integration architecture, config flow, DataUpdateCoordinator, entity guidelines — https://developers.home-assistant.io | §5, §9, §11 |
 | X-05 | `ludeeus/integration_blueprint` — dev container and HACS layout reference | §12 |
-| X-06 | Smart Boat Innovations integrations (ha-smart0183tcp, ha-smart-anchor) — prior art, not reused | §2 |
+| X-06 | Smart Boat Innovations integrations (ha-smart0183tcp, ha-smart-anchor) — prior art, not reused | §2, §8.4 |
 | X-08 | pyais (MIT) — test oracle only | §7.3 |
 | X-09 | Raw capture of the AIS receiver's serial output (to be produced; ≥ 15 min, ideally in port and under way; tracked in issue #2) | §3.3, §7.2, OD-13, OD-14, tests |
 | X-10 | HA-SAIL-TEST-001 — Test protocol (unit, functional, end-to-end) | §12, §13 |
