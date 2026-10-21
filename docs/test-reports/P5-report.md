@@ -9,7 +9,7 @@ they are.
 | Phase | P5 Anchor watch (SPEC HA-SAIL-SPEC-001 v0.18 §13) |
 | Documents | SPEC v0.18, TEST v0.23, NFL-TRACK-API-001 v0.2.0 (X-12, not part of P5) |
 | Code state | `main` at `a449836` (WP15–WP17 merged) plus this PR (WP18) |
-| Release | none yet; a beta tag is the owner's call |
+| Release | candidate `v0.2.0-beta.1` (CHANGELOG prepared); the tag is the owner's call |
 | CI | `lint`, `unit`, `hassfest`, `hacs` green on every P5 PR |
 | Automated tests | 517 passed, 1 skipped (U-GPS-08, #2), 3 `perf` tests run separately |
 | Coverage | 99 % of the pure modules (`nmea/`, `state.py`, `geo.py`, `hub.py`, `traffic.py`, `anchor.py`; `anchor.py` 100 %); gate ≥ 90 % |
