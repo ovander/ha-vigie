@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.20 (draft) |
+| Version | 0.21 (draft) |
 | Date | 2026-10-21 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.21 | 2026-10-21 | WP16 (#49): U-ANC-01…12 implemented (`tests/domain/test_anchor.py`) after SPEC OD-21…OD-26 were resolved (SPEC v0.15); U-ANC-06 and U-ANC-07 made precise (radius change restarts the timer; a position returning outside keeps `no_position` until inside or `drag`); U-ANC-10 names `restore()`; §7 gate 2 covers `anchor.py`. |
 | 0.20 | 2026-10-21 | WP15 (#47): anchor watch tests planned (SPEC v0.14 §8.4, §9.6, §10.4): new §3.7 `U-ANC`, §4.6 `F-ANC`, E-07 (bench `anchor-drag`), E-17 (in port overnight), E-24 (at an anchorage); D-07 preset `anchor-drag` planned; §7 gate 2 and 4 to cover `anchor.py`; §9 row P5. All Planned; values follow the recommended options of SPEC OD-21…OD-26, re-checked once the owner decides. |
 | 0.19 | 2026-09-28 | #41: new F-ENT-08 (every attribute of every entity has a translated label, enumerated values translated), after the P3 bench pre-run found untranslated labels. |
 | 0.18 | 2026-09-27 | WP14 (#38): D-07 targets can carry static data (type 5 or type 24 A/B, offset and 6 min interval, JSON keys) and the new preset `named-traffic` for the P3 bench check; the E-02 presets send none. E-12 extended to names and ship types (P3). README map card checked against real entities. P3 report template `docs/test-reports/P3-report.md`. |
@@ -195,22 +196,22 @@ The merge logic is written as plain classes in `state.py` (no HA) wrapped by the
 
 ### 3.7 Anchor watch — `U-ANC` (SPEC §8.4, P5)
 
-`AnchorWatch` in `anchor.py` (`tests/domain/test_anchor.py`), fake clock. Positions are built from metres so the expected distances are exact by hand: a point *d* m due north of the anchor is at Δlat = *d* / R rad (R = 6 371 008.8 m, `geo.py`), so its haversine distance is *d* and its bearing to the anchor 180°. Defaults: radius 50 m, confirmation 20 s, position timeout 60 s. Planned: values follow the recommended options of SPEC OD-22…OD-26.
+`AnchorWatch` in `anchor.py` (`tests/domain/test_anchor.py`), fake clock. Positions are built from metres so the expected distances are exact by hand: a point *d* m due north of the anchor is at Δlat = *d* / R rad (R = 6 371 008.8 m, `geo.py`), so its haversine distance is *d* and its bearing to the anchor 180°. Defaults: radius 50 m, confirmation 20 s, position timeout 60 s. Values follow SPEC OD-22…OD-26 (resolved v0.15).
 
 | ID | Case | Expected | Status |
 |---|---|---|---|
-| U-ANC-01 | Arm at own position; update at the same point | Armed; distance 0; alarm off; maximum distance 0 | Planned |
-| U-ANC-02 | Boat 60.0 m due north; 30.0 m due east (Δlon = 30 / (R·cos φ) rad) | Distance 60.0 m ± 0.01, bearing to anchor 180° ± 0.1; 30.0 m ± 0.01, bearing 270° ± 0.1 | Planned |
-| U-ANC-03 | Outside (60 m) for 19 s, back inside (40 m), outside again 19 s | No alarm: the timer restarts each time the boat comes back inside | Planned |
-| U-ANC-04 | Outside continuously from t = 0 | Alarm off at 19 s, on with reason `drag` at 20 s | Planned |
-| U-ANC-05 | Drag alarm on, boat back inside; then disarm; then arm again | Still on (latched, OD-23); off on disarm; off after re-arming, with a new anchor point and maximum distance reset | Planned |
-| U-ANC-06 | Radius changed while armed: 50 → 80 m with the boat at 60 m after 10 s outside; then 80 → 40 m with the boat at 60 m | No alarm (inside again); then the timer starts from the change and the alarm comes 20 s later; a latched alarm is not cleared by a radius change | Planned |
-| U-ANC-07 | No position for 59 s, then 60 s, then a position inside; same with the position returning outside | Off at 59 s; on with reason `no_position` at 60 s; cleared when the position returns inside; returning outside switches to the drag rule from that moment | Planned |
-| U-ANC-08 | Disarmed | Updates change nothing; alarm off; distance `None` | Planned |
-| U-ANC-09 | Boat at 20, 45, 30 m | Maximum distance 45 m; reset by a re-arm | Planned |
-| U-ANC-10 | Snapshot (`to_dict` / `from_dict`) armed with a latched alarm | Round trip keeps point, radius, arming time, maximum distance and alarm; the position-loss timer restarts from the restore time | Planned |
-| U-ANC-11 | Arm without position and without coordinates; latitude outside ±90, longitude outside ±180; only one of latitude/longitude; radius outside 10–500 m | Refused (`ValueError`), state unchanged | Planned |
-| U-ANC-12 | 10 min of positions on a 30 m circle with ± 8 m noise (fixed seed), radius 50 m | No alarm; maximum distance < 50 m | Planned |
+| U-ANC-01 | Arm at own position; update at the same point | Armed; distance 0; alarm off; maximum distance 0 | Done |
+| U-ANC-02 | Boat 60.0 m due north; 30.0 m due east (Δlon = 30 / (R·cos φ) rad) | Distance 60.0 m ± 0.01, bearing to anchor 180° ± 0.1; 30.0 m ± 0.01, bearing 270° ± 0.1 | Done |
+| U-ANC-03 | Outside (60 m) for 19 s, back inside (40 m), outside again 19 s | No alarm: the timer restarts each time the boat comes back inside | Done |
+| U-ANC-04 | Outside continuously from t = 0 | Alarm off at 19 s, on with reason `drag` at 20 s | Done |
+| U-ANC-05 | Drag alarm on, boat back inside; then disarm; then arm again | Still on (latched, OD-23); off on disarm; off after re-arming, with a new anchor point and maximum distance reset | Done |
+| U-ANC-06 | Radius changed while armed: 50 → 80 m with the boat at 60 m after 10 s outside; then 80 → 40 m with the boat at 60 m; then 50 → 45 m while outside | No alarm (inside again); after each change the timer starts again at the next position outside and the alarm comes 20 s later; a latched alarm is not cleared by a radius change | Done |
+| U-ANC-07 | No position for 59 s, then 60 s, then a position inside; same with the position returning outside | Off at 59 s; on with reason `no_position` at 60 s; cleared when the position returns inside; a position returning outside keeps `no_position` on and becomes `drag` after 20 s outside (then latched); a fix older than 60 s counts as no position; the timer runs from arming when no fix ever came | Done |
+| U-ANC-08 | Disarmed | Updates change nothing; alarm off; distance `None` | Done |
+| U-ANC-09 | Boat at 20, 45, 30 m | Maximum distance 45 m; reset by a re-arm | Done |
+| U-ANC-10 | Snapshot (`to_dict` / `restore`) armed with a latched alarm; disarmed; `no_position` alarm; invalid snapshots | Round trip keeps point, radius, arming time, maximum distance and the drag alarm; the position-loss timer restarts from the restore time; disarmed is `None`; a `no_position` alarm is not kept (it re-times); invalid data refused (`ValueError`), watch unchanged | Done |
+| U-ANC-11 | Arm without position and without coordinates; latitude outside ±90, longitude outside ±180; only one of latitude/longitude; radius outside 10–500 m or NaN; non-positive confirmation or timeout | Refused (`ValueError`), state unchanged; a radius set while disarmed is used at arming | Done |
+| U-ANC-12 | 10 min of positions on a 30 m circle with ± 8 m noise (fixed seed), radius 50 m | No alarm; maximum distance < 50 m | Done |
 
 ## 4. Functional tests (`tests/integration/`)
 
@@ -366,12 +367,12 @@ Performed in daylight, good visibility, with a crew member responsible for navig
 Every PR must pass:
 
 1. `ruff` and `mypy` clean.
-2. Unit tests (`U-*`) green; **coverage ≥ 90 % on the pure modules: `nmea/`, `state.py`, `geo.py`, `hub.py`, `traffic.py`** (NFR-08).
+2. Unit tests (`U-*`) green; **coverage ≥ 90 % on the pure modules: `nmea/`, `state.py`, `geo.py`, `hub.py`, `traffic.py`, `anchor.py`** (NFR-08).
 3. Functional tests (`F-*`) green, excluding `F-PERF` (marker `perf`, run nightly by `.github/workflows/nightly.yml` (job `perf`, junit report kept as an artifact) — timing-sensitive on shared runners). They run in the `unit` CI job.
 4. No HA import in any pure module (NFR-02 check).
 5. `hassfest` and HACS validation pass.
 
-From P5, `anchor.py` joins the pure modules of gates 2 and 4 and the mypy strict list.
+`anchor.py` (P5) is in gates 2 and 4 and in the mypy strict list since WP16.
 
 A release tag additionally requires: nightly `F-PERF` green on the last commit, and the E-1 checklist completed for the release candidate.
 
@@ -399,7 +400,7 @@ Functional requirements map by SPEC section: §7.2 → U-GPS; §7.3 → U-AIS; �
 | P1 Base | U-NMEA, U-GPS, U-AIS-13, U-COO, U-TRF-12, F-LIFE, F-HUB, F-ENT, F-PERF, E-1 (E-01, E-03…E-06), E-2 (E-10, E-11, E-13) | All green; D-05 replay matches receiver display. Tests needing X-09 (U-GPS-08, U-AIS-13, real-data runs of F-HUB-01, F-ENT-01, F-PERF-02) tracked in issue #2 |
 | P2 Traffic | U-TRF, F-TRF, E-02, E-12, E-16, E-3 | All green; at least 3 real encounters in E-21 consistent with the chartplotter |
 | P3 Static data | U-AIS-04, U-AIS-15…22; U-STA (static store, WP12); F-TRF static checks (entities, WP13); E-12 extended to names and ship types | All green; on board, names and ship types of 5 targets match the chartplotter (E-12); U-AIS-13 on the receiver capture (#2) decodes its type 5/24 lines without rejects |
-| P5 Anchor watch (planned, SPEC OD-21) | U-ANC, F-ANC, E-07, E-17, E-24 | All green; on board, no false alarm overnight (E-17) and the alarm fires when motoring out of the radius (E-24) |
+| P5 Anchor watch (SPEC OD-21) | U-ANC, F-ANC, E-07, E-17, E-24 | All green; on board, no false alarm overnight (E-17) and the alarm fires when motoring out of the radius (E-24) |
 
 **Test report** per release: version, commit, CI run link, coverage figures, E-stage checklists with date/location/conditions, deviations and their tickets. Stored in the repository under `docs/test-reports/`.
 

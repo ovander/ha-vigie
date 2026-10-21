@@ -23,6 +23,7 @@ source = [
     "custom_components.vigie.state",
     "custom_components.vigie.hub",
     "custom_components.vigie.traffic",
+    "custom_components.vigie.anchor",
 ]
 branch = true
 
@@ -43,6 +44,7 @@ files = [
     "custom_components/vigie/state.py",
     "custom_components/vigie/hub.py",
     "custom_components/vigie/traffic.py",
+    "custom_components/vigie/anchor.py",
 ]
 
 [[tool.mypy.overrides]]
