@@ -153,6 +153,21 @@ entities:
     label_mode: icon
 ```
 
+For the cockpit, the **anchor card** of
+[Vigie cards](https://github.com/ovander/ha-vigie-card) (`custom:vigie-anchor-card`, the
+same HACS download as the traffic map below, 0.2.0-beta.1 or later) shows the watch's
+state in large type, the distance against the radius with a gauge, the swing circle and
+your boat, and has three buttons: **Drop anchor here**, **Raise anchor** (only after a
+confirmation) and the radius **−** / **+**. One line is enough:
+
+```yaml
+type: custom:vigie-anchor-card
+switch: switch.garnet_anchor_watch
+```
+
+The card makes no sound: the automation above, with its critical notification, is what
+wakes the crew.
+
 As for collisions, the anchor watch is an aid: keep a watch on deck.
 
 ## Ship details
@@ -204,10 +219,11 @@ attribute of `sensor.<boat>_ais_targets`, for cards that read attributes.
 
 ### Traffic map card
 
-[Vigie traffic card](https://github.com/ovander/ha-vigie-card) (`custom:vigie-traffic-card`,
-installed separately through HACS, category *Dashboard*) draws that full picture: every
-target oriented on its course, threats in red with their point of closest approach, range
-rings, the anchor and its swing circle, details on tap. It has a visual editor:
+The traffic map of [Vigie cards](https://github.com/ovander/ha-vigie-card)
+(`custom:vigie-traffic-card`, installed separately through HACS, category *Dashboard*)
+draws that full picture: every target oriented on its course, threats in red with their
+point of closest approach, range rings, the anchor and its swing circle, your boat's
+position, speed and course, details on tap. It has a visual editor:
 
 ```yaml
 type: custom:vigie-traffic-card
