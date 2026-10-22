@@ -5,6 +5,14 @@ versioning: SemVer.
 
 ## [Unreleased]
 
+### Added
+- AIS traffic map card specified (#60), not implemented: SPEC v0.19 §9.7 (custom card in
+  its own repository drawing every target, threats with their CPA point, range rings and
+  the anchor; `heading` and `threat` added to the `targets` rows), TEST v0.25 (U-CARD,
+  F-CARD, F-TRF-12, E-08). Decisions OD-29…OD-33 open.
+- Two-Pi bench recipe in `CONTRIBUTING.md` (HA OS on one Raspberry Pi, the replay tool on
+  another, over a USB null-modem cable or 3.3 V USB-TTL adapters); TEST v0.24.
+
 ## [0.2.0-beta.1] - 2026-10-21
 
 Second beta: the anchor watch (phase P5) on top of 0.1.0-beta.1. Tested on synthetic data

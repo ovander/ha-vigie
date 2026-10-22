@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.18 (draft) |
+| Version | 0.19 (draft) |
 | Date | 2026-10-21 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.19 | 2026-10-22 | WP19 (#60): AIS traffic map card specified, not implemented. New §9.7 (custom card `vigie-traffic-card` in its own repository, data from the `targets` attribute, drawing rules, configuration), component C-12, §13 phase P6, X-13 (Leaflet); `heading` and `threat` planned in the `targets` rows (§9.2). New open decisions OD-29…OD-33 with recommendations. |
 | 0.18 | 2026-10-21 | WP18 (#55), after the E-07 pre-run: §9.6 anchor icons (`icons.json`) and a documented map card for the anchor (no clustering, zoom 18), since the built-in card merged the boat and the anchor into one marker. |
 | 0.17 | 2026-10-21 | WP17 (#53): anchor watch entities, services and options implemented (§9.6, §11.2). §10.4: the state is kept with Home Assistant's storage helper, written about 1 s after a change, instead of `RestoreEntity` (saved only every 15 min, too slow for a power cut); deleted with the entry; an invalid stored state starts disarmed. §9.6: entity IDs follow the boat name; the distance sensor writes a new anchor point or radius at once. §9.5: the diagnostics download carries the anchor watch without its position. C-11 adds `services.py`. |
 | 0.16 | 2026-10-21 | #51: noforeignland tracking contract added as X-12 (`docs/NFL-TRACK-API-001.md`). Owner requirement: positions buffered during an internet outage and sent at recovery (X-12 §8.5, R-1). New OD-28, open: where the buffering producer lives. §2.2 updated. No change to Vigie's behaviour. |
@@ -148,6 +149,7 @@ Pure-Python modules (no `homeassistant` import, `mypy --strict`, covered by the 
 | C-10 | Entity base | `entity.py` | Shared device info, unique IDs and availability rule for all entities. |
 | C-09 | Diagnostics | `sensor.py`, `diagnostics.py` | Health counters; HA diagnostics download. |
 | C-11 | Anchor watch (P5) | `anchor.py` (pure), `switch.py`, `number.py`, `services.py`, `services.yaml` | Anchor point, swing radius, drag and position-loss alarm (§8.4); entities and services (§9.6). `anchor.py` has no HA import. |
+| C-12 | AIS traffic map card (P6) | separate repository `ha-vigie-card` (TypeScript, Lit, Leaflet) | Lovelace card drawing the own boat, every target of the `targets` list, threats with their CPA point, range rings and the anchor (§9.7). Reads Home Assistant states only; no code in this repository apart from the `targets` fields (WP20). |
 
 ### 5.3 File layout
 
@@ -322,7 +324,7 @@ Speed: HA does not convert knots automatically under either the metric or the US
 
 | Entity | Content |
 |---|---|
-| `sensor.ais_targets` | Count of live targets. Attribute `targets`: compact list (MMSI, name, class, lat, lon, SOG, COG, distance, CPA, TCPA, age, and from P3 ship type category and length), capped at the 50 nearest (OD-04). Each entry carries `cpa_nm` and `tcpa_min` from the traffic logic (§8.1; `None` when undefined or diverging); distance comes from `geo.py`. The attribute is excluded from the recorder (`_unrecorded_attributes`). The count stays available when own position is unavailable: from the next rebuild of the list (≤ 5 s) distances are `None` and the list is ordered by report age. |
+| `sensor.ais_targets` | Count of live targets. Attribute `targets`: compact list (MMSI, name, class, lat, lon, SOG, COG, distance, CPA, TCPA, age, and from P3 ship type category and length), capped at the 50 nearest (OD-04). From P6 (WP20, planned) each entry also carries `heading` and `threat` (§9.7, OD-31). Each entry carries `cpa_nm` and `tcpa_min` from the traffic logic (§8.1; `None` when undefined or diverging); distance comes from `geo.py`. The attribute is excluded from the recorder (`_unrecorded_attributes`). The count stays available when own position is unavailable: from the next rebuild of the list (≤ 5 s) distances are `None` and the list is ordered by report age. |
 | `sensor.closest_target_distance` | Distance to the nearest target, dead-reckoned to now (device_class distance, native and suggested unit nmi — HA's metric system would otherwise show km —, state_class measurement, dead-band 0.01 NM). Attributes: MMSI, name, bearing, and the target's static data (§9.4). Unavailable without own position or without targets. |
 | `sensor.closest_threat_cpa` / `_tcpa` | CPA (nmi, suggested nmi, dead-band 0.01 NM) and TCPA (min, device_class duration, dead-band 0.1 min) of the most urgent threat (§8.2); no state_class, since the underlying target changes. Attributes: MMSI, name, distance, bearing, CPA, TCPA, and the target's static data (§9.4). Unavailable when there is no threat or no own position. A change of target, or of its static data, is always written. |
 | `binary_sensor.collision_risk` | On while at least one threat exists, with the anti-flapping latch of §8.2 (device_class safety). **Unavailable** when own position is unavailable: "off" would wrongly reassure. Attributes: `threat_count`, and MMSI, name and static data (§9.4) of the most urgent threat. Designed to drive automations (notification, buzzer, lights); trigger on `to: "on"`. |
@@ -371,6 +373,45 @@ Services (registered once for the domain, target a config entry):
 Every service field and error has a translated label and description (`strings.json`, `en.json`, `fr.json`). The switch and the distance sensor show an anchor icon, the radius a radius icon (`icons.json`).
 
 Map card: the README documents a built-in map card with the boat and `sensor.<boat>_anchor_distance` (whose `latitude`/`longitude` are the anchor point), with `cluster: false` and `default_zoom: 18`. Without them the card merges the boat and the anchor, metres apart, into one numbered marker (found in the E-07 pre-run).
+
+### 9.7 AIS traffic map card (C-12, P6)
+
+Specified in v0.19, not implemented. Decisions OD-29…OD-33 are **open** (§14); the text describes the recommended options.
+
+**Purpose.** One map with every AIS target Vigie knows, not only the watch list (§9.3): the built-in map card can only draw entities, and Vigie does not create one entity per target (OD-04). The card is an aid to awareness on a dashboard: who is around, which target is a threat, where the anchor is. It is **not a navigation display**: no chart, no depths, no guarantee of update when the browser sleeps (§2.2, README safety section).
+
+**Where it lives (OD-29).** A Lovelace custom card `custom:vigie-traffic-card`, in its own repository (`ha-vigie-card`, Apache-2.0), installed through HACS as a *Dashboard* (plugin) repository, released and versioned on its own. Vigie itself is unchanged apart from WP20 below: it opens no listener and serves no file (§12).
+
+**Data (OD-31).** The card reads, through the standard `hass` object every card receives, the states it is configured with:
+
+- the own boat: `device_tracker.<boat>` (position; `sog`, `cog`, `heading` attributes);
+- the traffic: the `targets` attribute of `sensor.<boat>_ais_targets` (the 50 nearest targets, rebuilt at most every 5 s, §9.2 and §10.2), each row with MMSI, name, class, position, SOG, COG, distance, CPA, TCPA, age, ship type and length;
+- optionally `binary_sensor.<boat>_collision_risk` and `sensor.<boat>_anchor_distance` (anchor point and radius, §9.6).
+
+WP20 adds two fields to each `targets` row so that the card applies Vigie's rules instead of re-implementing them: `heading` (true heading when reported) and `threat` (true when the target is a threat under §8.2 with the user's thresholds). The row stays compact and the attribute stays under Home Assistant's size limit (F-PERF-03). No new entity, no new API.
+
+**What the card draws.**
+
+| Element | Rule |
+|---|---|
+| Own boat | Boat symbol oriented on heading, else COG; COG vector of `vector_minutes` (default 6 min) when SOG ≥ 0.5 kn |
+| Targets | Triangle oriented on heading, else COG (circle when neither is known or SOG < 0.5 kn); COG vector of the same length; colour by state: threat red, Class A dark, Class B lighter, stale (age > 3 min) faded |
+| Threats | For each `threat` row: a line from the target to its CPA position and a small marker at the CPA point, with CPA (NM) and TCPA (min) in the label |
+| Labels | Ship name, else MMSI; shown from a zoom level, always for threats |
+| Range rings | 0.5, 1 and 2 NM around the own boat (configurable, can be off) |
+| Anchor | When the anchor watch is on: anchor symbol and the swing circle (radius); red when the alarm is on |
+| Details | Tap a target: name, MMSI, ship type, length, SOG, COG, distance, CPA, TCPA, age |
+| View | Centred on the own boat (follow mode on by default, off after a manual pan, button to come back); north-up |
+
+Positions are drawn as received in the list (rebuilt every 5 s); the card does not dead-reckon between rebuilds. Without own position the card shows the targets without distance-based elements and says so; without `sensor.<boat>_ais_targets` it shows a configuration error.
+
+**Configuration** (YAML and a visual editor): `entity` (the `ais_targets` sensor, required), `own` (the boat's tracker, required), `collision_risk`, `anchor` (optional), `vector_minutes`, `rings_nm`, `label_zoom`, `height`, `tiles` and `overlay` (OD-32). Every user-visible string of the card exists in English and French.
+
+**Map engine (OD-30).** Leaflet (BSD-2-Clause, X-13) bundled into the card's single JavaScript file; written in TypeScript with Lit, the framework of Home Assistant's own frontend.
+
+**Base map and offline (OD-32).** OpenStreetMap tiles by default, with a configurable tile URL and an optional OpenSeaMap sea-mark overlay. The boat is online around the clock through Starlink, so tiles normally load; during an outage (no internet) the card still draws the boat, the targets, the vectors and the rings on a plain background; there are no offline tiles in P6.
+
+**Clean room (§3.1).** No code from other map cards unless permissively licensed and credited; Home Assistant's built-in map card is a reference for behaviour only.
 
 ## 10. Runtime behaviour
 
@@ -441,6 +482,7 @@ Changing an option reloads the entry. The anchor radius is not an option: it cha
 | P2 | Traffic logic: CPA/TCPA, closest target/threat, `binary_sensor.collision_risk`, watched-target trackers | Scenario tests green; on-water check against a chartplotter's AIS page |
 | P3 | AIS static data (types 5, 24): names, ship type, dimensions; Lovelace map card configuration (built-in map card: own boat and watched targets, OD-19) | U-AIS static tests, U-STA and the F-TRF static checks green; on board, names and ship types of 5 targets match the chartplotter (E-12); the receiver capture (#2) decodes its type 5/24 lines without rejects |
 | P5 | Anchor watch (§8.4, §9.6, §10.4): `anchor.py`, switch, radius, alarm, distance, services, restore; independent of P4 (OD-21) | U-ANC and F-ANC green; bench `anchor-drag` scenario raises the alarm where the preset says (E-07); in port, armed overnight at 20 m without a false alarm (E-17); at an anchorage, motoring out of the radius raises the alarm and the phone notification (E-24) |
+| P6 | AIS traffic map card (§9.7, C-12): `heading` and `threat` in the `targets` rows (Vigie); custom card `vigie-traffic-card` in its own repository, HACS plugin (OD-29, OD-33) | U-CARD and F-CARD green in the card repository; Vigie's F-TRF/F-PERF checks still green with the new fields; on the bench, every target of `multi-target` and `named-traffic` drawn where `--list` says, threats red with their CPA point (E-08) |
 | P4 | Optional additional sources if instruments are added (wind, depth, log) and the performance layer (true wind, VMG, polars), via a second port or TCP | Requires new hardware; re-opens §2.2 |
 
 ## 14. Open decisions
@@ -473,6 +515,11 @@ Changing an option reloads the entry. The anchor radius is not an option: it cha
 | ~~OD-26~~ | ~~Anchor watch: HA restart while armed~~ | **Resolved v0.15:** armed state, anchor point, radius, maximum distance and a latched drag alarm restored (§10.4) | — |
 | ~~OD-27~~ | ~~Sharing the boat's track online (tracking site for friends and family)~~ | **Resolved v0.15:** Vigie stays offline (§2.2, §12); Home Assistant uploads `device_tracker.<boat>` with its own automation, documented and tested as a README recipe in a later work package | — |
 | OD-28 | Sharing the track with outage buffering (X-12 §8.5, R-1): where does the producer live? | (a) Home Assistant YAML only: buffer in a trigger-based template sensor (restored at restart), automation sends it with `rest_command` and clears it on 2xx — no code, but fragile, size-limited, no thinning; (b) **recommended:** a separate small integration in its own repository (pure buffer/sender logic, HA `Store` persistence, sensors per X-12 §8.4), reading any `device_tracker` — Vigie stays offline and the uploader is reusable; (c) an optional, off-by-default platform inside Vigie — reverses OD-27 and the no-outbound-traffic rule; (d) standalone Go service on the boat computer (X-12 §11), outside Home Assistant | Before #51 work; integration key from noforeignland needed first (X-12 OD-8) |
+| OD-29 | Traffic map card: where it lives | (a) **recommended:** own repository `ha-vigie-card`, HACS *Dashboard* (plugin) category, released on its own — HACS takes one category per repository, and a card has its own build (TypeScript) and test tools; (b) served by Vigie itself (`frontend.add_extra_js_url` and a static path): one install, but HTTP serving and a JavaScript build inside the integration, against §12's minimal surface; (c) no card, document an existing community map card — cannot draw the `targets` list | Before WP21 |
+| OD-30 | Traffic map card: map engine | (a) **recommended:** Leaflet (BSD-2, X-13) bundled in the card — small, the engine of Home Assistant's own map, raster tiles; (b) MapLibre GL (BSD-3) — vector tiles and rotation, but ten times larger and needs WebGL (older tablets) | Before WP21 |
+| OD-31 | Traffic map card: data path | (a) **recommended:** read the `targets` attribute of `sensor.<boat>_ais_targets` (50 nearest, every ≤ 5 s), with `heading` and `threat` added to its rows (WP20) — no new API, the card applies Vigie's threat rule; (b) same, the card computes threats itself from CPA/TCPA and the options — duplicates §8.2; (c) a dedicated WebSocket command in Vigie streaming every target — live and uncapped, but a new API to maintain and test | Before WP20 |
+| OD-32 | Traffic map card: base map and offline | (a) **recommended:** OpenStreetMap tiles by default, configurable tile URL, optional OpenSeaMap sea-mark overlay — the boat is online around the clock through Starlink (owner, 2026-10-22), so online tiles are the normal case; during an outage the boat, targets, vectors and rings still drawn on a plain background, no offline tiles in P6; (b) also cache viewed tiles in the browser for offline use — tile providers' usage policies restrict bulk caching, and it is not a chart anyway | Before WP22 |
+| OD-33 | Traffic map card: phase | (a) **recommended:** new phase P6, after P5 and independent of P4; Vigie side (WP20) released with the next Vigie beta, the card with its own `v0.1.0-beta.1`; (b) wait until the P1–P5 on-board checks are done | Before WP20 |
 
 (OD-05 and OD-09 from v0.1 were tied to NMEA 2000 and polars; both moved to P4 and are no longer open for v1.)
 
@@ -491,3 +538,4 @@ Changing an option reloads the entry. The anchor radius is not an option: it cha
 | X-10 | HA-SAIL-TEST-001 — Test protocol (unit, functional, end-to-end) | §12, §13 |
 | X-11 | Repository `ha-vigie` — bootstrap kit (skeleton, CI, GitHub setup script) | §5.3, §12 |
 | X-12 | NFL-TRACK-API-001 — noforeignland boat tracking API, reverse-engineered contract (`docs/NFL-TRACK-API-001.md`) | §2.2, OD-27, OD-28 |
+| X-13 | Leaflet (BSD-2-Clause) — https://leafletjs.com — map engine of the traffic card (OD-30) | §9.7, C-12 |
