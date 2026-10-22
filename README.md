@@ -243,6 +243,7 @@ attribute of `sensor.<boat>_ais_targets`, for cards that read attributes.
 | P3 | AIS static data (names, types, dimensions), map card | built; on-board checks pending |
 | P4 | Additional instruments (wind, depth) and sailing performance | later |
 | P5 | Anchor watch | built; bench and on-board checks pending |
+| P6 | AIS traffic map card (every target on one map) | specified; decisions pending |
 
 ## Documentation
 
