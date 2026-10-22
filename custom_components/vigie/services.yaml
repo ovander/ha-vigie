@@ -32,6 +32,10 @@ drop_anchor:
           step: 5
           unit_of_measurement: m
           mode: box
+    keep_since:
+      default: false
+      selector:
+        boolean:
 raise_anchor:
   fields:
     config_entry_id:

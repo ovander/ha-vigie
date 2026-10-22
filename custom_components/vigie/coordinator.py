@@ -247,6 +247,16 @@ class VigieCoordinator:
         self.anchor.arm(latitude, longitude, radius_m, armed_at=dt_util.utcnow().timestamp())
         self._anchor_changed()
 
+    def recenter_anchor(
+        self, latitude: float, longitude: float, radius_m: float | None = None
+    ) -> None:
+        """Move the circle, keeping the arming time (OD-39); ValueError when disarmed or
+        while an alarm is on (see `AnchorWatch.recenter`)."""
+        self.anchor.recenter(latitude, longitude)
+        if radius_m is not None:
+            self.anchor.set_radius(radius_m)
+        self._anchor_changed()
+
     def raise_anchor(self) -> None:
         self.anchor.disarm()
         self._anchor_changed()

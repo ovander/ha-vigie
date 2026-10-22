@@ -15,6 +15,7 @@ from homeassistant.helpers import config_validation as cv
 from .anchor import MAX_RADIUS_M, MIN_RADIUS_M
 from .const import (
     ATTR_CONFIG_ENTRY_ID,
+    ATTR_KEEP_SINCE,
     ATTR_LATITUDE,
     ATTR_LONGITUDE,
     ATTR_RADIUS,
@@ -35,6 +36,8 @@ DROP_SCHEMA = vol.Schema(
         vol.Optional(ATTR_RADIUS): vol.All(
             vol.Coerce(float), vol.Range(min=MIN_RADIUS_M, max=MAX_RADIUS_M)
         ),
+        # Recenter the circle (OD-39): keep the arming time, the swing track carries on
+        vol.Optional(ATTR_KEEP_SINCE, default=False): cv.boolean,
     }
 )
 RAISE_SCHEMA = vol.Schema(_ENTRY)
@@ -59,6 +62,21 @@ def _coordinator(hass: HomeAssistant, call: ServiceCall) -> VigieCoordinator:
     return coordinator
 
 
+def _recenter(coordinator: VigieCoordinator, call: ServiceCall) -> None:
+    """`keep_since`: move the circle of an armed watch (SPEC §9.6, OD-39). Refused while an
+    alarm is on, so a recentering never clears a drag alarm."""
+    latitude, longitude = call.data.get(ATTR_LATITUDE), call.data.get(ATTR_LONGITUDE)
+    if latitude is None or longitude is None:
+        raise ServiceValidationError(
+            translation_domain=DOMAIN, translation_key="recenter_needs_position"
+        )
+    if not coordinator.anchor.armed:
+        raise ServiceValidationError(translation_domain=DOMAIN, translation_key="anchor_not_armed")
+    if coordinator.anchor.status.alarm:
+        raise ServiceValidationError(translation_domain=DOMAIN, translation_key="anchor_alarm_on")
+    coordinator.recenter_anchor(latitude, longitude, call.data.get(ATTR_RADIUS))
+
+
 def async_register_services(hass: HomeAssistant) -> None:
     """Register the services once; runs in the event loop."""
     if hass.services.has_service(DOMAIN, SERVICE_DROP_ANCHOR):
@@ -66,6 +84,9 @@ def async_register_services(hass: HomeAssistant) -> None:
 
     async def drop_anchor(call: ServiceCall) -> None:
         coordinator = _coordinator(hass, call)
+        if call.data[ATTR_KEEP_SINCE]:
+            _recenter(coordinator, call)
+            return
         try:
             coordinator.drop_anchor(
                 call.data.get(ATTR_LATITUDE),

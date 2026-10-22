@@ -6,6 +6,10 @@ versioning: SemVer.
 ## [Unreleased]
 
 ### Added
+- Anchor watch: recenter the circle without restarting the watch, with
+  `vigie.drop_anchor` and `keep_since: true` and the anchor's position: the time at anchor
+  and the radius are kept, the largest distance starts again; refused while the anchor
+  alarm is on (#81).
 - Tests: the anchor card fixture also records your boat's tracker history, for the swing
   track (#80).
 - Specification: recentering the anchor circle decided (OD-39, SPEC v0.26 §9.8), to be built

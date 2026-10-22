@@ -145,6 +145,24 @@ class AnchorWatch:
         self._last_fix = self._clock()
         self._status = self._armed_status(None)
 
+    def recenter(self, lat: float, lon: float) -> None:
+        """Move the circle to where the anchor really is (OD-39): the anchor reaches the bottom
+        before the watch is armed, by which time the boat has dropped back.
+
+        Keeps the radius and the arming time (the swing track and the time at anchor carry
+        on); the largest distance restarts from the new point, the only one it is measured
+        from, and so does the drag timer. Refused when disarmed or while an alarm is on: a
+        recentering must never clear a drag alarm (re-drop the anchor instead).
+        """
+        if self._anchor is None:
+            raise ValueError("anchor watch not armed: drop the anchor first")
+        if self._reason is not None:
+            raise ValueError("anchor alarm on: raise the anchor or drop it again instead")
+        self._anchor = _check_position(lat, lon)
+        self._max = 0.0
+        self._outside_since = None
+        self._status = self._armed_status(None)
+
     def disarm(self) -> None:
         self._anchor = None
         self._armed_at = None

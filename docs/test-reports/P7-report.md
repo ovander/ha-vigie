@@ -5,9 +5,9 @@ formal bench check is filled in when it is run, and the exit criterion is assess
 
 | Item | Value |
 |---|---|
-| Phase | P7 Anchor card (SPEC HA-SAIL-SPEC-001 v0.26 §9.8, §13) |
-| Documents | SPEC v0.26, TEST v0.33 |
-| Code | Vigie `main` (no change to the integration in P7: tests and docs only); card `ovander/ha-vigie-card` (WP25, WP26) |
+| Phase | P7 Anchor card (SPEC HA-SAIL-SPEC-001 v0.27 §8.4, §9.6, §9.8, §13) |
+| Documents | SPEC v0.27, TEST v0.34 |
+| Code | Vigie `main`: `keep_since` on `vigie.drop_anchor` (WP27); otherwise tests and docs only. Card `ovander/ha-vigie-card` (WP25–WP27) |
 | Releases | Card [`v0.2.0-beta.1`](https://github.com/ovander/ha-vigie-card/releases/tag/v0.2.0-beta.1) (anchor card, own boat line) and [`v0.2.0-beta.2`](https://github.com/ovander/ha-vigie-card/releases/tag/v0.2.0-beta.2) (decimal degrees, version in the file), both pre-releases. The swing track, the editor and the pre-run fixes are not released yet: the next card beta is the owner's call |
 | CI | Vigie `lint`, `unit`, `hassfest`, `hacs`. Card `check` (typecheck, unit and headless Chromium tests, build, `dist` up to date, smoke test of the built file with its version) and `hacs`. The card's release workflow also checks the stamped version |
 | Automated tests | Vigie: 523 passed, 1 skipped (U-GPS-08, #2). Card: 95 (U-CARD, U-ACARD, F-CARD, F-ACARD, editors, pre-run regressions) and the smoke test |
@@ -20,14 +20,16 @@ formal bench check is filled in when it is run, and the exit criterion is assess
 | ovander/ha-vigie#75 | #74 | WP24: anchor card specified (SPEC §9.8, C-13); tests planned; OD-34…OD-38 opened |
 | ovander/ha-vigie#78, ovander/ha-vigie-card#7, ovander/ha-vigie-card#8 | #76, #77 | WP25: OD-34…OD-38 resolved; anchor fixtures recorded from Vigie; the anchor card (status, gauge, details, map, drop / raise with confirmation / radius); own boat line and details on both cards (owner's lab finding #77) |
 | ovander/ha-vigie#79, ovander/ha-vigie-card#10, ovander/ha-vigie-card#11 | #76, #77 | Docs for both cards; the release file carries its version; own position in decimal degrees (owner) |
-| ovander/ha-vigie-card#13, this PR | #80 | WP26: swing track from Home Assistant's history, visual editor, tracker history fixture, E-09 pre-run and its three fixes, this report |
+| ovander/ha-vigie-card#13, ovander/ha-vigie#82 | #80 | WP26: swing track from Home Assistant's history, visual editor, tracker history fixture, E-09 pre-run and its three fixes, this report |
+| ovander/ha-vigie-card#14, this PR | #81 | WP27: recentering the circle (OD-39): `keep_since` in Vigie, circle fit and move by hand in the card, pre-run (§5.1, second part) |
 
 ## 2. Test status (TEST §9, row P7)
 
 | Group | Status |
 |---|---|
-| U-ACARD-01…08 | Done (card `test/unit/`, hand values) |
-| F-ACARD-01…11 | Done (card `test/browser/`, headless Chromium, states and tracker history recorded from Vigie) |
+| U-ANC-13, F-ANC-10 | Done (recentering in Vigie) |
+| U-ACARD-01…09 | Done (card `test/unit/`, hand values) |
+| F-ACARD-01…13 | Done (card `test/browser/`, headless Chromium, states and tracker history recorded from Vigie) |
 | Anchor fixtures (Vigie) | Done: `tests/integration/test_card_fixtures.py` writes and checks `anchor-drag.json` |
 | Smoke test of the built file | Done (CI and release) |
 | E-09 | Pre-run passed after fixes (§5.1); the formal run is still to do (§5.2) |
@@ -41,7 +43,7 @@ formal bench check is filled in when it is run, and the exit criterion is assess
 | OD-36 | Swing track from Home Assistant's history since `armed_at`, then the live updates |
 | OD-37 | No sound; the alert is the phone notification |
 | OD-38 | New phase P7 |
-| OD-39 | Recentering the circle: on the swing (fitted circle) and by hand on the map, with a fourth call `vigie.drop_anchor` and `keep_since`. Built in WP27 (#81) |
+| OD-39 | Recentering the circle: on the swing (fitted circle) and by hand on the map, with a fourth call `vigie.drop_anchor` and `keep_since`; amended (owner): the largest distance restarts, and Vigie refuses a recentering during an alarm. Built in WP27 (#81) |
 | #77 (owner) | Own boat position, SOG, COG, heading and position state on both cards; position also in decimal degrees in the details |
 
 ## 4. Deviations from SPEC / TEST / CLAUDE.md
@@ -81,6 +83,18 @@ formal bench check is filled in when it is run, and the exit criterion is assess
 | 11 | French, phone width | *Veille*, `Distance maximale 3,5 m`, `Vitesse fond 0,5 nd`, *Lever l'ancre*; everything fits at 390 px | Pass |
 | 12 | Outside the circle before the alarm | **Found:** a green *Watching* next to a red gauge at `87 / 50 m` during the alarm's 20 s confirmation. Fixed: new amber status *Outside the circle*; re-checked in Home Assistant | Pass after fix |
 
+**Second part, recentering (WP27), 17:31–17:45 UTC.** Same container and scenario, Vigie with `keep_since` (`49dd3ae`), card `feat/anchor-recenter`. As when the button is pressed late, the anchor was armed 20 m north of the preset's anchor (43.5, 7.25).
+
+| # | Check | Observed | Result |
+|---|---|---|---|
+| 13 | *Recenter* at 120 s | "Too soon: the swing needs 10 min at anchor to place the anchor", with *Place it by hand*; no call | Pass |
+| 14 | *Recenter* at 625 s | Dashed preview on the swing; "Recenter Garnet's circle here? (20 m from the current one)". *Recenter* moved the anchor to **0.1 m** from 43.5, 7.25 (the track has ± 8 m of GPS noise). `armed_at` unchanged; the largest distance restarted (36.7 m, the boat drifting) | Pass |
+| 15 | *Move the anchor*, tap on the map | Preview at the tapped point and the confirmation; *Cancel*: no call | Pass |
+| 16 | Drag alarm after recentering | Alarm at 699.8 s (expected 698 s ± 2): the recentered circle is the true one. *Recenter* and *Move the anchor* disabled | Pass |
+| 17 | `vigie.drop_anchor` with `keep_since` during the alarm | Refused: the WebSocket answer is `service_validation_error` with the translated message; the alarm stays on and the anchor point is unchanged. Through Home Assistant's REST API the same refusal is a 500, because that API only maps schema errors to 400; this holds for every integration's validation errors, so it is not a Vigie defect | Pass |
+
+The card found Vigie's entry from the switch's device in Home Assistant's registries (`hass.entities`, `hass.devices`). Before recentering, the largest distance read 58.2 m against the wrong circle: the boat came close to a false alarm, which is the case recentering is for.
+
 Each finding was reproduced by a test in the card repository before it was fixed (U-ACARD-02, F-ACARD-02, and the time format test), then re-checked in the container. The browser console showed no error other than the blocked tiles; the file announced itself as `VIGIE-CARD 0.0.0-dev` (a development build).
 
 ### 5.2 Formal bench check
@@ -102,9 +116,9 @@ Run on the bench (`CONTRIBUTING.md`, two-Pi bench or container), with the card r
 | 7 | *Drop anchor here* | Watch on at the boat's position | |
 | 8 | Network cut | Everything but the tiles still drawn | |
 | 9 | Phone in French | Every card string and figure in French | |
+| 10 | Drop 20 m north of 43.5, 7.25; at 10 min, *Recenter* | Circle within a few metres of 43.5, 7.25, time at anchor kept | |
 
 ## 6. Open items
 
 - Formal E-09 (§5.2) with a card release that carries WP26.
-- WP27: recentering the circle (OD-39, #81).
 - Earlier phases: #2 receiver capture, TP-04, E-02 formal run, E-12/E-16, E-3, P5 E-07/E-17/E-24, P6 E-08.

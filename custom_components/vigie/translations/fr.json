@@ -574,6 +574,15 @@
     },
     "entry_not_loaded": {
       "message": "{boat} n'est pas démarré : vérifiez son port série."
+    },
+    "recenter_needs_position": {
+      "message": "Le recentrage demande la latitude et la longitude de l'ancre."
+    },
+    "anchor_not_armed": {
+      "message": "La veille au mouillage est arrêtée : mouillez d'abord l'ancre."
+    },
+    "anchor_alarm_on": {
+      "message": "L'alarme de mouillage est active : traitez-la, ou levez l'ancre et mouillez à nouveau, avant de recentrer."
     }
   },
   "services": {
@@ -596,6 +605,10 @@
         "radius": {
           "name": "Rayon",
           "description": "Rayon d'évitage en mètres (10–500). Vide : le rayon actuel est gardé."
+        },
+        "keep_since": {
+          "name": "Recentrer",
+          "description": "Déplace le cercle d'une veille déjà active vers le point donné, en gardant l'heure de mouillage et la trace d'évitage : quand le bateau avait déjà reculé au moment d'allumer la veille. Demande la latitude et la longitude ; refusé tant que l'alarme de mouillage est active."
         }
       }
     },
