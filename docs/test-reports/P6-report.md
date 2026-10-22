@@ -8,7 +8,7 @@ is filled in when it is run; the exit criterion is assessed then.
 | Phase | P6 Traffic map card (SPEC HA-SAIL-SPEC-001 v0.22 §9.7, §13) |
 | Documents | SPEC v0.22, TEST v0.29 |
 | Code state | Vigie `main` at `d7725a4` (WP19–WP23 and the 0.3.0-beta.1 changelog merged); card `main` at `6e051d8` (WP21–WP23 and the 0.1.0-beta.1 changelog merged) |
-| Release | Vigie [`v0.3.0-beta.1`](https://github.com/ovander/ha-vigie/releases/tag/v0.3.0-beta.1), pre-release, 2026-10-22, tag on `d7725a4`; `vigie.zip` checked (manifest `0.3.0-beta.1`, `heading`/`threat` row fields). Card [`v0.1.0-beta.1`](https://github.com/ovander/ha-vigie-card/releases/tag/v0.1.0-beta.1), pre-release, 2026-10-22, tag on `6e051d8`; `vigie-traffic-card.js` checked (the committed build with the version stamped `0.1.0-beta.1`). Run the formal check below on these releases |
+| Release | Vigie [`v0.3.0-beta.1`](https://github.com/ovander/ha-vigie/releases/tag/v0.3.0-beta.1), pre-release, 2026-10-22, tag on `d7725a4`; `vigie.zip` checked (manifest `0.3.0-beta.1`, `heading`/`threat` row fields). Card [`v0.1.0-beta.1`](https://github.com/ovander/ha-vigie-card/releases/tag/v0.1.0-beta.1), pre-release, 2026-10-22, tag on `6e051d8`; `vigie-traffic-card.js` checked (the committed build with the version stamped `0.1.0-beta.1`). Card [`v0.1.0-beta.2`](https://github.com/ovander/ha-vigie-card/releases/tag/v0.1.0-beta.2), pre-release, 2026-10-22, tag on `b7117cf`: tile fix (#71), asset checked the same way. Run the formal check below on Vigie `v0.3.0-beta.1` and card `v0.1.0-beta.2` |
 | CI | Vigie `lint`, `unit`, `hassfest`, `hacs` green on every P6 PR, release workflow green; nightly `perf` last green on `3af0d5b` (before WP20), the three `perf` tests run locally on `d7725a4` and passed — the tag was pushed before the first nightly on it (2026-10-23 02:17 UTC). Card `check` (typecheck, unit and headless Chromium tests, build, `dist` up to date, smoke test of the built file) and `hacs` (README `images` check skipped until the screenshot, §6), release workflow green |
 | Automated tests | Vigie: 522 passed, 1 skipped (U-GPS-08, #2). Card: 58 (U-CARD, F-CARD, editor, untrusted-name check, pre-run regressions) and the smoke test |
 | Exit criterion | **Not met yet**: the formal E-08 (§5.2) |
@@ -113,18 +113,19 @@ tablet.
 | Date | 2026-10-22 |
 | Home Assistant | Home Assistant OS 18.3, frontend 2026.x |
 | Vigie | `v0.3.0-beta.1`, fed by an NMEA simulator over `socket://` |
-| Card | `v0.1.0-beta.1`, installed through HACS |
+| Card | `v0.1.0-beta.1`, then `v0.1.0-beta.2`, installed through HACS |
 
 | # | Check | Observed | Result |
 |---|---|---|---|
 | 1 | Card on a dashboard | Boat, targets, CPA, red `collision_risk` frame, "3 AIS targets" | Pass |
-| 2 | Map tiles (§5.2 check 3) | **Found:** every OpenStreetMap tile replaced by OSM's "403 — Access blocked" image. Home Assistant's page sets the referrer policy to `same-origin`, so the tile requests carried no `Referer`, which OSM refuses. Fixed in the card (#71: both tile layers send the page's origin, F-CARD-10); to check again on the next card release | Fail, fix pending release |
+| 2 | Map tiles (§5.2 check 3) | **Found:** every OpenStreetMap tile replaced by OSM's "403 — Access blocked" image. Home Assistant's page sets the referrer policy to `same-origin`, so the tile requests carried no `Referer`, which OSM refuses. Fixed in the card (#71: both tile layers send the page's origin, F-CARD-10) and released in card `v0.1.0-beta.2` | Fail, fixed |
+| 3 | Map tiles again, card `v0.1.0-beta.2` (HACS, reload without cache) | OpenStreetMap tiles shown on the dashboard; tile requests to `tile.openstreetmap.org` answered 200 | Pass |
 
 The sandbox pre-run (§5.1) could not see this: tiles were not reachable there at all.
 
 ## 6. Open items
 
-- Formal E-08 (§5.2), on the boat's Home Assistant with map tiles, with the card release carrying the tile fix (§5.3, #71).
+- Formal E-08 (§5.2), on the boat's Home Assistant with map tiles, with card `v0.1.0-beta.2` or later (tile fix, §5.3, #71).
 - README screenshot with real tiles: from the formal E-08, or from the sandbox once
   `tile.openstreetmap.org` is allowed in its network settings; then remove `images` from
   the card's HACS check.
