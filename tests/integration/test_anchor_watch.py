@@ -472,3 +472,45 @@ async def test_f_anc_09_two_boats_independent(
     await call(hass, "raise_anchor", second)
     assert hass.states.get("switch.garnet_anchor_watch").state == STATE_ON
     assert hass.states.get("switch.jade_anchor_watch").state == STATE_OFF
+
+
+async def test_f_anc_10_recenter_keeps_since(
+    hass: HomeAssistant, boat, freezer: FrozenDateTimeFactory
+):
+    """F-ANC-10 (OD-39): `keep_since` moves the circle and keeps the arming time and radius;
+    the largest distance restarts from the new point."""
+    entry, fake = boat
+    await call(hass, "drop_anchor", entry, latitude=ANCHOR[0], longitude=ANCHOR[1], radius=50)
+    armed_at = hass.states.get("switch.garnet_anchor_watch").attributes["armed_at"]
+    await hold(hass, freezer, fake, north(38), 5)
+    real = north(25)  # where the anchor really is
+    await call(hass, "drop_anchor", entry, latitude=real[0], longitude=real[1], keep_since=True)
+    await hold(hass, freezer, fake, north(38), 2)
+    switch = hass.states.get("switch.garnet_anchor_watch")
+    assert switch.attributes["armed_at"] == armed_at
+    assert (switch.attributes["anchor_latitude"], switch.attributes["radius_m"]) == (real[0], 50.0)
+    distance = hass.states.get("sensor.garnet_anchor_distance")
+    assert float(distance.state) == pytest.approx(13, abs=1)
+    assert distance.attributes["max_distance_m"] == pytest.approx(13, abs=1)
+
+
+async def test_f_anc_10_recenter_refused(hass: HomeAssistant, boat, freezer: FrozenDateTimeFactory):
+    entry, fake = boat
+    real = north(25)
+    # Watch off
+    with pytest.raises(ServiceValidationError) as err:
+        await call(hass, "drop_anchor", entry, latitude=real[0], longitude=real[1], keep_since=True)
+    assert err.value.translation_key == "anchor_not_armed"
+    await call(hass, "drop_anchor", entry, latitude=ANCHOR[0], longitude=ANCHOR[1], radius=50)
+    # No point given
+    with pytest.raises(ServiceValidationError) as err:
+        await call(hass, "drop_anchor", entry, keep_since=True)
+    assert err.value.translation_key == "recenter_needs_position"
+    # During a drag alarm: never cleared by a recentering
+    await hold(hass, freezer, fake, north(60), 22)
+    assert hass.states.get("binary_sensor.garnet_anchor_alarm").state == STATE_ON
+    with pytest.raises(ServiceValidationError) as err:
+        await call(hass, "drop_anchor", entry, latitude=real[0], longitude=real[1], keep_since=True)
+    assert err.value.translation_key == "anchor_alarm_on"
+    assert hass.states.get("binary_sensor.garnet_anchor_alarm").state == STATE_ON
+    assert hass.states.get("switch.garnet_anchor_watch").attributes["anchor_latitude"] == ANCHOR[0]

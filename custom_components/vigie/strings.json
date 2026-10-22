@@ -574,6 +574,15 @@
     },
     "entry_not_loaded": {
       "message": "{boat} is not running: check its serial port."
+    },
+    "recenter_needs_position": {
+      "message": "Recentering needs the anchor's latitude and longitude."
+    },
+    "anchor_not_armed": {
+      "message": "The anchor watch is off: drop the anchor first."
+    },
+    "anchor_alarm_on": {
+      "message": "The anchor alarm is on: deal with it, or raise the anchor and drop it again, before recentering."
     }
   },
   "services": {
@@ -596,6 +605,10 @@
         "radius": {
           "name": "Radius",
           "description": "Swing radius in metres (10–500). Leave empty to keep the current one."
+        },
+        "keep_since": {
+          "name": "Recenter",
+          "description": "Move the circle of a watch already on, to the given point, keeping the time it was armed and the swing track: for when the boat had dropped back before the watch was turned on. Needs the latitude and longitude; refused while the anchor alarm is on."
         }
       }
     },

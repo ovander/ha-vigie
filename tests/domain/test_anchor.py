@@ -1,4 +1,4 @@
-"""Anchor watch — U-ANC-01…12 (TEST §3.7, SPEC §8.4, OD-21…OD-26).
+"""Anchor watch — U-ANC-01…13 (TEST §3.7, SPEC §8.4, OD-21…OD-26, OD-39).
 
 Positions are built from metres so the expected values are exact by hand: a point d m due
 north of the anchor is at Δlat = d / R rad, its haversine distance is d and its bearing to
@@ -358,3 +358,39 @@ def test_u_anc_12_swinging_with_noise_no_alarm(watch, clock):
         max_seen = max(max_seen, s.distance_m)
     assert s.max_distance_m == pytest.approx(max_seen)
     assert s.max_distance_m < 50.0
+
+
+def test_u_anc_13_recenter_keeps_since_and_radius(watch, clock):
+    """U-ANC-13 (OD-39): the circle moves to the given point; arming time and radius are
+    kept, the largest distance restarts from the new point, the drag timer restarts."""
+    watch.arm(*ANCHOR, radius_m=50, armed_at=1_790_000_000.0)
+    hold(watch, clock, north(38), 10)
+    assert watch.status.max_distance_m == pytest.approx(38, abs=0.01)
+    hold(watch, clock, north(55), 10)  # outside for 10 s, the drag timer running
+    new_anchor = north(25)  # where the anchor really is
+    watch.recenter(*new_anchor)
+    assert watch.anchor == new_anchor
+    assert (watch.radius_m, watch.armed_at) == (50.0, 1_790_000_000.0)
+    s = watch.update(north(55))  # 30 m from the new point: inside
+    assert (s.alarm, s.distance_m) == (False, pytest.approx(30, abs=0.01))
+    assert s.max_distance_m == pytest.approx(30, abs=0.01)  # measured from the new point only
+    assert watch.to_dict()["armed_at"] == 1_790_000_000.0
+
+
+def test_u_anc_13_recenter_refused_disarmed_or_during_an_alarm(clock):
+    w = AnchorWatch(clock=clock)
+    with pytest.raises(ValueError, match="not armed"):
+        w.recenter(*ANCHOR)
+    w.arm(*ANCHOR)
+    hold(w, clock, north(60), 21)  # outside for the 20 s confirmation
+    assert w.status.reason == DRAG
+    with pytest.raises(ValueError, match="alarm"):
+        w.recenter(*north(30))
+    assert w.anchor == ANCHOR  # unchanged, the alarm still on
+    w.arm(*ANCHOR)
+    hold(w, clock, None, 60)
+    assert w.status.reason == NO_POSITION
+    with pytest.raises(ValueError, match="alarm"):
+        w.recenter(*north(30))
+    with pytest.raises(ValueError):
+        AnchorWatch(clock=clock).recenter(91, 0)
