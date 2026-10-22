@@ -1,9 +1,10 @@
 """States recorded for the cards' tests (TEST §4.7, §4.8; SPEC §9.7, §9.8).
 
 The card repository (`ovander/ha-vigie-card`) tests its rendering against these states, so
-both repositories agree on the format of the `targets` rows and of the anchor entities. The fixtures are checked here
-against what Vigie produces now; regenerate them with `VIGIE_UPDATE_CARD_FIXTURES=1 pytest
-tests/integration/test_card_fixtures.py` and copy them to the card's `test/fixtures/`.
+both repositories agree on the format of the `targets` rows and of the anchor entities. The
+fixtures are checked here against what Vigie produces now; regenerate them with
+`VIGIE_UPDATE_CARD_FIXTURES=1 pytest tests/integration/test_card_fixtures.py` and copy them
+to the card's `test/fixtures/`.
 """
 
 import json

@@ -17,7 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
-| 0.31 | 2026-10-22 | Anchor card decisions (SPEC v0.24 OD-34…OD-38) and WP25 (#76): §3.9 and §4.8 no longer proposed; U-ACARD-05 and -07 move to WP25 with the map and the details, U-ACARD-04, F-ACARD-07 and F-ACARD-11 stay for WP26. #77: own boat line and details on both cards, U-CARD-08, F-CARD-11, F-ACARD-01 and -03 extended. |
+| 0.31 | 2026-10-22 | Anchor card decisions (SPEC v0.24 OD-34…OD-38) and WP25 (#76): §3.9 and §4.8 no longer proposed; U-ACARD-01…03, 05…08 and F-ACARD-01…06, 08…10 Done in ovander/ha-vigie-card#8 (U-ACARD-05 and -07 moved to WP25 with the map and the details); U-ACARD-04, F-ACARD-07 (swing track) and F-ACARD-11 (editor) stay for WP26. The anchor fixtures are written and checked by `tests/integration/test_card_fixtures.py`. #77: own boat line and details on both cards, U-CARD-08 and F-CARD-11 Done in ovander/ha-vigie-card#7, F-ACARD-01 and -03 extended. |
 | 0.30 | 2026-10-22 | WP24 (#74): anchor card tests planned (SPEC v0.23 §9.8): new §3.9 `U-ACARD`, §4.8 `F-ACARD` (in the card repository), the anchor fixtures on the Vigie side, E-09 bench check; §9 row P7. All Planned; values follow the recommended options of SPEC OD-34…OD-38, re-checked once the owner decides. |
 | 0.29 | 2026-10-22 | #71: F-CARD-10 (tile requests send the page's origin as `Referer`, base map and overlay; SPEC v0.22 §9.7), Done in ovander/ha-vigie-card. |
 | 0.28 | 2026-10-22 | WP23 (#67): F-CARD-08 done (form logic unit-tested, editor checked in a browser and in Home Assistant 2026.2.3); E-08 pre-run in the official HA container recorded in `docs/test-reports/P6-report.md`, its five findings fixed in the card, each reproduced by a browser test first. |
@@ -236,7 +236,7 @@ In the card repository (`ha-vigie-card`, `test/unit/`), pure TypeScript function
 | U-CARD-05 | Label: name present; name null | Name; MMSI | Done |
 | U-CARD-06 | Config validation: missing `entity`; missing `own`; `vector_minutes` 0 or negative; `rings_nm` not a list | Error naming the field; defaults applied otherwise | Done |
 | U-CARD-07 | Translations: every key in `en` and `fr` | Same key sets, no empty string | Done |
-| U-CARD-08 | Position in degrees and minutes (#77), English then French: 43.5, 7.25; −33.856, −151.2153; 43.50049833, 7.25; 43.9999999, 0 | `43° 30.000′ N`, `7° 15.000′ E` (`43° 30,000′ N` in French); `33° 51.360′ S`, `151° 12.918′ W`; `43° 30.030′ N`; `44° 00.000′ N` (no `60.000′`), `0° 00.000′ E` | Planned |
+| U-CARD-08 | Position in degrees and minutes (#77), English then French: 43.5, 7.25; −33.856, −151.2153; 43.50049833, 7.25; 43.9999999, 0 | `43° 30.000′ N`, `7° 15.000′ E` (`43° 30,000′ N` in French); `33° 51.360′ S`, `151° 12.918′ W`; `43° 30.030′ N`; `44° 00.000′ N` (no `60.000′`), `0° 00.000′ E` | Done |
 
 ### 3.9 Anchor card — `U-ACARD` (SPEC §9.8, P7)
 
@@ -244,14 +244,14 @@ In the card repository (`test/unit/`), pure TypeScript functions, as §3.8; valu
 
 | ID | Case | Expected | Status |
 |---|---|---|---|
-| U-ACARD-01 | Distance gauge, radius 50 m: distance 32, 41, 50, 51 m; distance unavailable | 64 % normal; 82 % amber; 100 % amber (on the circle is inside, SPEC §8.4); red, outside; `—` and no fill | Planned |
-| U-ACARD-02 | Status from the states: switch off; armed, alarm off, distance known; alarm on, `reason` `drag`; alarm on, `no_position`; armed, alarm off, distance unavailable (position lost less than 60 s ago) | *Off*; *Watching*; *Dragging*; *Position lost*; *Waiting for position* (amber, never the colour of *Watching*) | Planned |
-| U-ACARD-03 | Radius step, limits 10–500, step 5: 50 +; 50 −; 497 +; 500 +; 10 − | 55; 45; 500; disabled; disabled | Planned |
+| U-ACARD-01 | Distance gauge, radius 50 m: distance 32, 41, 50, 51 m; distance unavailable | 64 % normal; 82 % amber; 100 % amber (on the circle is inside, SPEC §8.4); red, outside; `—` and no fill | Done |
+| U-ACARD-02 | Status from the states: switch off; armed, alarm off, distance known; alarm on, `reason` `drag`; alarm on, `no_position`; armed, alarm off, distance unavailable (position lost less than 60 s ago) | *Off*; *Watching*; *Dragging*; *Position lost*; *Waiting for position* (amber, never the colour of *Watching*) | Done |
+| U-ACARD-03 | Radius step, limits 10–500, step 5: 50 +; 50 −; 497 +; 500 +; 10 − | 55; 45; 500; disabled; disabled | Done |
 | U-ACARD-04 | Swing track from history points, armed at T, `track_hours` 6: points before T; points older than 6 h; 1 200 points; `track_hours` 0 | Dropped; dropped; at most 500 kept, first and last kept, in time order; no history request | Planned |
-| U-ACARD-05 | Map bounds: anchor 43.5° N, 7.25° E, radius 50 m | Anchor ± 50 m: Δlat = 50 / 1852 / 60 = 0.000449964°, Δlon = Δlat / cos 43.5° = 0.00062032° (± 1e-8; same spherical geometry as U-CARD-01) | Planned |
-| U-ACARD-06 | Config: missing `switch`; `switch.garnet_anchor_watch` alone; a switch not named `switch.<boat>_anchor_watch` without the other entities; `track_hours` negative | Error naming `switch`; derived `sensor.garnet_anchor_distance`, `binary_sensor.garnet_anchor_alarm`, `number.garnet_anchor_radius`, `device_tracker.garnet`; error naming the first missing entity; error naming `track_hours` | Planned |
-| U-ACARD-07 | Time at anchor: armed 59 s, 2 h 05 min, 26 h ago | `< 1 min`; `2 h 05`; `26 h 00` | Planned |
-| U-ACARD-08 | Translations: every anchor-card key in `en` and `fr` | Same key sets, no empty string (with U-CARD-07) | Planned |
+| U-ACARD-05 | Map bounds: anchor 43.5° N, 7.25° E, radius 50 m | Anchor ± 50 m: Δlat = 50 / 1852 / 60 = 0.000449964°, Δlon = Δlat / cos 43.5° = 0.00062032° (± 1e-8; same spherical geometry as U-CARD-01) | Done |
+| U-ACARD-06 | Config: missing `switch`; `switch.garnet_anchor_watch` alone; a switch not named `switch.<boat>_anchor_watch` without the other entities; `track_hours` negative | Error naming `switch`; derived `sensor.garnet_anchor_distance`, `binary_sensor.garnet_anchor_alarm`, `number.garnet_anchor_radius`, `device_tracker.garnet`; error naming the first missing entity; error naming `track_hours` | Done |
+| U-ACARD-07 | Time at anchor: armed 59 s, 2 h 05 min, 26 h ago | `< 1 min`; `2 h 05`; `26 h 00` | Done |
+| U-ACARD-08 | Translations: every anchor-card key in `en` and `fr` | Same key sets, no empty string (with U-CARD-07) | Done |
 
 ## 4. Functional tests (`tests/integration/`)
 
@@ -356,7 +356,7 @@ In the card repository (`test/browser/`): the card rendered in headless Chromium
 | F-CARD-08 | Visual editor | Every option editable; YAML round trip | Done |
 | F-CARD-09 | `hass.locale` French | Every card string in French | Done |
 | F-CARD-10 | Base map and overlay configured | Every tile image of both layers has `referrerpolicy="strict-origin-when-cross-origin"`: the tile server gets the page's origin as `Referer`, never its path (SPEC §9.7, OpenStreetMap tile usage policy) | Done |
-| F-CARD-11 | Own boat (#77): `multi-target` states; tap the own boat; then the tracker unavailable | Line under the map with position, SOG, COG, heading (`—` when null) and *position current*; the same in a details popup; then *position lost since HH:MM* and the last position drawn faded | Planned |
+| F-CARD-11 | Own boat (#77): `multi-target` states; tap the own boat; then the tracker unavailable | Line under the map with position, SOG, COG, heading (`—` when null) and *position current*; the same in a details popup; then *position lost since HH:MM* and the last position drawn faded | Done |
 
 Vigie side (WP20, in this repository, Done): F-TRF-12 (§4.4) — `heading` and `threat` in every `targets` row, `threat` equal to the target being in the traffic picture's threats with the configured thresholds and stationary exclusion; F-PERF-03 still under the attribute size limit with 50 rows.
 
@@ -366,16 +366,16 @@ In the card repository (`test/browser/`), as §4.7: headless Chromium, a fake `h
 
 | ID | Case | Expected | Status |
 |---|---|---|---|
-| F-ACARD-01 | Armed, swinging (300 s) | *Watching*; distance against `50 m` in large figures with the gauge; bearing, largest distance, time at anchor; anchor, circle and boat on the map, circle filling it; tiles with the policy of F-CARD-10; the own boat line of F-CARD-11 | Planned |
-| F-ACARD-02 | Drag alarm (700 s) | *Dragging* in red with its start time; gauge and circle red | Planned |
-| F-ACARD-03 | Position lost | *Position lost*; distance `—`; the boat's last position faded; own boat line *position lost since HH:MM* | Planned |
-| F-ACARD-04 | Watch off; tap *Drop anchor here*; then own position unavailable | One `switch.turn_on` on the configured switch; button disabled with the reason, no call | Planned |
-| F-ACARD-05 | Armed; tap *Raise anchor*, cancel; tap again, confirm | Confirmation naming the boat; no call after cancel; one `switch.turn_off` after confirm | Planned |
-| F-ACARD-06 | Radius 50, tap +; radius 500; radius 10 | `number.set_value` 55 on the configured radius; + disabled; − disabled | Planned |
+| F-ACARD-01 | Armed, swinging (300 s) | *Watching*; distance against `50 m` in large figures with the gauge; bearing, largest distance, time at anchor; anchor, circle and boat on the map, circle filling it; tiles with the policy of F-CARD-10; the own boat line of F-CARD-11 | Done |
+| F-ACARD-02 | Drag alarm (700 s) | *Dragging* in red with its start time; gauge and circle red | Done |
+| F-ACARD-03 | Position lost | *Position lost*; distance `—`; the boat's last position faded; own boat line *position lost since HH:MM* | Done |
+| F-ACARD-04 | Watch off; tap *Drop anchor here*; then own position unavailable | One `switch.turn_on` on the configured switch; button disabled with the reason, no call | Done |
+| F-ACARD-05 | Armed; tap *Raise anchor*, cancel; tap again, confirm | Confirmation naming the boat; no call after cancel; one `switch.turn_off` after confirm | Done |
+| F-ACARD-06 | Radius 50, tap +; radius 500; radius 10 | `number.set_value` 55 on the configured radius; + disabled; − disabled | Done |
 | F-ACARD-07 | Swing track | One history request for the tracker since `armed_at`; the recorded positions drawn as a line; a new state adds a point without a new request; `track_hours: 0`: no request, no line | Planned |
-| F-ACARD-08 | A refused call (Home Assistant error) | The error message shown in the card; states and controls unchanged | Planned |
-| F-ACARD-09 | `hass.locale` French | Every card string and figure in French (`32,5 m`) | Planned |
-| F-ACARD-10 | Every test above | The only calls are the three of SPEC §9.8 on the configured entities, and the history request; never another service or entity | Planned |
+| F-ACARD-08 | A refused call (Home Assistant error) | The error message shown in the card; states and controls unchanged | Done |
+| F-ACARD-09 | `hass.locale` French | Every card string and figure in French (`55,4 m`) | Done |
+| F-ACARD-10 | Every test above | The only calls are the three of SPEC §9.8 on the configured entities, and the history request; never another service or entity | Done |
 | F-ACARD-11 | Visual editor | Every option editable; a one-line configuration (`switch` only) round trips | Planned |
 
 ## 5. End-to-end tests

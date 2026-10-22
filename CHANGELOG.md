@@ -8,7 +8,11 @@ versioning: SemVer.
 ### Added
 - Specification: anchor card for the cockpit (SPEC v0.23 §9.8, C-13, proposed phase P7;
   open decisions OD-34…OD-38) and its planned tests (TEST v0.30: U-ACARD, F-ACARD, E-09)
-  (#74). No code yet.
+  (#74); decisions OD-34…OD-38 taken with the recommended options (SPEC v0.24, phase P7).
+- Tests: the anchor entities recorded on the `anchor-drag` preset for the anchor card's
+  tests (watch off, swinging, waiting for a position, position lost, dragging) (#76).
+- Specification: both cards show your boat's position, SOG, COG, heading and whether the
+  position is current (SPEC v0.24 §9.7, §9.8; TEST U-CARD-08, F-CARD-11) (#77).
 
 ### Fixed
 - Specification: tile requests of the dashboard cards send the page's origin as `Referer`
