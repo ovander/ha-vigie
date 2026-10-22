@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.22 (draft) |
+| Version | 0.23 (draft) |
 | Date | 2026-10-22 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.23 | 2026-10-22 | WP24 (#74): anchor card specified, not implemented. New §9.8 (custom card `vigie-anchor-card`: distance against radius, alarm and its reason, a small map with the swing circle and the swing track, controls drop / raise / radius), component C-13, §13 phase P7 (proposed), §2.1 scope line for the dashboard cards. New open decisions OD-34…OD-38 with recommendations. |
 | 0.22 | 2026-10-22 | #71: §9.7 tile requests send the page's origin as `Referer` (OpenStreetMap refuses tile requests without one, and Home Assistant's page sends none to other sites); found in the owner's lab with the card v0.1.0-beta.1. |
 | 0.21 | 2026-10-22 | WP21–WP23 (#64, #65, #67): traffic card built in `ovander/ha-vigie-card`. §9.7 made precise after the E-08 pre-run: the first view waits for the card to have a size; follow mode pauses while a details popup is open; numbers in the user's locale; the visual editor is Home Assistant's form with Vigie entity pickers. |
 | 0.20 | 2026-10-22 | P6 decisions (owner, "following your recommendations") and WP20 (#62). OD-29…OD-33 resolved with the recommended options. §9.2: every `targets` row carries `heading` and `threat` (implemented). |
@@ -61,6 +62,7 @@ The integration must run standalone on a boat-mounted Home Assistant instance (t
 - CPA/TCPA computation for each target and a closest-threat alert (§8).
 - UI configuration (config flow + options flow), HACS-installable.
 - Anchor watch on own position: swing radius, drag and position-loss alarm (§8.4, §9.6). Phase P5 (OD-21, resolved v0.15).
+- Dashboard cards, in a separate repository: the AIS traffic map (§9.7, P6) and the anchor card (§9.8, proposed; OD-34, OD-38).
 
 ### 2.2 Out of scope (v1)
 
@@ -153,6 +155,7 @@ Pure-Python modules (no `homeassistant` import, `mypy --strict`, covered by the 
 | C-09 | Diagnostics | `sensor.py`, `diagnostics.py` | Health counters; HA diagnostics download. |
 | C-11 | Anchor watch (P5) | `anchor.py` (pure), `switch.py`, `number.py`, `services.py`, `services.yaml` | Anchor point, swing radius, drag and position-loss alarm (§8.4); entities and services (§9.6). `anchor.py` has no HA import. |
 | C-12 | AIS traffic map card (P6) | separate repository `ha-vigie-card` (TypeScript, Lit, Leaflet) | Lovelace card drawing the own boat, every target of the `targets` list, threats with their CPA point, range rings and the anchor (§9.7). Reads Home Assistant states only; no code in this repository apart from the `targets` fields (WP20). |
+| C-13 | Anchor card (P7, proposed) | `vigie-anchor-card`, in the repository of OD-34 (recommended: `ha-vigie-card`, next to C-12) | Lovelace card for the anchor watch in the cockpit: distance against radius, alarm and its reason, swing circle and swing track, controls drop / raise / radius (§9.8). No code in this repository: it uses the entities and services of §9.6 as they are. |
 
 ### 5.3 File layout
 
@@ -418,6 +421,51 @@ Numbers (CPA, TCPA, speeds, distances) are shown in the user's locale, as Home A
 
 **Clean room (§3.1).** No code from other map cards unless permissively licensed and credited; Home Assistant's built-in map card is a reference for behaviour only.
 
+### 9.8 Anchor card (C-13, P7 proposed)
+
+Specified in v0.23 (WP24, #74); decisions OD-34…OD-38 open. Nothing in Vigie changes: the card uses the entities and services of §9.6 as they are.
+
+**Purpose.** One card for the anchor watch, readable at a glance in the cockpit on a phone or tablet, day and night, and usable with wet fingers: is the watch on, how far is the boat from the anchor against the radius, is there an alarm and why, how has the boat swung. Today the watch is used through four entities and the built-in map card (§9.6). Like the watch itself (§8.4), the card is an **aid**: the alert that wakes the crew is the phone notification of the README automation, not the card, which only shows while a screen is on and awake.
+
+**Where it lives (OD-34).** A Lovelace custom card `custom:vigie-anchor-card`. Recommended: a second card in the `ha-vigie-card` repository and its single JavaScript file, next to the traffic card (C-12): one HACS install, the same Leaflet map, geometry, styles and EN/FR strings, one release.
+
+**Data.** Through the standard `hass` object:
+
+- `switch.<boat>_anchor_watch`: armed or not; `anchor_latitude`, `anchor_longitude`, `radius_m`, `armed_at` (also while the distance is unavailable);
+- `sensor.<boat>_anchor_distance`: distance (m), `bearing_to_anchor`, `max_distance_m`, `radius_m`, anchor `latitude`/`longitude`;
+- `binary_sensor.<boat>_anchor_alarm`: on/off and `reason` (`drag`, `no_position`);
+- `number.<boat>_anchor_radius`: the radius and its limits (10–500 m, step 5);
+- `device_tracker.<boat>`: position, `heading`, `cog`, `sog`;
+- the swing track: positions of `device_tracker.<boat>` since `armed_at` (source: OD-36).
+
+**What the card shows.**
+
+| Element | Rule |
+|---|---|
+| Status line | Watch off; *Watching* (inside the radius); *Waiting for position* (amber) while armed without a position, before the 60 s alarm; *Dragging* or *Position lost* when the alarm is on, in red, with the time it started (the alarm's last change). Never the colour of *Watching* while the alarm is on or the position is unknown |
+| Distance | Large figures: distance to the anchor against the radius (`32 / 50 m`), and a bar or ring filled to distance / radius, amber from 80 %, red outside; `—` without position |
+| Details | Bearing to the anchor, largest distance since the drop, time at anchor (since `armed_at`) |
+| Map | North-up, centred on the anchor, zoomed so the swing circle fills the map; anchor symbol, swing circle (red when the alarm is on), the boat oriented on heading, else COG, and its swing track since the drop (at most the last 6 h, thinned to at most 500 points); same tiles setting as §9.7; with the network cut, everything but the tiles still drawn |
+| Watch off | The map centred on the boat, and the control to drop the anchor here |
+
+Figures in the user's locale (`32,5 m` in French), as in §9.7. Large type and high contrast; colours follow the Home Assistant theme (a dark or red night theme is the user's choice in Home Assistant; no theme of its own).
+
+**Controls (OD-35).** The card can arm, disarm and change the radius:
+
+| Control | Effect |
+|---|---|
+| *Drop anchor here* | `switch.turn_on` on the watch switch: the anchor at the boat's current position, with the current radius (§9.6). Disabled, with the reason, without own position |
+| *Raise anchor* | `switch.turn_off`, only after a confirmation in the card (a single tap must never stop the watch); the confirmation names the boat |
+| Radius − / + | `number.set_value` on the radius entity, by its step (5 m), within its limits; the buttons are disabled at the limits. A change applies at once (§8.4: it restarts the drag timer) |
+
+No other service is called: no `vigie.drop_anchor` with coordinates (an anchor position from the chartplotter stays in the Actions page or an automation), no notification, no automation. A refused call (for example no own position) shows Home Assistant's error message in the card. The traffic card (§9.7) stays read only.
+
+**Sound (OD-37).** Recommended: none. Browsers block sound until the page has been touched, phones and tablets sleep, and the critical phone notification already rings through silent mode; a sound in the card would give a false sense of safety.
+
+**Configuration** (YAML or the visual editor, entity pickers limited to Vigie's entities): `switch` (the watch switch, required); `distance`, `alarm`, `radius` and `own` (derived from the switch's boat name when left out, so a one-line configuration works); `height`, `tiles`, `overlay`, `track_hours` (default 6, 0 for no track). Every user-visible string in English and French.
+
+**Clean room (§3.1).** As §9.7; prior art for anchor alarms (X-06) is a reference for behaviour only.
+
 ## 10. Runtime behaviour
 
 ### 10.1 Availability
@@ -488,6 +536,7 @@ Changing an option reloads the entry. The anchor radius is not an option: it cha
 | P3 | AIS static data (types 5, 24): names, ship type, dimensions; Lovelace map card configuration (built-in map card: own boat and watched targets, OD-19) | U-AIS static tests, U-STA and the F-TRF static checks green; on board, names and ship types of 5 targets match the chartplotter (E-12); the receiver capture (#2) decodes its type 5/24 lines without rejects |
 | P5 | Anchor watch (§8.4, §9.6, §10.4): `anchor.py`, switch, radius, alarm, distance, services, restore; independent of P4 (OD-21) | U-ANC and F-ANC green; bench `anchor-drag` scenario raises the alarm where the preset says (E-07); in port, armed overnight at 20 m without a false alarm (E-17); at an anchorage, motoring out of the radius raises the alarm and the phone notification (E-24) |
 | P6 | AIS traffic map card (§9.7, C-12): `heading` and `threat` in the `targets` rows (Vigie, done in WP20); custom card `vigie-traffic-card` in its own repository, HACS plugin (OD-29, OD-33) | U-CARD and F-CARD green in the card repository; Vigie's F-TRF/F-PERF checks still green with the new fields; on the bench, every target of `multi-target` and `named-traffic` drawn where `--list` says, threats red with their CPA point (E-08) |
+| P7 (proposed, OD-38) | Anchor card (§9.8, C-13): `vigie-anchor-card` next to the traffic card (OD-34), with drop / raise / radius controls (OD-35); no Vigie change | U-ACARD and F-ACARD green in the card repository; on the bench, `anchor-drag` driven from the card: drop, radius, swing track, the *Dragging* status where `--list` says, raise only after confirmation (E-09) |
 | P4 | Optional additional sources if instruments are added (wind, depth, log) and the performance layer (true wind, VMG, polars), via a second port or TCP | Requires new hardware; re-opens §2.2 |
 
 ## 14. Open decisions
@@ -525,6 +574,11 @@ Changing an option reloads the entry. The anchor radius is not an option: it cha
 | ~~OD-31~~ | ~~Traffic map card: data path~~ | **Resolved v0.20:** the `targets` attribute of `sensor.<boat>_ais_targets`, with `heading` and `threat` in every row (§9.2, §9.7) | — |
 | ~~OD-32~~ | ~~Traffic map card: base map and offline~~ | **Resolved v0.20:** OpenStreetMap tiles by default, configurable tile URL, optional OpenSeaMap sea-mark overlay; no offline tiles (boat online through Starlink); during an outage, everything but the tiles still drawn (§9.7) | — |
 | ~~OD-33~~ | ~~Traffic map card: phase~~ | **Resolved v0.20:** phase P6, after P5 and independent of P4; Vigie side released with the next Vigie beta, the card with its own first beta (§13) | — |
+| OD-34 | Anchor card: where it lives | (a) **recommended:** a second card `custom:vigie-anchor-card` in `ha-vigie-card`, in the same JavaScript file: one HACS install, shared map, geometry and strings, one release; (b) a mode of the traffic card (`mode: anchor`): one element, but two different layouts and configurations in one card; (c) its own repository: separate releases and a second HACS install for a few hundred lines | Before WP25 |
+| OD-35 | Anchor card: controls | The cards are read only today (C-12, card repository rules). (a) **recommended:** the anchor card may call exactly three services on its configured entities: `switch.turn_on`, `switch.turn_off` after a confirmation in the card, `number.set_value` on the radius; nothing else, checked by a test (F-ACARD-10); the traffic card stays read only; (b) read only, with Home Assistant's own tile cards for the controls next to it: no new rule, but the controls are small and *Raise* has no confirmation; (c) (a) plus `vigie.drop_anchor` with typed coordinates: more to get wrong in a cockpit | Before WP25 |
+| OD-36 | Anchor card: swing track source | (a) **recommended:** Home Assistant's history of `device_tracker.<boat>` since `armed_at` (websocket `history/history_during_period`, read only), then the live updates: survives a page reload and works on every screen; needs the recorder (on by default) to keep the tracker's position; (b) only the positions seen while the card is open: nothing to fetch, but lost at every reload and different on each screen; (c) a track attribute kept by Vigie: changes Vigie and adds recorder load (§10.2) | Before WP26 |
+| OD-37 | Anchor card: sound on alarm | (a) **recommended:** no sound; the alert is the critical phone notification (README), the card says so in its documentation; (b) an optional tone while the card is visible and the alarm is on (`sound: true`): unreliable (blocked until the page is touched, silent when the screen sleeps) | Before WP26 |
+| OD-38 | Anchor card: phase | (a) **recommended:** new phase P7, after P5 and P6, independent of P4: P6 closes on E-08 as planned; (b) an extension of P6: P6 then waits for the anchor card too | Before WP25 |
 
 (OD-05 and OD-09 from v0.1 were tied to NMEA 2000 and polars; both moved to P4 and are no longer open for v1.)
 
@@ -537,7 +591,7 @@ Changing an option reloads the entry. The anchor radius is not an option: it cha
 | X-03 | Code review of `SmartBoatInnovations/ha-smart0183serial` @ `5854e94` (license, sensor.py L334, checksum handling) | §3.1, §3.3 |
 | X-04 | Home Assistant developer docs — integration architecture, config flow, DataUpdateCoordinator, entity guidelines — https://developers.home-assistant.io | §5, §9, §11 |
 | X-05 | `ludeeus/integration_blueprint` — dev container and HACS layout reference | §12 |
-| X-06 | Smart Boat Innovations integrations (ha-smart0183tcp, ha-smart-anchor) — prior art, not reused | §2, §8.4 |
+| X-06 | Smart Boat Innovations integrations (ha-smart0183tcp, ha-smart-anchor) — prior art, not reused | §2, §8.4, §9.8 |
 | X-08 | pyais (MIT) — test oracle only | §7.3 |
 | X-09 | Raw capture of the AIS receiver's serial output (to be produced; ≥ 15 min, ideally in port and under way; tracked in issue #2) | §3.3, §7.2, OD-13, OD-14, tests |
 | X-10 | HA-SAIL-TEST-001 — Test protocol (unit, functional, end-to-end) | §12, §13 |

@@ -260,7 +260,8 @@ Like the rest of Vigie, it is an aid to awareness, not a navigation display.
 | P3 | AIS static data (names, types, dimensions), map card | built; on-board checks pending |
 | P4 | Additional instruments (wind, depth) and sailing performance | later |
 | P5 | Anchor watch | built; bench and on-board checks pending |
-| P6 | AIS traffic map card (every target on one map) | specified; decisions pending |
+| P6 | AIS traffic map card (every target on one map) | built ([ha-vigie-card](https://github.com/ovander/ha-vigie-card)); bench check pending |
+| P7 | Anchor card (the anchor watch in the cockpit, with drop / raise / radius) | specified; decisions pending |
 
 ## Documentation
 

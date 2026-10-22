@@ -5,6 +5,16 @@ versioning: SemVer.
 
 ## [Unreleased]
 
+### Added
+- Specification: anchor card for the cockpit (SPEC v0.23 §9.8, C-13, proposed phase P7;
+  open decisions OD-34…OD-38) and its planned tests (TEST v0.30: U-ACARD, F-ACARD, E-09)
+  (#74). No code yet.
+
+### Fixed
+- Specification: tile requests of the dashboard cards send the page's origin as `Referer`
+  (SPEC v0.22 §9.7, TEST F-CARD-10), the cause of the blocked OpenStreetMap tiles fixed in
+  the traffic card 0.1.0-beta.2 (#71).
+
 ## [0.3.0-beta.1] - 2026-10-22
 
 Third beta: the data for the new [Vigie traffic card](https://github.com/ovander/ha-vigie-card)
