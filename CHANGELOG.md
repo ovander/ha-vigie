@@ -5,25 +5,28 @@ versioning: SemVer.
 
 ## [Unreleased]
 
+## [0.4.0-beta.1] - 2026-10-22
+
+Fourth beta: recentering the anchor watch's circle, for the new anchor card of
+[Vigie cards](https://github.com/ovander/ha-vigie-card) (phase P7). The card's
+**Recenter** and **Move the anchor** buttons need this version (card 0.2.0-beta.3 or
+later). Nothing else changes in the integration; the rest is specification, tests and docs
+for the anchor card and the traffic map.
+
 ### Added
 - Anchor watch: recenter the circle without restarting the watch, with
-  `vigie.drop_anchor` and `keep_since: true` and the anchor's position: the time at anchor
-  and the radius are kept, the largest distance starts again; refused while the anchor
-  alarm is on (#81).
-- Tests: the anchor card fixture also records your boat's tracker history, for the swing
-  track (#80).
-- Specification: recentering the anchor circle decided (OD-39, SPEC v0.26 §9.8), to be built
-  in WP27 (#81); TEST v0.33 (WP26 tests done).
-- README: the anchor card for the cockpit in the *Anchor watch* section (#76).
-- Specification: the own boat's details also give the position in decimal degrees (SPEC
-  v0.25 §9.7, TEST v0.32 U-CARD-08) (#77).
-- Specification: anchor card for the cockpit (SPEC v0.23 §9.8, C-13, proposed phase P7;
-  open decisions OD-34…OD-38) and its planned tests (TEST v0.30: U-ACARD, F-ACARD, E-09)
-  (#74); decisions OD-34…OD-38 taken with the recommended options (SPEC v0.24, phase P7).
-- Tests: the anchor entities recorded on the `anchor-drag` preset for the anchor card's
-  tests (watch off, swinging, waiting for a position, position lost, dragging) (#76).
-- Specification: both cards show your boat's position, SOG, COG, heading and whether the
-  position is current (SPEC v0.24 §9.7, §9.8; TEST U-CARD-08, F-CARD-11) (#77).
+  `vigie.drop_anchor` and `keep_since: true` and the anchor's position. The boat has
+  usually dropped back by the time the watch is turned on; this puts the circle where the
+  anchor is. The time at anchor and the radius are kept, the largest distance starts
+  again; refused while the anchor alarm is on (#81).
+- README: the anchor card for the cockpit and recentering in the *Anchor watch* section
+  (#76, #81).
+- Tests: the anchor entities and your boat's tracker history recorded on the `anchor-drag`
+  preset, so the anchor card is tested against what Vigie produces (#76, #80).
+- Specification and tests (SPEC v0.23–v0.27, TEST v0.30–v0.34): the anchor card (§9.8,
+  C-13, phase P7; decisions OD-34…OD-39), your boat's position, speed and course on both
+  cards (#77), recentering (#81); P7 report with the bench pre-run in Home Assistant
+  2026.2.3 (`docs/test-reports/P7-report.md`).
 
 ### Fixed
 - Specification: tile requests of the dashboard cards send the page's origin as `Referer`
@@ -189,7 +192,8 @@ P1–P3). Tested on synthetic data only; see `docs/test-reports/`.
 - AIS decoder rejects payload armoring characters 0x58–0x5F (`X`…`_`), which the AIVDM
   specification does not allow; they were decoded as six-bit values 40–47 (#11).
 
-[Unreleased]: https://github.com/ovander/ha-vigie/compare/v0.3.0-beta.1...HEAD
+[Unreleased]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.1...HEAD
+[0.4.0-beta.1]: https://github.com/ovander/ha-vigie/compare/v0.3.0-beta.1...v0.4.0-beta.1
 [0.3.0-beta.1]: https://github.com/ovander/ha-vigie/compare/v0.2.0-beta.1...v0.3.0-beta.1
 [0.2.0-beta.1]: https://github.com/ovander/ha-vigie/compare/v0.1.0-beta.1...v0.2.0-beta.1
 [0.1.0-beta.1]: https://github.com/ovander/ha-vigie/releases/tag/v0.1.0-beta.1
