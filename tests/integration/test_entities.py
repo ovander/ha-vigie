@@ -315,6 +315,8 @@ async def test_ais_targets_sensor(hass: HomeAssistant, loaded, fake_ports: FakeP
         "tcpa_min",
         "ship_type",
         "length_m",
+        "heading",  # P6: for the traffic map card (SPEC §9.7)
+        "threat",
     }
     # A new target: count now, attribute list at most every 5 s
     fake_ports[BY_ID_PORT].feed_lines(nmea("AIVDM,1,1,,A,15MgK45P3@G?fl0E`JbR0OwT0@MS,0", "!"))

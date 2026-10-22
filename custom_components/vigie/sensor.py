@@ -373,10 +373,19 @@ class AisTargetsSensor(VigieEntity, SensorEntity):
             return False
         position = self.coordinator.own.get(POSITION)
         lat, lon = position.value if position else (None, None)
-        encounters = self.coordinator.picture.encounters
+        picture = self.coordinator.picture
+        encounters, threats = picture.encounters, picture.threats
         name, static = self.coordinator.target_name, self.coordinator.statics.get
         targets = [
-            _target_row(t, name(t.mmsi), static(t.mmsi), distance, encounters.get(t.mmsi), now)
+            _target_row(
+                t,
+                name(t.mmsi),
+                static(t.mmsi),
+                distance,
+                encounters.get(t.mmsi),
+                t.mmsi in threats,
+                now,
+            )
             for t, distance in self.coordinator.targets.nearest(lat, lon, TARGETS_LIMIT)
         ]
         if targets:  # the first list with data starts the 5 s rhythm
@@ -392,9 +401,14 @@ def _target_row(
     static: StaticInfo | None,
     distance: float | None,
     encounter: Encounter | None,
+    threat: bool,
     now: float,
 ) -> dict[str, Any]:
-    """One entry of the `targets` attribute (SPEC §9.2); static data kept to type and length."""
+    """One entry of the `targets` attribute (SPEC §9.2); static data kept to type and length.
+
+    `heading` and `threat` let the traffic map card draw orientation and threats with
+    Vigie's own rule (SPEC §9.7, OD-31).
+    """
     return {
         "mmsi": t.mmsi,
         "name": name,
@@ -405,10 +419,12 @@ def _target_row(
         "lon": _round(t.report.longitude, 5),
         "sog": _round(t.report.sog_knots, 1),
         "cog": _round(t.report.cog_deg, 1),
+        "heading": t.report.heading_deg,
         "distance_nm": _round(distance, 2),
         "age_s": round(now - t.last_seen),
         "cpa_nm": None if encounter is None else _round(encounter.cpa_nm, 2),
         "tcpa_min": None if encounter is None else _round(encounter.tcpa_min, 1),
+        "threat": threat,
     }
 
 
