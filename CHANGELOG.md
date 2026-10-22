@@ -6,6 +6,9 @@ versioning: SemVer.
 ## [Unreleased]
 
 ### Added
+- States recorded for the traffic map card's tests (`tests/fixtures/card/`, #65), checked by
+  `tests/integration/test_card_fixtures.py` so Vigie and the card agree on the `targets`
+  row format; TEST v0.27 (U-CARD and F-CARD done in the card repository).
 - `heading` and `threat` in every row of the `targets` attribute of
   `sensor.<boat>_ais_targets` (#62), for the coming traffic map card: true heading when the
   target reports it, and whether the target is a collision threat under your thresholds.
