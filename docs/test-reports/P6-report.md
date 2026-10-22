@@ -22,7 +22,7 @@ is filled in when it is run; the exit criterion is assessed then.
 | ovander/ha-vigie-card#1 | #64 | WP21: card repository — skeleton, configuration (U-CARD-06), EN/FR strings (U-CARD-07), CI, HACS packaging, release workflow |
 | ovander/ha-vigie-card#2, ovander/ha-vigie#66 | #65 | WP22: the map (Leaflet): own boat, targets, threats with CPA point, rings, anchor, details, follow mode; U-CARD-01…05, F-CARD-01…07, 09 against states recorded from Vigie; smoke test |
 | ovander/ha-vigie-card#3, ovander/ha-vigie#68 | #67 | WP23: visual editor (F-CARD-08), E-08 pre-run and its five fixes, Vigie README section, this report |
-| ovander/ha-vigie-card fix/tile-referrer, this PR | #71 | Tile requests send the page's origin as `Referer` (lab finding §5.3); F-CARD-10 |
+| ovander/ha-vigie-card#5, this PR | #71 | Tile requests send the page's origin as `Referer` (lab finding §5.3); F-CARD-10 |
 
 ## 2. Test status (TEST §9, row P6)
 
