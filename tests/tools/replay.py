@@ -10,11 +10,17 @@ replayed at `--rate` lines per second. Output goes to:
 - `--device PATH`: an existing device or file: a USB-serial adapter wired null-modem to
   the Home Assistant host, one end of a socat pair, or a plain file. `--baud` sets the
   rate of a real serial device.
+- `--tcp PORT`: a TCP server on this machine (all interfaces, or `--host`). Set Vigie's
+  port to `socket://<this machine>:PORT`: Home Assistant on another computer (HA OS on a
+  Pi, a VM) reads the replay over the network, no cable. One client at a time; a client
+  that goes away (Vigie restarting) lets the next one start the replay from the beginning.
+  Without `--loop` the tool stops once a client has had the whole replay.
 
     python -m tests.tools.replay capture.nmea --pty /tmp/ttyAIS --speed 1 --loop
     python -m tests.tools.replay head-on.nmea --device /dev/ttyUSB1 --baud 38400
+    python -m tests.tools.replay anchor-drag.nmea --tcp 10110
 
-Linux/macOS only (pseudo-terminals).
+Linux/macOS only (pseudo-terminals); `--tcp` also works on Windows.
 """
 
 from __future__ import annotations
@@ -88,6 +94,54 @@ def run(
     return count
 
 
+def serve_tcp(
+    scheduled: list[tuple[float, str]],
+    host: str,
+    port: int,
+    *,
+    loops: int = 1,
+    clients: int | None = None,
+    ready: Callable[[int], object] | None = None,
+) -> int:
+    """Serve the replay over TCP, one client at a time, each from the beginning.
+
+    Stops after `clients` connections, or (`clients` None) once a client has had the whole
+    replay; with `loops=0` a client gets it until it goes away. `ready` gets the bound port
+    (port 0: an ephemeral one, for tests). Returns the number of connections served.
+    """
+    import select
+    import socket
+
+    served = 0
+    with socket.create_server((host, port)) as server:
+        if ready is not None:
+            ready(server.getsockname()[1])
+        print(
+            f"Replaying {len(scheduled)} lines on TCP {host}:{server.getsockname()[1]}", flush=True
+        )
+        while clients is None or served < clients:
+            conn, peer = server.accept()
+            served += 1
+            print(f"Client {peer[0]}:{peer[1]} connected: replay from the start", flush=True)
+
+            def write(data: bytes, conn: socket.socket = conn) -> None:
+                # A client that has closed shows as readable with nothing to read: stop at
+                # once rather than at the next failed send
+                if select.select([conn], [], [], 0)[0] and conn.recv(1, socket.MSG_PEEK) == b"":
+                    raise ConnectionResetError("client closed")
+                conn.sendall(data)
+
+            with conn:
+                try:
+                    run(scheduled, write, loops=loops)
+                except (BrokenPipeError, ConnectionResetError):
+                    print(f"Client {peer[0]}:{peer[1]} went away", flush=True)
+                    continue
+            if clients is None:
+                break  # the whole replay delivered
+    return served
+
+
 def open_pty(link: Path) -> tuple[int, int]:
     """Create a raw pseudo-terminal and link its slave side at `link`; return (master, slave).
 
@@ -129,6 +183,10 @@ def main(argv: list[str] | None = None) -> int:
     target = parser.add_mutually_exclusive_group(required=True)
     target.add_argument("--pty", type=Path, help="create a pseudo-terminal linked at this path")
     target.add_argument("--device", type=Path, help="write to an existing device or file")
+    target.add_argument(
+        "--tcp", type=int, metavar="PORT", help="serve over TCP: Vigie port socket://HOST:PORT"
+    )
+    parser.add_argument("--host", default="0.0.0.0", help="address --tcp listens on (all)")
     parser.add_argument("--baud", type=int, help="baud rate of a real serial --device")
     parser.add_argument("--speed", type=float, default=1.0, help="time scale (2 = twice as fast)")
     parser.add_argument("--rate", type=float, default=10.0, help="lines/s for untimed files")
@@ -140,6 +198,10 @@ def main(argv: list[str] | None = None) -> int:
         speed=args.speed,
         rate=args.rate,
     )
+    if args.tcp is not None:
+        with contextlib.suppress(KeyboardInterrupt):
+            serve_tcp(scheduled, args.host, args.tcp, loops=0 if args.loop else 1)
+        return 0
     if args.pty:
         master, slave = open_pty(args.pty)
         print(f"Replaying {len(scheduled)} lines on {args.pty} -> {os.ttyname(slave)}", flush=True)

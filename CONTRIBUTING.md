@@ -37,6 +37,7 @@ Run from the repository root with the test requirements installed.
 | `python -m tests.tools.scenario --preset head-on -o head-on.nmea` | D-07 scenario: own boat as `$GPRMC` (1 Hz) and targets as `!AIVDM`, timed format `<epoch> <sentence>`. One preset per TEST §3.4 geometry (`--list` shows them with their expected CPA/TCPA), plus `named-traffic` with AIS static data (P3); custom scenarios as JSON, targets optionally with static data (see the module docstring). |
 | `python -m tests.tools.replay FILE --pty /tmp/ttyAIS [--speed 10] [--loop]` | Replays a timed or plain capture into a pseudo-terminal linked at `/tmp/ttyAIS`. Configure Vigie on that path. |
 | `python -m tests.tools.replay FILE --device /dev/ttyUSB1 --baud 38400` | Same, into a real serial adapter (null-modem to the HA host) or one end of a socat pair. |
+| `python -m tests.tools.replay FILE --tcp 10110 [--loop]` | Same, served over TCP from this computer (Mac, PC, Linux): set Vigie's serial port to `socket://<this computer's IP>:10110`. No cable; one client at a time, each from the start of the file. |
 | `python -m tests.tools.capture --port /dev/serial/by-id/... --baud 38400 --duration 900` | Raw timestamped capture of the receiver (X-09) into `captures/` (git-ignored). Stop Vigie first; anonymise before committing (TEST-001 TP-03). |
 
 `F-PERF` tests are marked `perf`: `pytest -m perf` runs them; they are excluded by default and
@@ -156,6 +157,28 @@ its anchor, so drop the anchor at the preset's coordinates, not with the switch:
 Developer tools → Actions, run `vigie.drop_anchor` with latitude 43.5, longitude 7.25 and
 radius 50, then replay `--preset anchor-drag` once at real speed (15 min). The alarm is due
 at 698 s (`--list`). Fill in `docs/test-reports/P5-report.md` §5.
+
+### Network bench from a laptop (`--tcp`)
+
+Home Assistant anywhere on the network (HA OS on a Pi, a VM, a container), the scenarios
+on a Mac or PC, no serial cable:
+
+1. On the laptop, in the repository with the test requirements installed:
+   `python -m tests.tools.scenario --preset anchor-drag -o anchor-drag.nmea`, then
+   `python -m tests.tools.replay anchor-drag.nmea --tcp 10110`. On macOS, allow incoming
+   connections for Python if the firewall asks.
+2. In Home Assistant, add Vigie (or reconfigure the bench boat) with the serial port
+   `socket://<laptop IP>:10110` (any baud rate).
+3. The replay starts when Vigie connects, and starts again from the beginning if Vigie
+   reconnects (Home Assistant restarted, the entry reloaded). Without `--loop` the tool
+   stops after one full replay: Vigie then sees the port gone.
+
+For the anchor card (P7, E-09): with the anchor card on a dashboard, start the replay (Vigie
+connects at once) and within a few seconds run `vigie.drop_anchor` at 43.5, 7.25 with
+radius 50 (Developer tools → Actions), then watch the swing, *Outside the circle* at 678 s and *Dragging* at 698 s. To try
+recentering, drop it 20 m north instead (latitude 43.50018) and press *Recenter* after
+10 minutes: the circle moves back to 43.5, 7.25. Checklist in
+`docs/test-reports/P7-report.md` §5.2.
 
 ## Workflow
 
