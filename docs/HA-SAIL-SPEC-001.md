@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.20 (draft) |
+| Version | 0.21 (draft) |
 | Date | 2026-10-22 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.21 | 2026-10-22 | WP21–WP23 (#64, #65, #67): traffic card built in `ovander/ha-vigie-card`. §9.7 made precise after the E-08 pre-run: the first view waits for the card to have a size; follow mode pauses while a details popup is open; numbers in the user's locale; the visual editor is Home Assistant's form with Vigie entity pickers. |
 | 0.20 | 2026-10-22 | P6 decisions (owner, "following your recommendations") and WP20 (#62). OD-29…OD-33 resolved with the recommended options. §9.2: every `targets` row carries `heading` and `threat` (implemented). |
 | 0.19 | 2026-10-22 | WP19 (#60): AIS traffic map card specified, not implemented. New §9.7 (custom card `vigie-traffic-card` in its own repository, data from the `targets` attribute, drawing rules, configuration), component C-12, §13 phase P6, X-13 (Leaflet); `heading` and `threat` planned in the `targets` rows (§9.2). New open decisions OD-29…OD-33 with recommendations. |
 | 0.18 | 2026-10-21 | WP18 (#55), after the E-07 pre-run: §9.6 anchor icons (`icons.json`) and a documented map card for the anchor (no clustering, zoom 18), since the built-in card merged the boat and the anchor into one marker. |
@@ -402,11 +403,13 @@ WP20 adds two fields to each `targets` row so that the card applies Vigie's rule
 | Range rings | 0.5, 1 and 2 NM around the own boat (configurable, can be off) |
 | Anchor | When the anchor watch is on: anchor symbol and the swing circle (radius); red when the alarm is on |
 | Details | Tap a target: name, MMSI, ship type, length, SOG, COG, distance, CPA, TCPA, age |
-| View | Centred on the own boat (follow mode on by default, off after a manual pan, button to come back); north-up |
+| View | First view: the outer range ring around the own boat, fitted once the card has a size (Home Assistant lays a card out after its first states); then centred on the own boat (follow mode on by default, off after a manual pan, button to come back, paused while a details popup is open); north-up |
 
 Positions are drawn as received in the list (rebuilt every 5 s); the card does not dead-reckon between rebuilds. Without own position the card shows the targets without distance-based elements and says so; without `sensor.<boat>_ais_targets` it shows a configuration error.
 
-**Configuration** (YAML and a visual editor): `entity` (the `ais_targets` sensor, required), `own` (the boat's tracker, required), `collision_risk`, `anchor` (optional), `vector_minutes`, `rings_nm`, `label_zoom`, `height`, `tiles` and `overlay` (OD-32). Every user-visible string of the card exists in English and French.
+Numbers (CPA, TCPA, speeds, distances) are shown in the user's locale, as Home Assistant does (0,45 NM in French).
+
+**Configuration** (YAML, or the visual editor: Home Assistant's form with entity pickers limited to Vigie's entities; the YAML keeps only what the user set): `entity` (the `ais_targets` sensor, required), `own` (the boat's tracker, required), `collision_risk`, `anchor` (optional), `vector_minutes`, `rings_nm`, `label_zoom`, `height`, `tiles` and `overlay` (OD-32). Every user-visible string of the card exists in English and French.
 
 **Map engine (OD-30).** Leaflet (BSD-2-Clause, X-13) bundled into the card's single JavaScript file; written in TypeScript with Lit, the framework of Home Assistant's own frontend.
 

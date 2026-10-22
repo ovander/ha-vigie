@@ -202,6 +202,23 @@ The built-in card can only draw entities, so it does not show every AIS target: 
 picture (up to the 50 nearest targets, with position, CPA and TCPA) is in the `targets`
 attribute of `sensor.<boat>_ais_targets`, for cards that read attributes.
 
+### Traffic map card
+
+[Vigie traffic card](https://github.com/ovander/ha-vigie-card) (`custom:vigie-traffic-card`,
+installed separately through HACS, category *Dashboard*) draws that full picture: every
+target oriented on its course, threats in red with their point of closest approach, range
+rings, the anchor and its swing circle, details on tap. It has a visual editor:
+
+```yaml
+type: custom:vigie-traffic-card
+entity: sensor.garnet_ais_targets
+own: device_tracker.garnet
+collision_risk: binary_sensor.garnet_collision_risk
+anchor: sensor.garnet_anchor_distance
+```
+
+Like the rest of Vigie, it is an aid to awareness, not a navigation display.
+
 ## Requirements
 
 - Home Assistant 2026.2.0 or later.

@@ -6,6 +6,9 @@ versioning: SemVer.
 ## [Unreleased]
 
 ### Added
+- README: the Vigie traffic card (`ovander/ha-vigie-card`), with its configuration (#67);
+  P6 report with the E-08 bench pre-run (`docs/test-reports/P6-report.md`); TEST v0.28,
+  SPEC v0.21.
 - States recorded for the traffic map card's tests (`tests/fixtures/card/`, #65), checked by
   `tests/integration/test_card_fixtures.py` so Vigie and the card agree on the `targets`
   row format; TEST v0.27 (U-CARD and F-CARD done in the card repository).
