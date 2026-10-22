@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.30 (draft) |
+| Version | 0.31 (draft) |
 | Date | 2026-10-22 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.31 | 2026-10-22 | Anchor card decisions (SPEC v0.24 OD-34…OD-38) and WP25 (#76): §3.9 and §4.8 no longer proposed; U-ACARD-05 and -07 move to WP25 with the map and the details, U-ACARD-04, F-ACARD-07 and F-ACARD-11 stay for WP26. #77: own boat line and details on both cards, U-CARD-08, F-CARD-11, F-ACARD-01 and -03 extended. |
 | 0.30 | 2026-10-22 | WP24 (#74): anchor card tests planned (SPEC v0.23 §9.8): new §3.9 `U-ACARD`, §4.8 `F-ACARD` (in the card repository), the anchor fixtures on the Vigie side, E-09 bench check; §9 row P7. All Planned; values follow the recommended options of SPEC OD-34…OD-38, re-checked once the owner decides. |
 | 0.29 | 2026-10-22 | #71: F-CARD-10 (tile requests send the page's origin as `Referer`, base map and overlay; SPEC v0.22 §9.7), Done in ovander/ha-vigie-card. |
 | 0.28 | 2026-10-22 | WP23 (#67): F-CARD-08 done (form logic unit-tested, editor checked in a browser and in Home Assistant 2026.2.3); E-08 pre-run in the official HA container recorded in `docs/test-reports/P6-report.md`, its five findings fixed in the card, each reproduced by a browser test first. |
@@ -235,8 +236,9 @@ In the card repository (`ha-vigie-card`, `test/unit/`), pure TypeScript function
 | U-CARD-05 | Label: name present; name null | Name; MMSI | Done |
 | U-CARD-06 | Config validation: missing `entity`; missing `own`; `vector_minutes` 0 or negative; `rings_nm` not a list | Error naming the field; defaults applied otherwise | Done |
 | U-CARD-07 | Translations: every key in `en` and `fr` | Same key sets, no empty string | Done |
+| U-CARD-08 | Position in degrees and minutes (#77), English then French: 43.5, 7.25; −33.856, −151.2153; 43.50049833, 7.25; 43.9999999, 0 | `43° 30.000′ N`, `7° 15.000′ E` (`43° 30,000′ N` in French); `33° 51.360′ S`, `151° 12.918′ W`; `43° 30.030′ N`; `44° 00.000′ N` (no `60.000′`), `0° 00.000′ E` | Planned |
 
-### 3.9 Anchor card — `U-ACARD` (SPEC §9.8, P7 proposed)
+### 3.9 Anchor card — `U-ACARD` (SPEC §9.8, P7)
 
 In the card repository (`test/unit/`), pure TypeScript functions, as §3.8; values by hand.
 
@@ -354,18 +356,19 @@ In the card repository (`test/browser/`): the card rendered in headless Chromium
 | F-CARD-08 | Visual editor | Every option editable; YAML round trip | Done |
 | F-CARD-09 | `hass.locale` French | Every card string in French | Done |
 | F-CARD-10 | Base map and overlay configured | Every tile image of both layers has `referrerpolicy="strict-origin-when-cross-origin"`: the tile server gets the page's origin as `Referer`, never its path (SPEC §9.7, OpenStreetMap tile usage policy) | Done |
+| F-CARD-11 | Own boat (#77): `multi-target` states; tap the own boat; then the tracker unavailable | Line under the map with position, SOG, COG, heading (`—` when null) and *position current*; the same in a details popup; then *position lost since HH:MM* and the last position drawn faded | Planned |
 
 Vigie side (WP20, in this repository, Done): F-TRF-12 (§4.4) — `heading` and `threat` in every `targets` row, `threat` equal to the target being in the traffic picture's threats with the configured thresholds and stationary exclusion; F-PERF-03 still under the attribute size limit with 50 rows.
 
-### 4.8 Anchor card — `F-ACARD` (SPEC §9.8, P7 proposed)
+### 4.8 Anchor card — `F-ACARD` (SPEC §9.8, P7)
 
 In the card repository (`test/browser/`), as §4.7: headless Chromium, a fake `hass` built from states recorded from Vigie, no network. The fake `hass` records every `callService` and `callWS` call, answers the history request with recorded positions, and can refuse a call with Home Assistant's error. Vigie side: `tests/integration/test_card_fixtures.py` also records the anchor entities and the own tracker on the `anchor-drag` preset (anchor dropped at 43.5, 7.25, radius 50 m) at 300 s (swinging, inside), 700 s (drag alarm) and 60 s after the feed stops (`no_position`), plus the tracker's positions for the history answer.
 
 | ID | Case | Expected | Status |
 |---|---|---|---|
-| F-ACARD-01 | Armed, swinging (300 s) | *Watching*; distance against `50 m` in large figures with the gauge; bearing, largest distance, time at anchor; anchor, circle and boat on the map, circle filling it; tiles with the policy of F-CARD-10 | Planned |
+| F-ACARD-01 | Armed, swinging (300 s) | *Watching*; distance against `50 m` in large figures with the gauge; bearing, largest distance, time at anchor; anchor, circle and boat on the map, circle filling it; tiles with the policy of F-CARD-10; the own boat line of F-CARD-11 | Planned |
 | F-ACARD-02 | Drag alarm (700 s) | *Dragging* in red with its start time; gauge and circle red | Planned |
-| F-ACARD-03 | Position lost | *Position lost*; distance `—`; the boat's last position faded | Planned |
+| F-ACARD-03 | Position lost | *Position lost*; distance `—`; the boat's last position faded; own boat line *position lost since HH:MM* | Planned |
 | F-ACARD-04 | Watch off; tap *Drop anchor here*; then own position unavailable | One `switch.turn_on` on the configured switch; button disabled with the reason, no call | Planned |
 | F-ACARD-05 | Armed; tap *Raise anchor*, cancel; tap again, confirm | Confirmation naming the boat; no call after cancel; one `switch.turn_off` after confirm | Planned |
 | F-ACARD-06 | Radius 50, tap +; radius 500; radius 10 | `number.set_value` 55 on the configured radius; + disabled; − disabled | Planned |
@@ -481,7 +484,7 @@ Functional requirements map by SPEC section: §7.2 → U-GPS; §7.3 → U-AIS; �
 | P3 Static data | U-AIS-04, U-AIS-15…22; U-STA (static store, WP12); F-TRF static checks (entities, WP13); E-12 extended to names and ship types | All green; on board, names and ship types of 5 targets match the chartplotter (E-12); U-AIS-13 on the receiver capture (#2) decodes its type 5/24 lines without rejects |
 | P5 Anchor watch (SPEC OD-21) | U-ANC, F-ANC, E-07, E-17, E-24 | All green; on board, no false alarm overnight (E-17) and the alarm fires when motoring out of the radius (E-24) |
 | P6 Traffic map card (SPEC OD-33) | U-CARD, F-CARD (card repository), F-TRF-12, F-PERF-03, E-08 | All green; on the bench every target drawn where expected, threats with the right CPA (E-08) |
-| P7 Anchor card (proposed, SPEC OD-38) | U-ACARD, F-ACARD (card repository), the anchor fixtures (Vigie), E-09 | All green; on the bench the card drives `anchor-drag` and shows *Dragging* where expected (E-09) |
+| P7 Anchor card (SPEC OD-38) | U-ACARD, F-ACARD (card repository), the anchor fixtures (Vigie), E-09 | All green; on the bench the card drives `anchor-drag` and shows *Dragging* where expected (E-09) |
 
 **Test report** per release: version, commit, CI run link, coverage figures, E-stage checklists with date/location/conditions, deviations and their tickets. Stored in the repository under `docs/test-reports/`.
 

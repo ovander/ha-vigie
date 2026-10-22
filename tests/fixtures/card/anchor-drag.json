@@ -1,0 +1,244 @@
+{
+  "dragging": {
+    "binary_sensor.garnet_anchor_alarm": {
+      "attributes": {
+        "device_class": "safety",
+        "reason": "drag"
+      },
+      "state": "on"
+    },
+    "device_tracker.garnet": {
+      "attributes": {
+        "cog": 0.0,
+        "gps_accuracy": 0,
+        "heading": null,
+        "latitude": 43.50049833333333,
+        "longitude": 7.25,
+        "position_source": "gps",
+        "sog": 0.5,
+        "source_type": "gps"
+      },
+      "state": "not_home"
+    },
+    "number.garnet_anchor_radius": {
+      "attributes": {
+        "device_class": "distance",
+        "max": 500.0,
+        "min": 10.0,
+        "mode": "box",
+        "step": 5,
+        "unit_of_measurement": "m"
+      },
+      "state": "50.0"
+    },
+    "sensor.garnet_anchor_distance": {
+      "attributes": {
+        "bearing_to_anchor": 180.0,
+        "device_class": "distance",
+        "latitude": 43.5,
+        "longitude": 7.25,
+        "max_distance_m": 55.4,
+        "radius_m": 50.0,
+        "state_class": "measurement",
+        "unit_of_measurement": "m"
+      },
+      "state": "55.4122149833451"
+    },
+    "switch.garnet_anchor_watch": {
+      "attributes": {
+        "anchor_latitude": 43.5,
+        "anchor_longitude": 7.25,
+        "armed_at": "2026-09-21T14:13:21+00:00",
+        "radius_m": 50.0
+      },
+      "state": "on"
+    }
+  },
+  "off": {
+    "binary_sensor.garnet_anchor_alarm": {
+      "attributes": {
+        "device_class": "safety",
+        "reason": null
+      },
+      "state": "off"
+    },
+    "device_tracker.garnet": {
+      "attributes": {
+        "cog": 0.0,
+        "gps_accuracy": 0,
+        "heading": null,
+        "latitude": 43.50033833333333,
+        "longitude": 7.250043333333333,
+        "position_source": "gps",
+        "sog": 0.0,
+        "source_type": "gps"
+      },
+      "state": "not_home"
+    },
+    "number.garnet_anchor_radius": {
+      "attributes": {
+        "device_class": "distance",
+        "max": 500.0,
+        "min": 10.0,
+        "mode": "box",
+        "step": 5,
+        "unit_of_measurement": "m"
+      },
+      "state": "50.0"
+    },
+    "sensor.garnet_anchor_distance": {
+      "attributes": {
+        "device_class": "distance",
+        "state_class": "measurement",
+        "unit_of_measurement": "m"
+      },
+      "state": "unavailable"
+    },
+    "switch.garnet_anchor_watch": {
+      "attributes": {
+        "anchor_latitude": null,
+        "anchor_longitude": null,
+        "armed_at": null,
+        "radius_m": 50.0
+      },
+      "state": "off"
+    }
+  },
+  "position-lost": {
+    "binary_sensor.garnet_anchor_alarm": {
+      "attributes": {
+        "device_class": "safety",
+        "reason": "no_position"
+      },
+      "state": "on"
+    },
+    "device_tracker.garnet": {
+      "attributes": {},
+      "state": "unavailable"
+    },
+    "number.garnet_anchor_radius": {
+      "attributes": {
+        "device_class": "distance",
+        "max": 500.0,
+        "min": 10.0,
+        "mode": "box",
+        "step": 5,
+        "unit_of_measurement": "m"
+      },
+      "state": "50.0"
+    },
+    "sensor.garnet_anchor_distance": {
+      "attributes": {
+        "device_class": "distance",
+        "state_class": "measurement",
+        "unit_of_measurement": "m"
+      },
+      "state": "unavailable"
+    },
+    "switch.garnet_anchor_watch": {
+      "attributes": {
+        "anchor_latitude": 43.5,
+        "anchor_longitude": 7.25,
+        "armed_at": "2026-09-21T14:13:21+00:00",
+        "radius_m": 50.0
+      },
+      "state": "on"
+    }
+  },
+  "swinging": {
+    "binary_sensor.garnet_anchor_alarm": {
+      "attributes": {
+        "device_class": "safety",
+        "reason": null
+      },
+      "state": "off"
+    },
+    "device_tracker.garnet": {
+      "attributes": {
+        "cog": 0.0,
+        "gps_accuracy": 0,
+        "heading": null,
+        "latitude": 43.49971166666667,
+        "longitude": 7.250051666666667,
+        "position_source": "gps",
+        "sog": 0.0,
+        "source_type": "gps"
+      },
+      "state": "not_home"
+    },
+    "number.garnet_anchor_radius": {
+      "attributes": {
+        "device_class": "distance",
+        "max": 500.0,
+        "min": 10.0,
+        "mode": "box",
+        "step": 5,
+        "unit_of_measurement": "m"
+      },
+      "state": "50.0"
+    },
+    "sensor.garnet_anchor_distance": {
+      "attributes": {
+        "bearing_to_anchor": 353.0,
+        "device_class": "distance",
+        "latitude": 43.5,
+        "longitude": 7.25,
+        "max_distance_m": 38.5,
+        "radius_m": 50.0,
+        "state_class": "measurement",
+        "unit_of_measurement": "m"
+      },
+      "state": "32.3309508143085"
+    },
+    "switch.garnet_anchor_watch": {
+      "attributes": {
+        "anchor_latitude": 43.5,
+        "anchor_longitude": 7.25,
+        "armed_at": "2026-09-21T14:13:21+00:00",
+        "radius_m": 50.0
+      },
+      "state": "on"
+    }
+  },
+  "waiting": {
+    "binary_sensor.garnet_anchor_alarm": {
+      "attributes": {
+        "device_class": "safety",
+        "reason": null
+      },
+      "state": "off"
+    },
+    "device_tracker.garnet": {
+      "attributes": {},
+      "state": "unavailable"
+    },
+    "number.garnet_anchor_radius": {
+      "attributes": {
+        "device_class": "distance",
+        "max": 500.0,
+        "min": 10.0,
+        "mode": "box",
+        "step": 5,
+        "unit_of_measurement": "m"
+      },
+      "state": "50.0"
+    },
+    "sensor.garnet_anchor_distance": {
+      "attributes": {
+        "device_class": "distance",
+        "state_class": "measurement",
+        "unit_of_measurement": "m"
+      },
+      "state": "unavailable"
+    },
+    "switch.garnet_anchor_watch": {
+      "attributes": {
+        "anchor_latitude": 43.5,
+        "anchor_longitude": 7.25,
+        "armed_at": "2026-09-21T14:13:21+00:00",
+        "radius_m": 50.0
+      },
+      "state": "on"
+    }
+  }
+}
