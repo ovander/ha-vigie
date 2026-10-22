@@ -5,12 +5,12 @@ is filled in when it is run; the exit criterion is assessed then.
 
 | Item | Value |
 |---|---|
-| Phase | P6 Traffic map card (SPEC HA-SAIL-SPEC-001 v0.21 §9.7, §13) |
-| Documents | SPEC v0.21, TEST v0.28 |
+| Phase | P6 Traffic map card (SPEC HA-SAIL-SPEC-001 v0.22 §9.7, §13) |
+| Documents | SPEC v0.22, TEST v0.29 |
 | Code state | Vigie `main` at `d7725a4` (WP19–WP23 and the 0.3.0-beta.1 changelog merged); card `main` at `6e051d8` (WP21–WP23 and the 0.1.0-beta.1 changelog merged) |
 | Release | Vigie [`v0.3.0-beta.1`](https://github.com/ovander/ha-vigie/releases/tag/v0.3.0-beta.1), pre-release, 2026-10-22, tag on `d7725a4`; `vigie.zip` checked (manifest `0.3.0-beta.1`, `heading`/`threat` row fields). Card [`v0.1.0-beta.1`](https://github.com/ovander/ha-vigie-card/releases/tag/v0.1.0-beta.1), pre-release, 2026-10-22, tag on `6e051d8`; `vigie-traffic-card.js` checked (the committed build with the version stamped `0.1.0-beta.1`). Run the formal check below on these releases |
 | CI | Vigie `lint`, `unit`, `hassfest`, `hacs` green on every P6 PR, release workflow green; nightly `perf` last green on `3af0d5b` (before WP20), the three `perf` tests run locally on `d7725a4` and passed — the tag was pushed before the first nightly on it (2026-10-23 02:17 UTC). Card `check` (typecheck, unit and headless Chromium tests, build, `dist` up to date, smoke test of the built file) and `hacs` (README `images` check skipped until the screenshot, §6), release workflow green |
-| Automated tests | Vigie: 522 passed, 1 skipped (U-GPS-08, #2). Card: 57 (U-CARD, F-CARD, editor, untrusted-name check, pre-run regressions) and the smoke test |
+| Automated tests | Vigie: 522 passed, 1 skipped (U-GPS-08, #2). Card: 58 (U-CARD, F-CARD, editor, untrusted-name check, pre-run regressions) and the smoke test |
 | Exit criterion | **Not met yet**: the formal E-08 (§5.2) |
 
 ## 1. What was built
@@ -22,13 +22,14 @@ is filled in when it is run; the exit criterion is assessed then.
 | ovander/ha-vigie-card#1 | #64 | WP21: card repository — skeleton, configuration (U-CARD-06), EN/FR strings (U-CARD-07), CI, HACS packaging, release workflow |
 | ovander/ha-vigie-card#2, ovander/ha-vigie#66 | #65 | WP22: the map (Leaflet): own boat, targets, threats with CPA point, rings, anchor, details, follow mode; U-CARD-01…05, F-CARD-01…07, 09 against states recorded from Vigie; smoke test |
 | ovander/ha-vigie-card#3, ovander/ha-vigie#68 | #67 | WP23: visual editor (F-CARD-08), E-08 pre-run and its five fixes, Vigie README section, this report |
+| ovander/ha-vigie-card fix/tile-referrer, this PR | #71 | Tile requests send the page's origin as `Referer` (lab finding §5.3); F-CARD-10 |
 
 ## 2. Test status (TEST §9, row P6)
 
 | Group | Status |
 |---|---|
 | U-CARD-01…07 | Done (card `test/unit/`, hand values) |
-| F-CARD-01…09 | Done (card `test/browser/`, headless Chromium, Vigie fixtures) |
+| F-CARD-01…10 | Done (card `test/browser/`, headless Chromium, Vigie fixtures) |
 | F-TRF-12 (Vigie side) | Done |
 | F-PERF-03 with the new row fields | Done (50 rows under the attribute size limit) |
 | Smoke test of the built file | Done (CI) — caught a bundling bug in WP22 |
@@ -105,9 +106,25 @@ tablet.
 | 8 | Phone in French | Every card string and number in French | |
 | 9 | Screenshot for the card's README | Saved (§6) | |
 
+### 5.3 Lab finding (owner)
+
+| Item | Value |
+|---|---|
+| Date | 2026-10-22 |
+| Home Assistant | Home Assistant OS 18.3, frontend 2026.x |
+| Vigie | `v0.3.0-beta.1`, fed by an NMEA simulator over `socket://` |
+| Card | `v0.1.0-beta.1`, installed through HACS |
+
+| # | Check | Observed | Result |
+|---|---|---|---|
+| 1 | Card on a dashboard | Boat, targets, CPA, red `collision_risk` frame, "3 AIS targets" | Pass |
+| 2 | Map tiles (§5.2 check 3) | **Found:** every OpenStreetMap tile replaced by OSM's "403 — Access blocked" image. Home Assistant's page sets the referrer policy to `same-origin`, so the tile requests carried no `Referer`, which OSM refuses. Fixed in the card (#71: both tile layers send the page's origin, F-CARD-10); to check again on the next card release | Fail, fix pending release |
+
+The sandbox pre-run (§5.1) could not see this: tiles were not reachable there at all.
+
 ## 6. Open items
 
-- Formal E-08 (§5.2), on the boat's Home Assistant with map tiles.
+- Formal E-08 (§5.2), on the boat's Home Assistant with map tiles, with the card release carrying the tile fix (§5.3, #71).
 - README screenshot with real tiles: from the formal E-08, or from the sandbox once
   `tile.openstreetmap.org` is allowed in its network settings; then remove `images` from
   the card's HACS check.

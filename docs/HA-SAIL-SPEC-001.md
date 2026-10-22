@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.21 (draft) |
+| Version | 0.22 (draft) |
 | Date | 2026-10-22 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.22 | 2026-10-22 | #71: §9.7 tile requests send the page's origin as `Referer` (OpenStreetMap refuses tile requests without one, and Home Assistant's page sends none to other sites); found in the owner's lab with the card v0.1.0-beta.1. |
 | 0.21 | 2026-10-22 | WP21–WP23 (#64, #65, #67): traffic card built in `ovander/ha-vigie-card`. §9.7 made precise after the E-08 pre-run: the first view waits for the card to have a size; follow mode pauses while a details popup is open; numbers in the user's locale; the visual editor is Home Assistant's form with Vigie entity pickers. |
 | 0.20 | 2026-10-22 | P6 decisions (owner, "following your recommendations") and WP20 (#62). OD-29…OD-33 resolved with the recommended options. §9.2: every `targets` row carries `heading` and `threat` (implemented). |
 | 0.19 | 2026-10-22 | WP19 (#60): AIS traffic map card specified, not implemented. New §9.7 (custom card `vigie-traffic-card` in its own repository, data from the `targets` attribute, drawing rules, configuration), component C-12, §13 phase P6, X-13 (Leaflet); `heading` and `threat` planned in the `targets` rows (§9.2). New open decisions OD-29…OD-33 with recommendations. |
@@ -413,7 +414,7 @@ Numbers (CPA, TCPA, speeds, distances) are shown in the user's locale, as Home A
 
 **Map engine (OD-30).** Leaflet (BSD-2-Clause, X-13) bundled into the card's single JavaScript file; written in TypeScript with Lit, the framework of Home Assistant's own frontend.
 
-**Base map and offline (OD-32).** OpenStreetMap tiles by default, with a configurable tile URL and an optional OpenSeaMap sea-mark overlay. The boat is online around the clock through Starlink, so tiles normally load; during an outage (no internet) the card still draws the boat, the targets, the vectors and the rings on a plain background; there are no offline tiles in P6.
+**Base map and offline (OD-32).** OpenStreetMap tiles by default, with a configurable tile URL and an optional OpenSeaMap sea-mark overlay. The boat is online around the clock through Starlink, so tiles normally load; during an outage (no internet) the card still draws the boat, the targets, the vectors and the rings on a plain background; there are no offline tiles in P6. Tile requests (base map and overlay) send the page's origin as `Referer`, never its path: OpenStreetMap's tile usage policy refuses requests without one, and Home Assistant's page sends none to other sites by default (`same-origin`).
 
 **Clean room (§3.1).** No code from other map cards unless permissively licensed and credited; Home Assistant's built-in map card is a reference for behaviour only.
 

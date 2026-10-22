@@ -5,8 +5,8 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.28 (draft) |
-| Date | 2026-10-21 |
+| Version | 0.29 (draft) |
+| Date | 2026-10-22 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open points in §10 |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.29 | 2026-10-22 | #71: F-CARD-10 (tile requests send the page's origin as `Referer`, base map and overlay; SPEC v0.22 §9.7), Done in ovander/ha-vigie-card. |
 | 0.28 | 2026-10-22 | WP23 (#67): F-CARD-08 done (form logic unit-tested, editor checked in a browser and in Home Assistant 2026.2.3); E-08 pre-run in the official HA container recorded in `docs/test-reports/P6-report.md`, its five findings fixed in the card, each reproduced by a browser test first. |
 | 0.27 | 2026-10-22 | WP21 (ovander/ha-vigie-card#1) and WP22 (ovander/ha-vigie-card#2, #65): U-CARD-01…07 and F-CARD-01…07, 09 implemented in the card repository; F-CARD runs in Vitest browser mode with Playwright's Chromium (instead of Web Test Runner), plus a smoke test of the built file and a check that untrusted AIS names stay text; the card's fixtures are written and checked by `tests/integration/test_card_fixtures.py`. F-CARD-08 (editor) moves to WP23. |
 | 0.26 | 2026-10-22 | WP20 (#62): F-TRF-12 implemented (`tests/integration/test_traffic_entities.py`): `heading` and `threat` in every `targets` row, `threat` following the stationary exclusion and false without own position; F-PERF-03 still under the size limit. SPEC OD-29…OD-33 resolved (v0.20). |
@@ -336,6 +337,7 @@ In the card repository (`test/browser/`): the card rendered in headless Chromium
 | F-CARD-07 | Tap a target | Details popup with name, MMSI, ship type, length, SOG, COG, distance, CPA, TCPA, age | Done |
 | F-CARD-08 | Visual editor | Every option editable; YAML round trip | Done |
 | F-CARD-09 | `hass.locale` French | Every card string in French | Done |
+| F-CARD-10 | Base map and overlay configured | Every tile image of both layers has `referrerpolicy="strict-origin-when-cross-origin"`: the tile server gets the page's origin as `Referer`, never its path (SPEC §9.7, OpenStreetMap tile usage policy) | Done |
 
 Vigie side (WP20, in this repository, Done): F-TRF-12 (§4.4) — `heading` and `threat` in every `targets` row, `threat` equal to the target being in the traffic picture's threats with the configured thresholds and stationary exclusion; F-PERF-03 still under the attribute size limit with 50 rows.
 
