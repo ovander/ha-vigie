@@ -6,6 +6,10 @@ versioning: SemVer.
 ## [Unreleased]
 
 ### Added
+- `heading` and `threat` in every row of the `targets` attribute of
+  `sensor.<boat>_ais_targets` (#62), for the coming traffic map card: true heading when the
+  target reports it, and whether the target is a collision threat under your thresholds.
+  Map card decisions OD-29…OD-33 recorded (phase P6).
 - AIS traffic map card specified (#60), not implemented: SPEC v0.19 §9.7 (custom card in
   its own repository drawing every target, threats with their CPA point, range rings and
   the anchor; `heading` and `threat` added to the `targets` rows), TEST v0.25 (U-CARD,

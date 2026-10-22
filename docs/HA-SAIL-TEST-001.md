@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.25 (draft) |
+| Version | 0.26 (draft) |
 | Date | 2026-10-21 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.26 | 2026-10-22 | WP20 (#62): F-TRF-12 implemented (`tests/integration/test_traffic_entities.py`): `heading` and `threat` in every `targets` row, `threat` following the stationary exclusion and false without own position; F-PERF-03 still under the size limit. SPEC OD-29…OD-33 resolved (v0.20). |
 | 0.25 | 2026-10-22 | WP19 (#60): traffic map card tests planned (SPEC v0.19 §9.7): new §3.8 `U-CARD`, §4.7 `F-CARD` (in the card repository), F-TRF-12 (Vigie side), E-08 bench check; §9 row P6. All Planned; values follow the recommended options of SPEC OD-29…OD-33, re-checked once the owner decides. |
 | 0.24 | 2026-10-22 | §5.1: the E-1 bench may also run on two Raspberry Pis (HA OS with Vigie on one, the replay tool on the other, over a serial link); recipe in `CONTRIBUTING.md`; E-04 on a real link differs (silence vs lost port). |
 | 0.23 | 2026-10-21 | WP18 (#55): E-07 checklist in `docs/test-reports/P5-report.md`, pre-run recorded; README anchor map card checked against real entities (`tests/integration/test_readme_map_card.py`); P5 report template. |
@@ -290,6 +291,7 @@ Driven by D-07 scenarios replayed in accelerated time.
 | F-TRF-09 | Type 5 cargo ship as the closest target and threat, on the watch list; same without static data | Ship type (`cargo`, code 70), call sign, IMO, length, beam, draught, destination on `collision_risk`, the closest target/threat sensors and the tracker, `None` when unknown; `targets` row has ship type and length only | §9.2–9.4, OD-17, OD-20 | Done |
 | F-TRF-10 | Stationary threat: static data arrives after the position, then its destination changes | `collision_risk` and the tracker are written although their state and position do not change | §9.4 | Done |
 | F-TRF-11 | Ship-type translations | Every category in `strings.json`, `en.json`, `fr.json` for every entity with the attribute; French strings loaded by HA | CLAUDE.md, OD-17 | Done |
+| F-TRF-12 | `heading` reported by one target, not by another; a crossing threat, a clear crossing and an anchored Class A, with the stationary exclusion on and off; no own position | Every row has `heading` (`None` when not reported) and `threat`; `threat` true exactly for the traffic picture's threats (anchored target only without the exclusion); false while own position is unknown | §9.2, §9.7, OD-31 | Done |
 
 ### 4.5 Load and recorder — `F-PERF`
 
@@ -333,7 +335,7 @@ Planned. In the card repository: the card rendered in a headless browser (Web Te
 | F-CARD-08 | Visual editor | Every option editable; YAML round trip | Planned |
 | F-CARD-09 | `hass.locale` French | Every card string in French | Planned |
 
-Vigie side (WP20, in this repository): F-TRF-12 — `heading` and `threat` in every `targets` row, `threat` equal to the target being in the traffic picture's threats with the configured thresholds and stationary exclusion; F-PERF-03 still under the attribute size limit with 50 rows.
+Vigie side (WP20, in this repository, Done): F-TRF-12 (§4.4) — `heading` and `threat` in every `targets` row, `threat` equal to the target being in the traffic picture's threats with the configured thresholds and stationary exclusion; F-PERF-03 still under the attribute size limit with 50 rows.
 
 ## 5. End-to-end tests
 
@@ -439,7 +441,7 @@ Functional requirements map by SPEC section: §7.2 → U-GPS; §7.3 → U-AIS; �
 | P2 Traffic | U-TRF, F-TRF, E-02, E-12, E-16, E-3 | All green; at least 3 real encounters in E-21 consistent with the chartplotter |
 | P3 Static data | U-AIS-04, U-AIS-15…22; U-STA (static store, WP12); F-TRF static checks (entities, WP13); E-12 extended to names and ship types | All green; on board, names and ship types of 5 targets match the chartplotter (E-12); U-AIS-13 on the receiver capture (#2) decodes its type 5/24 lines without rejects |
 | P5 Anchor watch (SPEC OD-21) | U-ANC, F-ANC, E-07, E-17, E-24 | All green; on board, no false alarm overnight (E-17) and the alarm fires when motoring out of the radius (E-24) |
-| P6 Traffic map card (planned, SPEC OD-33) | U-CARD, F-CARD (card repository), F-TRF-12, F-PERF-03, E-08 | All green; on the bench every target drawn where expected, threats with the right CPA (E-08) |
+| P6 Traffic map card (SPEC OD-33) | U-CARD, F-CARD (card repository), F-TRF-12, F-PERF-03, E-08 | All green; on the bench every target drawn where expected, threats with the right CPA (E-08) |
 
 **Test report** per release: version, commit, CI run link, coverage figures, E-stage checklists with date/location/conditions, deviations and their tickets. Stored in the repository under `docs/test-reports/`.
 

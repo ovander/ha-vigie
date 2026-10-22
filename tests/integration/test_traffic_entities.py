@@ -246,3 +246,49 @@ async def test_f_trf_07_anchored_target_exclusion_follows_option(
     fake.feed_lines(*(s for _, s in lines))
     await tick(hass, freezer, 1)
     assert state(hass, entry, "collision_risk", "binary_sensor").state == STATE_ON
+
+
+# --- F-TRF-12 (P6, SPEC §9.2, §9.7, OD-31) -------------------------------------------------
+
+
+def _rows(hass, entry) -> dict[int, dict]:
+    return {r["mmsi"]: r for r in state(hass, entry, "ais_targets").attributes["targets"]}
+
+
+@pytest.mark.parametrize("exclude_stationary", [True, False])
+async def test_f_trf_12_heading_and_threat_in_every_row(
+    hass: HomeAssistant, fake_ports: FakePorts, freezer, exclude_stationary
+):
+    """The map card draws orientation and threats from the rows (SPEC §9.7): `threat`
+    follows Vigie's own rule, thresholds and stationary exclusion included."""
+    entry = make_entry(hass, **{CONF_EXCLUDE_STATIONARY: exclude_stationary})
+    await setup(hass, entry)
+    targets = (
+        # U-TRF-03 crossing: CPA 0.45 NM, TCPA 4.0 min — a threat; heading reported
+        Target(235000001, at(1.0, 0.0, 12.0, 270.0), heading=268),
+        # U-TRF-02 clear crossing: CPA 0.71 NM — not a threat; no heading
+        Target(235000002, at(1.0, 0.0, 6.0, 270.0)),
+        # U-TRF-08 anchored Class A on the track: a threat only without the exclusion
+        Target(235000003, at(0.0, 0.4, 0.0, 0.0), nav_status=1, heading=45),
+    )
+    await play(hass, freezer, fake_ports[BY_ID_PORT], scenario.generate(Scenario(OWN, targets, 20)))
+    rows = _rows(hass, entry)
+    assert {m: (r["heading"], r["threat"]) for m, r in rows.items()} == {
+        235000001: (268, True),
+        235000002: (None, False),
+        235000003: (45, not exclude_stationary),
+    }
+    picture = entry.runtime_data.picture
+    assert {m for m, r in rows.items() if r["threat"]} == set(picture.threats)
+
+
+async def test_f_trf_12_no_threat_without_own_position(
+    hass: HomeAssistant, fake_ports: FakePorts, freezer
+):
+    entry = make_entry(hass)
+    await setup(hass, entry)
+    target = Target(235000001, at(1.0, 0.0, 12.0, 270.0), heading=268)
+    lines = [(t, s) for t, s in scenario.generate(Scenario(OWN, (target,), 20)) if s[0] == "!"]
+    await play(hass, freezer, fake_ports[BY_ID_PORT], lines)
+    row = _rows(hass, entry)[235000001]
+    assert (row["heading"], row["threat"]) == (268, False)  # unknown risk is never shown red
