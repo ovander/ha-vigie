@@ -54,6 +54,3385 @@
       "state": "on"
     }
   },
+  "history": {
+    "device_tracker.garnet": [
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500325,
+          "longitude": 7.249961666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000004.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50025,
+          "longitude": 7.250026666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000005.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500301666666665,
+          "longitude": 7.250103333333334,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000006.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50020833333333,
+          "longitude": 7.250118333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000007.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50029833333333,
+          "longitude": 7.249928333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000008.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50033166666667,
+          "longitude": 7.250101666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000009.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50032,
+          "longitude": 7.249986666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000010.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500278333333334,
+          "longitude": 7.250016666666666,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000012.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50022833333333,
+          "longitude": 7.250078333333334,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000013.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50028,
+          "longitude": 7.249968333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000014.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500233333333334,
+          "longitude": 7.250088333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000016.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50024166666667,
+          "longitude": 7.250155,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000018.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500283333333336,
+          "longitude": 7.249995,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000019.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500225,
+          "longitude": 7.250031666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000020.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500303333333335,
+          "longitude": 7.250155,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000021.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500205,
+          "longitude": 7.250175,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000023.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50027,
+          "longitude": 7.25002,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000024.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50026666666667,
+          "longitude": 7.250183333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000025.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500323333333334,
+          "longitude": 7.250005,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000026.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500193333333335,
+          "longitude": 7.25014,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000027.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500281666666666,
+          "longitude": 7.250005,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000028.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50022666666667,
+          "longitude": 7.250208333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000030.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500206666666664,
+          "longitude": 7.250103333333334,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000031.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500193333333335,
+          "longitude": 7.250178333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000033.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500263333333336,
+          "longitude": 7.250213333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000035.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500301666666665,
+          "longitude": 7.2500583333333335,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000036.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50024166666667,
+          "longitude": 7.250065,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000037.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500213333333335,
+          "longitude": 7.2502233333333335,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000038.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500301666666665,
+          "longitude": 7.250126666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000039.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500188333333334,
+          "longitude": 7.250243333333334,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000042.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50031,
+          "longitude": 7.250186666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000043.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500251666666664,
+          "longitude": 7.250233333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000045.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500213333333335,
+          "longitude": 7.250185,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000046.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500303333333335,
+          "longitude": 7.2502,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000047.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50017833333333,
+          "longitude": 7.250201666666666,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000048.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50024166666667,
+          "longitude": 7.250101666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000049.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500193333333335,
+          "longitude": 7.250235,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000050.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.5003,
+          "longitude": 7.2501516666666666,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000051.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500236666666666,
+          "longitude": 7.250095,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000052.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500193333333335,
+          "longitude": 7.250111666666666,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000053.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500255,
+          "longitude": 7.25021,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000054.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50021,
+          "longitude": 7.250208333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000055.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500275,
+          "longitude": 7.250255,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000057.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50021,
+          "longitude": 7.2502,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000058.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50020833333333,
+          "longitude": 7.250295,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000059.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500155,
+          "longitude": 7.250283333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000060.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500231666666664,
+          "longitude": 7.250221666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000062.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500231666666664,
+          "longitude": 7.25029,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000063.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500166666666665,
+          "longitude": 7.250171666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000064.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500225,
+          "longitude": 7.250313333333334,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000065.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50014,
+          "longitude": 7.250253333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000066.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50026,
+          "longitude": 7.250225,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000067.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500145,
+          "longitude": 7.2503,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000068.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500225,
+          "longitude": 7.250203333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000069.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50024166666667,
+          "longitude": 7.250311666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000070.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50024166666667,
+          "longitude": 7.25019,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000071.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50020833333333,
+          "longitude": 7.25026,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000072.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50012666666667,
+          "longitude": 7.250278333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000073.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50026166666667,
+          "longitude": 7.250196666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000074.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500128333333336,
+          "longitude": 7.250238333333334,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000075.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50016,
+          "longitude": 7.25036,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000076.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500135,
+          "longitude": 7.25027,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000078.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50024,
+          "longitude": 7.250276666666666,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000080.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500175,
+          "longitude": 7.250278333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000081.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500215,
+          "longitude": 7.25037,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000082.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50017666666667,
+          "longitude": 7.250306666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000084.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50024333333333,
+          "longitude": 7.250201666666666,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000085.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50019833333333,
+          "longitude": 7.250258333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000087.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50011666666666,
+          "longitude": 7.250233333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000089.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50009166666667,
+          "longitude": 7.250381666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000091.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50022166666667,
+          "longitude": 7.25022,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000092.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50009,
+          "longitude": 7.250361666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000093.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50018166666667,
+          "longitude": 7.250236666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000094.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500175,
+          "longitude": 7.250311666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000095.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500101666666666,
+          "longitude": 7.250331666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000096.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500146666666666,
+          "longitude": 7.25034,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000097.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500098333333334,
+          "longitude": 7.250303333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000100.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500135,
+          "longitude": 7.250235,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000101.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500186666666664,
+          "longitude": 7.250361666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000102.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500128333333336,
+          "longitude": 7.250388333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000103.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50006166666667,
+          "longitude": 7.2503383333333336,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000104.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500141666666664,
+          "longitude": 7.250301666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000105.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500188333333334,
+          "longitude": 7.250258333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000108.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500115,
+          "longitude": 7.250283333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000109.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50010833333333,
+          "longitude": 7.250345,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000111.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50007,
+          "longitude": 7.25041,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000112.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50015833333333,
+          "longitude": 7.2502933333333335,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000113.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50007166666666,
+          "longitude": 7.25037,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000114.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50015166666667,
+          "longitude": 7.250305,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000115.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50007166666666,
+          "longitude": 7.25026,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000116.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50009333333333,
+          "longitude": 7.250405,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000117.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500025,
+          "longitude": 7.250396666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000118.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500148333333335,
+          "longitude": 7.25036,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000119.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500033333333334,
+          "longitude": 7.250366666666666,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000120.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50006833333333,
+          "longitude": 7.25045,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000121.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50011,
+          "longitude": 7.250426666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000122.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50011333333333,
+          "longitude": 7.2503633333333335,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000123.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500035,
+          "longitude": 7.250368333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000124.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50008,
+          "longitude": 7.250445,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000125.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500105,
+          "longitude": 7.250366666666666,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000126.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500013333333335,
+          "longitude": 7.250281666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000131.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50002666666666,
+          "longitude": 7.250443333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000132.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500055,
+          "longitude": 7.250313333333334,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000134.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50002333333333,
+          "longitude": 7.25045,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000136.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500083333333336,
+          "longitude": 7.250275,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000137.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50001833333334,
+          "longitude": 7.250403333333334,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000138.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499966666666666,
+          "longitude": 7.250448333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000143.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50004333333333,
+          "longitude": 7.250325,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000144.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50007333333333,
+          "longitude": 7.250381666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000145.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50004,
+          "longitude": 7.2503,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000146.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499965,
+          "longitude": 7.250436666666666,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000147.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49998,
+          "longitude": 7.2503416666666665,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000148.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49999,
+          "longitude": 7.250406666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000150.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500045,
+          "longitude": 7.250468333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000151.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49999833333333,
+          "longitude": 7.250295,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000152.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49997333333334,
+          "longitude": 7.25047,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000153.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49998166666666,
+          "longitude": 7.250373333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000154.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500025,
+          "longitude": 7.250328333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000155.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49998,
+          "longitude": 7.250306666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000157.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49992666666667,
+          "longitude": 7.25039,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000158.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49998166666666,
+          "longitude": 7.250298333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000159.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499986666666665,
+          "longitude": 7.25045,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000161.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49990833333333,
+          "longitude": 7.250378333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000162.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500011666666666,
+          "longitude": 7.250466666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000164.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500005,
+          "longitude": 7.25035,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000165.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49995833333333,
+          "longitude": 7.25031,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000166.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.50002,
+          "longitude": 7.250305,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000169.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.500013333333335,
+          "longitude": 7.250368333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000170.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49988666666667,
+          "longitude": 7.250328333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000171.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499975,
+          "longitude": 7.250406666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000173.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49992666666667,
+          "longitude": 7.250311666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000174.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49995166666667,
+          "longitude": 7.250423333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000179.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49995,
+          "longitude": 7.25035,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000182.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499923333333335,
+          "longitude": 7.2502933333333335,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000183.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49984166666667,
+          "longitude": 7.2503166666666665,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000184.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49986666666667,
+          "longitude": 7.250403333333334,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000185.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499945,
+          "longitude": 7.250263333333334,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000186.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499921666666665,
+          "longitude": 7.25042,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000187.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49984166666667,
+          "longitude": 7.250281666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000188.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499961666666664,
+          "longitude": 7.250306666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000189.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499851666666665,
+          "longitude": 7.25031,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000190.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49986333333333,
+          "longitude": 7.250431666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000191.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49995,
+          "longitude": 7.25026,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000192.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49993833333333,
+          "longitude": 7.25034,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000193.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49986,
+          "longitude": 7.25034,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000194.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49992833333334,
+          "longitude": 7.250336666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000195.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49984833333333,
+          "longitude": 7.2502683333333335,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000196.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499916666666664,
+          "longitude": 7.250305,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000197.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499903333333336,
+          "longitude": 7.250376666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000199.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499875,
+          "longitude": 7.250288333333334,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000200.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499916666666664,
+          "longitude": 7.250261666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000201.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49987,
+          "longitude": 7.25027,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000202.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499793333333336,
+          "longitude": 7.250321666666666,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000203.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49992,
+          "longitude": 7.2504,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000206.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499833333333335,
+          "longitude": 7.250348333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000207.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49989,
+          "longitude": 7.25032,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000208.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49988833333333,
+          "longitude": 7.250236666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000209.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49982,
+          "longitude": 7.250275,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000210.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49989333333333,
+          "longitude": 7.25033,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000211.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499806666666665,
+          "longitude": 7.250278333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000212.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49982,
+          "longitude": 7.2503633333333335,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000214.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49984166666667,
+          "longitude": 7.250256666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000215.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49979833333333,
+          "longitude": 7.250296666666666,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000216.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49983,
+          "longitude": 7.250191666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000217.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499878333333335,
+          "longitude": 7.2502716666666664,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000218.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49975833333333,
+          "longitude": 7.250331666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000219.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49988166666667,
+          "longitude": 7.25029,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000220.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49984,
+          "longitude": 7.250231666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000222.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49988166666667,
+          "longitude": 7.250283333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000223.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49980333333333,
+          "longitude": 7.250353333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000224.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49983666666667,
+          "longitude": 7.250251666666666,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000225.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49984833333333,
+          "longitude": 7.25034,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000226.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499788333333335,
+          "longitude": 7.250256666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000227.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49979666666667,
+          "longitude": 7.250335,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000228.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499736666666664,
+          "longitude": 7.2501766666666665,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000229.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499831666666665,
+          "longitude": 7.250188333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000230.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49977833333333,
+          "longitude": 7.25021,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000231.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49978,
+          "longitude": 7.2503166666666665,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000237.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49984833333333,
+          "longitude": 7.25017,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000238.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499793333333336,
+          "longitude": 7.250236666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000239.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499745,
+          "longitude": 7.250135,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000240.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499761666666664,
+          "longitude": 7.250313333333334,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000241.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499763333333334,
+          "longitude": 7.250238333333334,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000242.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499805,
+          "longitude": 7.250135,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000243.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49972,
+          "longitude": 7.250161666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000244.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499786666666665,
+          "longitude": 7.250211666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000246.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49977166666667,
+          "longitude": 7.250105,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000247.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499743333333335,
+          "longitude": 7.25027,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000248.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49983833333334,
+          "longitude": 7.25017,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000249.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499763333333334,
+          "longitude": 7.2502716666666664,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000250.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49977166666667,
+          "longitude": 7.250125,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000251.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49973166666667,
+          "longitude": 7.250215,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000252.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49977833333333,
+          "longitude": 7.250158333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000253.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49970666666667,
+          "longitude": 7.25015,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000255.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49979833333333,
+          "longitude": 7.25016,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000257.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499826666666664,
+          "longitude": 7.25007,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000259.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499705,
+          "longitude": 7.250165,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000261.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499725,
+          "longitude": 7.2502233333333335,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000262.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499763333333334,
+          "longitude": 7.250043333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000264.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49977333333333,
+          "longitude": 7.250175,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000265.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49981666666667,
+          "longitude": 7.2500816666666665,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000266.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499808333333334,
+          "longitude": 7.250181666666666,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000267.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499781666666664,
+          "longitude": 7.25007,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000268.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499705,
+          "longitude": 7.2501,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000269.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49975166666667,
+          "longitude": 7.250146666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000270.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49968,
+          "longitude": 7.250181666666666,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000271.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49977666666667,
+          "longitude": 7.250116666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000272.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49968666666667,
+          "longitude": 7.250083333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000273.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499745,
+          "longitude": 7.250093333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000274.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499695,
+          "longitude": 7.250086666666666,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000278.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499743333333335,
+          "longitude": 7.25008,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000279.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49966833333333,
+          "longitude": 7.250138333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000280.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499723333333336,
+          "longitude": 7.2500816666666665,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000281.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499673333333334,
+          "longitude": 7.250135,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000283.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49972833333333,
+          "longitude": 7.250018333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000285.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499755,
+          "longitude": 7.250105,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000287.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499703333333336,
+          "longitude": 7.249978333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000290.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49966166666667,
+          "longitude": 7.250098333333334,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000291.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499718333333334,
+          "longitude": 7.250013333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000292.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49977333333333,
+          "longitude": 7.250043333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000293.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499793333333336,
+          "longitude": 7.25011,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000294.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49971166666667,
+          "longitude": 7.250108333333333,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000295.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.499715,
+          "longitude": 7.2500116666666665,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000297.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49969166666666,
+          "longitude": 7.24992,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000298.0,
+        "s": "not_home"
+      },
+      {
+        "a": {
+          "cog": 0.0,
+          "friendly_name": "Garnet",
+          "gps_accuracy": 0,
+          "heading": null,
+          "latitude": 43.49971166666667,
+          "longitude": 7.250051666666667,
+          "position_source": "gps",
+          "sog": 0.0,
+          "source_type": "gps"
+        },
+        "lu": 1790000300.0,
+        "s": "not_home"
+      }
+    ]
+  },
   "off": {
     "binary_sensor.garnet_anchor_alarm": {
       "attributes": {

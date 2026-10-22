@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 from freezegun.api import FrozenDateTimeFactory
-from homeassistant.core import HomeAssistant
+from homeassistant.core import Event, HomeAssistant
 from homeassistant.helpers.json import JSONEncoder
 
 from custom_components.vigie.const import CONF_WATCH_LIST, DOMAIN
@@ -121,7 +121,9 @@ async def test_anchor_card_fixture_states(
 ):
     """F-ACARD fixtures (TEST §4.8): the `anchor-drag` preset, anchor dropped at 43.5, 7.25,
     radius 50 m; watch off, swinging (300 s), waiting for a position and position lost (the
-    feed stopped 30 s and 61 s), then dragging (700 s, the feed resumed at 361 s)."""
+    feed stopped 30 s and 61 s), then dragging (700 s, the feed resumed at 361 s). Plus the
+    tracker's changes from the drop to 300 s in Home Assistant's history format (the answer
+    to `history/history_during_period`, compressed: `s`, `a`, `lu`), for the swing track."""
     freezer.move_to(datetime.fromtimestamp(START, UTC))  # `armed_at` the same at every run
     entry = make_entry(hass)
     await setup(hass, entry)
@@ -138,6 +140,15 @@ async def test_anchor_card_fixture_states(
     moments = {}
     await feed(range(1))
     moments["off"] = _record(hass, ANCHOR_ENTITIES)
+    track: list[dict] = []
+
+    def on_change(event: Event) -> None:
+        state = event.data["new_state"]
+        if event.data["entity_id"] == "device_tracker.garnet" and state is not None:
+            changed = state.last_updated.timestamp()
+            track.append({"s": state.state, "a": dict(state.attributes), "lu": changed})
+
+    stop = hass.bus.async_listen("state_changed", on_change)
     await hass.services.async_call(
         DOMAIN,
         "drop_anchor",
@@ -145,7 +156,9 @@ async def test_anchor_card_fixture_states(
         blocking=True,
     )
     await feed(range(1, 300))
+    stop()
     moments["swinging"] = _record(hass, ANCHOR_ENTITIES)
+    moments["history"] = json.loads(json.dumps({"device_tracker.garnet": track}, cls=JSONEncoder))
     await tick(hass, freezer, 30)
     moments["waiting"] = _record(hass, ANCHOR_ENTITIES)
     await tick(hass, freezer, 31)
@@ -166,4 +179,8 @@ async def test_anchor_card_fixture_states(
     assert alarm("position-lost") == ("on", "no_position")
     assert alarm("dragging") == ("on", "drag")
     assert moments["dragging"][distance]["attributes"]["radius_m"] == 50
+    # The swing: several written positions, all on the swing circle (radius 30 m ± noise)
+    swing = moments["history"]["device_tracker.garnet"]
+    assert len(swing) >= 10
+    assert all({"latitude", "longitude"} <= set(p["a"]) for p in swing)
     _check("anchor-drag", moments)
