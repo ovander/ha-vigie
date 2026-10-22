@@ -5,23 +5,26 @@ versioning: SemVer.
 
 ## [Unreleased]
 
+## [0.3.0-beta.1] - 2026-10-22
+
+Third beta: the data for the new [Vigie traffic card](https://github.com/ovander/ha-vigie-card)
+(phase P6), which draws every AIS target on one map. Install the card separately through
+HACS (category *Dashboard*); it needs this version. No change to the existing entities
+beyond two new fields in the `targets` list.
+
 ### Added
-- README: the Vigie traffic card (`ovander/ha-vigie-card`), with its configuration (#67);
-  P6 report with the E-08 bench pre-run (`docs/test-reports/P6-report.md`); TEST v0.28,
-  SPEC v0.21.
-- States recorded for the traffic map card's tests (`tests/fixtures/card/`, #65), checked by
-  `tests/integration/test_card_fixtures.py` so Vigie and the card agree on the `targets`
-  row format; TEST v0.27 (U-CARD and F-CARD done in the card repository).
 - `heading` and `threat` in every row of the `targets` attribute of
-  `sensor.<boat>_ais_targets` (#62), for the coming traffic map card: true heading when the
-  target reports it, and whether the target is a collision threat under your thresholds.
-  Map card decisions OD-29…OD-33 recorded (phase P6).
-- AIS traffic map card specified (#60), not implemented: SPEC v0.19 §9.7 (custom card in
-  its own repository drawing every target, threats with their CPA point, range rings and
-  the anchor; `heading` and `threat` added to the `targets` rows), TEST v0.25 (U-CARD,
-  F-CARD, F-TRF-12, E-08). Decisions OD-29…OD-33 open.
-- Two-Pi bench recipe in `CONTRIBUTING.md` (HA OS on one Raspberry Pi, the replay tool on
-  another, over a USB null-modem cable or 3.3 V USB-TTL adapters); TEST v0.24.
+  `sensor.<boat>_ais_targets` (#62): the target's reported true heading, and whether it is a
+  collision threat under your thresholds (Vigie's own rule, so the card shows the same
+  threats as `collision_risk`).
+- README: *Traffic map card* section with its configuration (#67).
+- Tests: the states the card's tests use are recorded from Vigie and checked here, so both
+  agree on the row format (#65).
+- Bench: two-Pi recipe in `CONTRIBUTING.md` (HA OS on one Raspberry Pi, the replay tool on
+  another, over a USB null-modem cable or 3.3 V USB-TTL adapters).
+- Specification: traffic map card (SPEC v0.19–v0.21 §9.7, decisions OD-29…OD-33) and its
+  tests (TEST v0.24–v0.28); P6 report with the bench pre-run in Home Assistant 2026.2.3
+  (`docs/test-reports/P6-report.md`).
 
 ## [0.2.0-beta.1] - 2026-10-21
 
@@ -161,6 +164,7 @@ P1–P3). Tested on synthetic data only; see `docs/test-reports/`.
 - AIS decoder rejects payload armoring characters 0x58–0x5F (`X`…`_`), which the AIVDM
   specification does not allow; they were decoded as six-bit values 40–47 (#11).
 
-[Unreleased]: https://github.com/ovander/ha-vigie/compare/v0.2.0-beta.1...HEAD
+[Unreleased]: https://github.com/ovander/ha-vigie/compare/v0.3.0-beta.1...HEAD
+[0.3.0-beta.1]: https://github.com/ovander/ha-vigie/compare/v0.2.0-beta.1...v0.3.0-beta.1
 [0.2.0-beta.1]: https://github.com/ovander/ha-vigie/compare/v0.1.0-beta.1...v0.2.0-beta.1
 [0.1.0-beta.1]: https://github.com/ovander/ha-vigie/releases/tag/v0.1.0-beta.1

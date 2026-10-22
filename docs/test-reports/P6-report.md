@@ -8,7 +8,7 @@ is filled in when it is run; the exit criterion is assessed then.
 | Phase | P6 Traffic map card (SPEC HA-SAIL-SPEC-001 v0.21 §9.7, §13) |
 | Documents | SPEC v0.21, TEST v0.28 |
 | Code | Vigie `main` (WP20 `heading`/`threat` rows, card fixtures); card `ovander/ha-vigie-card` (WP21–WP23) |
-| Release | none yet: the next Vigie beta carries the new row fields; the card's first beta (`v0.1.0-beta.1`) is the owner's call |
+| Release | candidates: Vigie `v0.3.0-beta.1` (row fields) and the card's `v0.1.0-beta.1` (changelogs prepared); the tags are the owner's call |
 | CI | Vigie `lint`, `unit`, `hassfest`, `hacs`; card `check` (typecheck, unit and headless Chromium tests, build, `dist` up to date, smoke test of the built file) and `hacs` (README `images` check skipped until the screenshot, §6) |
 | Automated tests | Vigie: 522 passed, 1 skipped (U-GPS-08, #2). Card: 57 (U-CARD, F-CARD, editor, untrusted-name check, pre-run regressions) and the smoke test |
 | Exit criterion | **Not met yet**: the formal E-08 (§5.2) |
