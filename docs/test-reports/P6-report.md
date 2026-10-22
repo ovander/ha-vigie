@@ -7,9 +7,9 @@ is filled in when it is run; the exit criterion is assessed then.
 |---|---|
 | Phase | P6 Traffic map card (SPEC HA-SAIL-SPEC-001 v0.21 §9.7, §13) |
 | Documents | SPEC v0.21, TEST v0.28 |
-| Code | Vigie `main` (WP20 `heading`/`threat` rows, card fixtures); card `ovander/ha-vigie-card` (WP21–WP23) |
-| Release | candidates: Vigie `v0.3.0-beta.1` (row fields) and the card's `v0.1.0-beta.1` (changelogs prepared); the tags are the owner's call |
-| CI | Vigie `lint`, `unit`, `hassfest`, `hacs`; card `check` (typecheck, unit and headless Chromium tests, build, `dist` up to date, smoke test of the built file) and `hacs` (README `images` check skipped until the screenshot, §6) |
+| Code state | Vigie `main` at `d7725a4` (WP19–WP23 and the 0.3.0-beta.1 changelog merged); card `main` at `6e051d8` (WP21–WP23 and the 0.1.0-beta.1 changelog merged) |
+| Release | Vigie [`v0.3.0-beta.1`](https://github.com/ovander/ha-vigie/releases/tag/v0.3.0-beta.1), pre-release, 2026-10-22, tag on `d7725a4`; `vigie.zip` checked (manifest `0.3.0-beta.1`, `heading`/`threat` row fields). Card [`v0.1.0-beta.1`](https://github.com/ovander/ha-vigie-card/releases/tag/v0.1.0-beta.1), pre-release, 2026-10-22, tag on `6e051d8`; `vigie-traffic-card.js` checked (the committed build with the version stamped `0.1.0-beta.1`). Run the formal check below on these releases |
+| CI | Vigie `lint`, `unit`, `hassfest`, `hacs` green on every P6 PR, release workflow green; nightly `perf` last green on `3af0d5b` (before WP20), the three `perf` tests run locally on `d7725a4` and passed — the tag was pushed before the first nightly on it (2026-10-23 02:17 UTC). Card `check` (typecheck, unit and headless Chromium tests, build, `dist` up to date, smoke test of the built file) and `hacs` (README `images` check skipped until the screenshot, §6), release workflow green |
 | Automated tests | Vigie: 522 passed, 1 skipped (U-GPS-08, #2). Card: 57 (U-CARD, F-CARD, editor, untrusted-name check, pre-run regressions) and the smoke test |
 | Exit criterion | **Not met yet**: the formal E-08 (§5.2) |
 
@@ -21,7 +21,7 @@ is filled in when it is run; the exit criterion is assessed then.
 | ovander/ha-vigie#63 | #62 | WP20: `heading` and `threat` in every `targets` row (F-TRF-12); OD-29…OD-33 resolved |
 | ovander/ha-vigie-card#1 | #64 | WP21: card repository — skeleton, configuration (U-CARD-06), EN/FR strings (U-CARD-07), CI, HACS packaging, release workflow |
 | ovander/ha-vigie-card#2, ovander/ha-vigie#66 | #65 | WP22: the map (Leaflet): own boat, targets, threats with CPA point, rings, anchor, details, follow mode; U-CARD-01…05, F-CARD-01…07, 09 against states recorded from Vigie; smoke test |
-| ovander/ha-vigie-card#3, this PR | #67 | WP23: visual editor (F-CARD-08), E-08 pre-run and its five fixes, Vigie README section, this report |
+| ovander/ha-vigie-card#3, ovander/ha-vigie#68 | #67 | WP23: visual editor (F-CARD-08), E-08 pre-run and its five fixes, Vigie README section, this report |
 
 ## 2. Test status (TEST §9, row P6)
 
@@ -83,8 +83,8 @@ Each finding was reproduced by a browser test in the card repository before the 
 
 ### 5.2 Formal bench check
 
-On the bench (`CONTRIBUTING.md`, two-Pi bench or container) with Vigie including WP20 and
-the card installed through HACS (*Dashboard*, custom repository
+On the bench (`CONTRIBUTING.md`, two-Pi bench or container) with Vigie `v0.3.0-beta.1` and
+the card `v0.1.0-beta.1` installed through HACS (*Dashboard*, custom repository
 `https://github.com/ovander/ha-vigie-card`). Add the card from the dashboard editor
 (*Vigie traffic map*), with the collision risk and the anchor distance, on a phone and on a
 tablet.
@@ -111,5 +111,5 @@ tablet.
 - README screenshot with real tiles: from the formal E-08, or from the sandbox once
   `tile.openstreetmap.org` is allowed in its network settings; then remove `images` from
   the card's HACS check.
-- Releases: the next Vigie beta (row fields) and the card's `v0.1.0-beta.1` (owner's call).
+- First nightly `perf` run on `d7725a4` (2026-10-23).
 - Earlier phases: #2 receiver capture, TP-04, E-02 formal run, E-12/E-16, E-3, P5 E-07/E-17/E-24.
