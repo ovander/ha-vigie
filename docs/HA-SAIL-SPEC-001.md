@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.25 (draft) |
+| Version | 0.26 (draft) |
 | Date | 2026-10-22 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.26 | 2026-10-22 | WP26 (#80): swing track and editor of the anchor card built (§9.8); E-09 pre-run findings: *Outside the circle* status, the boat kept in view when outside the circle, times in the user's 12/24 h format. New OD-39, resolved (owner, "A + B following your recommendations"): recentering the anchor circle, specified and built in WP27 (#81); it adds a fourth call to the anchor card (amends OD-35) and a `keep_since` field to `vigie.drop_anchor`. |
 | 0.25 | 2026-10-22 | #77 (owner): the own boat's details also give the position in decimal degrees, signed with a point and six decimals whatever the language (`43.501917, 7.250000`), to paste into a charting app or `vigie.drop_anchor`; the line under the map keeps degrees and minutes (§9.7, §9.8). |
 | 0.24 | 2026-10-22 | Anchor card decisions (owner, "following your recommendations") and WP25 (#76): OD-34…OD-38 resolved with the recommended options; phase P7 confirmed. #77 (owner's lab finding): both cards show the own boat's position, SOG, COG, heading and whether the position is current, in a line under the map and in details on tapping the boat (§9.7, §9.8). |
 | 0.23 | 2026-10-22 | WP24 (#74): anchor card specified, not implemented. New §9.8 (custom card `vigie-anchor-card`: distance against radius, alarm and its reason, a small map with the swing circle and the swing track, controls drop / raise / radius), component C-13, §13 phase P7 (proposed), §2.1 scope line for the dashboard cards. New open decisions OD-34…OD-38 with recommendations. |
@@ -447,14 +448,14 @@ Specified in v0.23 (WP24, #74); decisions OD-34…OD-38 resolved v0.24 with the 
 
 | Element | Rule |
 |---|---|
-| Status line | Watch off; *Watching* (inside the radius); *Waiting for position* (amber) while armed without a position, before the 60 s alarm; *Dragging* or *Position lost* when the alarm is on, in red, with the time it started (the alarm's last change). Never the colour of *Watching* while the alarm is on or the position is unknown |
+| Status line | Watch off; *Watching* (inside the radius); *Waiting for position* (amber) while armed without a position, before the 60 s alarm; *Outside the circle* (amber) while outside the radius before the alarm's confirmation delay ends (E-09 pre-run); *Dragging* or *Position lost* when the alarm is on, in red, with the time it started (the alarm's last change). Never the colour of *Watching* while the alarm is on or the position is unknown |
 | Distance | Large figures: distance to the anchor against the radius (`32 / 50 m`), and a bar or ring filled to distance / radius, amber from 80 %, red outside; `—` without position |
 | Details | Bearing to the anchor, largest distance since the drop, time at anchor (since `armed_at`) |
-| Map | North-up, centred on the anchor, zoomed so the swing circle fills the map; anchor symbol, swing circle (red when the alarm is on), the boat oriented on heading, else COG, and its swing track since the drop (at most the last 6 h, thinned to at most 500 points); same tiles setting as §9.7; with the network cut, everything but the tiles still drawn |
+| Map | North-up, centred on the anchor, zoomed so the swing circle fills the map, and taking in the boat when it is outside the circle (E-09 pre-run); anchor symbol, swing circle (red when the alarm is on), the boat oriented on heading, else COG, and its swing track since the drop (at most the last 6 h, thinned to at most 500 points); same tiles setting as §9.7; with the network cut, everything but the tiles still drawn |
 | Watch off | The map centred on the boat, and the control to drop the anchor here |
 | Own boat | The own boat line of §9.7 under the map, and the same details on tapping the boat (#77) |
 
-Figures in the user's locale (`32,5 m` in French), as in §9.7. Large type and high contrast; colours follow the Home Assistant theme (a dark or red night theme is the user's choice in Home Assistant; no theme of its own).
+Figures in the user's locale (`32,5 m` in French), as in §9.7; times follow the user's 12/24 h setting in Home Assistant (E-09 pre-run). Large type and high contrast; colours follow the Home Assistant theme (a dark or red night theme is the user's choice in Home Assistant; no theme of its own).
 
 **Controls (OD-35).** The card can arm, disarm and change the radius:
 
@@ -464,7 +465,9 @@ Figures in the user's locale (`32,5 m` in French), as in §9.7. Large type and h
 | *Raise anchor* | `switch.turn_off`, only after a confirmation in the card (a single tap must never stop the watch); the confirmation names the boat |
 | Radius − / + | `number.set_value` on the radius entity, by its step (5 m), within its limits; the buttons are disabled at the limits. A change applies at once (§8.4: it restarts the drag timer) |
 
-No other service is called: no `vigie.drop_anchor` with coordinates (an anchor position from the chartplotter stays in the Actions page or an automation), no notification, no automation. A refused call (for example no own position) shows Home Assistant's error message in the card. The traffic card (§9.7) stays read only.
+No other service is called: no `vigie.drop_anchor` with typed coordinates (an anchor position from the chartplotter stays in the Actions page or an automation), no notification, no automation. Exception from WP27: recentering the circle (OD-39, below).
+
+**Recentering the circle (OD-39, WP27, #81).** The anchor reaches the bottom before the button is pressed, by which time the boat has dropped back: the circle is centred on the boat, not on the anchor. The card can recenter it: (A) on the circle fitted to the swing track after at least 10 min at anchor, previewed dashed on the map, with a message instead when the track covers too little arc; (B) by hand, tapping the map where the anchor is. Both ask for a confirmation, keep the radius, are disabled while the alarm is on (a re-drop clears a latched drag alarm, OD-23), and call `vigie.drop_anchor` with `latitude`, `longitude` and `keep_since: true`, which keeps `armed_at` and the largest distance so the track and the time at anchor carry on (§9.6). Details, values and tests in WP27. A refused call (for example no own position) shows Home Assistant's error message in the card. The traffic card (§9.7) stays read only.
 
 **Sound (OD-37).** None. Browsers block sound until the page has been touched, phones and tablets sleep, and the critical phone notification already rings through silent mode; a sound in the card would give a false sense of safety.
 
@@ -585,6 +588,7 @@ Changing an option reloads the entry. The anchor radius is not an option: it cha
 | ~~OD-36~~ | ~~Anchor card: swing track source~~ | **Resolved v0.24:** Home Assistant's history of `device_tracker.<boat>` since `armed_at`, then the live updates (§9.8) | — |
 | ~~OD-37~~ | ~~Anchor card: sound on alarm~~ | **Resolved v0.24:** no sound; the alert is the critical phone notification (§9.8) | — |
 | ~~OD-38~~ | ~~Anchor card: phase~~ | **Resolved v0.24:** new phase P7, after P5 and P6, independent of P4 (§13) | — |
+| ~~OD-39~~ | ~~Anchor card: recentering the circle (the boat has dropped back when the button is pressed)~~ | **Resolved v0.26** (owner, options A + B): (A) recenter on the circle fitted to the swing track, (B) move the anchor by tapping the map; confirmation, radius kept, disabled during an alarm; a fourth call `vigie.drop_anchor` with coordinates and `keep_since: true` (amends OD-35, new service field, §9.6, §9.8). Rejected: (C) back in time by a chosen delay, (D) chain length and bearing typed in | — |
 
 (OD-05 and OD-09 from v0.1 were tied to NMEA 2000 and polars; both moved to P4 and are no longer open for v1.)
 

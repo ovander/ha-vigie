@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.32 (draft) |
+| Version | 0.33 (draft) |
 | Date | 2026-10-22 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.33 | 2026-10-22 | WP26 (#80): U-ACARD-04, F-ACARD-07 (swing track) and F-ACARD-11 (editor) Done in ovander/ha-vigie-card#13; U-ACARD-02 and F-ACARD-02 extended with the E-09 pre-run findings; the anchor fixture also records the tracker's history in Home Assistant's compressed format (`s`, `a`, `lu`); F-ACARD-10 also checks that the only WebSocket message is the history request. E-09 pre-run in `docs/test-reports/P7-report.md`. |
 | 0.32 | 2026-10-22 | #77: U-CARD-08 adds the position in decimal degrees, F-CARD-11 and F-ACARD-01 check it in the own boat's details (SPEC v0.25 §9.7); Done in ovander/ha-vigie-card#11. |
 | 0.31 | 2026-10-22 | Anchor card decisions (SPEC v0.24 OD-34…OD-38) and WP25 (#76): §3.9 and §4.8 no longer proposed; U-ACARD-01…03, 05…08 and F-ACARD-01…06, 08…10 Done in ovander/ha-vigie-card#8 (U-ACARD-05 and -07 moved to WP25 with the map and the details); U-ACARD-04, F-ACARD-07 (swing track) and F-ACARD-11 (editor) stay for WP26. The anchor fixtures are written and checked by `tests/integration/test_card_fixtures.py`. #77: own boat line and details on both cards, U-CARD-08 and F-CARD-11 Done in ovander/ha-vigie-card#7, F-ACARD-01 and -03 extended. |
 | 0.30 | 2026-10-22 | WP24 (#74): anchor card tests planned (SPEC v0.23 §9.8): new §3.9 `U-ACARD`, §4.8 `F-ACARD` (in the card repository), the anchor fixtures on the Vigie side, E-09 bench check; §9 row P7. All Planned; values follow the recommended options of SPEC OD-34…OD-38, re-checked once the owner decides. |
@@ -246,9 +247,9 @@ In the card repository (`test/unit/`), pure TypeScript functions, as §3.8; valu
 | ID | Case | Expected | Status |
 |---|---|---|---|
 | U-ACARD-01 | Distance gauge, radius 50 m: distance 32, 41, 50, 51 m; distance unavailable | 64 % normal; 82 % amber; 100 % amber (on the circle is inside, SPEC §8.4); red, outside; `—` and no fill | Done |
-| U-ACARD-02 | Status from the states: switch off; armed, alarm off, distance known; alarm on, `reason` `drag`; alarm on, `no_position`; armed, alarm off, distance unavailable (position lost less than 60 s ago) | *Off*; *Watching*; *Dragging*; *Position lost*; *Waiting for position* (amber, never the colour of *Watching*) | Done |
+| U-ACARD-02 | Status from the states: switch off; armed, alarm off, distance known; alarm on, `reason` `drag`; alarm on, `no_position`; armed, alarm off, distance unavailable (position lost less than 60 s ago); armed, alarm off, distance 51 m then 50 m, radius 50 m | *Off*; *Watching*; *Dragging*; *Position lost*; *Waiting for position* (amber, never the colour of *Watching*); *Outside the circle* (amber) then *Watching* (E-09 pre-run) | Done |
 | U-ACARD-03 | Radius step, limits 10–500, step 5: 50 +; 50 −; 497 +; 500 +; 10 − | 55; 45; 500; disabled; disabled | Done |
-| U-ACARD-04 | Swing track from history points, armed at T, `track_hours` 6: points before T; points older than 6 h; 1 200 points; `track_hours` 0 | Dropped; dropped; at most 500 kept, first and last kept, in time order; no history request | Planned |
+| U-ACARD-04 | Swing track from history points, armed at T, `track_hours` 6: points before T; points older than 6 h; 1 200 points; `track_hours` 0 | Dropped; dropped; at most 500 kept, first and last kept, in time order; no history request | Done |
 | U-ACARD-05 | Map bounds: anchor 43.5° N, 7.25° E, radius 50 m | Anchor ± 50 m: Δlat = 50 / 1852 / 60 = 0.000449964°, Δlon = Δlat / cos 43.5° = 0.00062032° (± 1e-8; same spherical geometry as U-CARD-01) | Done |
 | U-ACARD-06 | Config: missing `switch`; `switch.garnet_anchor_watch` alone; a switch not named `switch.<boat>_anchor_watch` without the other entities; `track_hours` negative | Error naming `switch`; derived `sensor.garnet_anchor_distance`, `binary_sensor.garnet_anchor_alarm`, `number.garnet_anchor_radius`, `device_tracker.garnet`; error naming the first missing entity; error naming `track_hours` | Done |
 | U-ACARD-07 | Time at anchor: armed 59 s, 2 h 05 min, 26 h ago | `< 1 min`; `2 h 05`; `26 h 00` | Done |
@@ -368,16 +369,16 @@ In the card repository (`test/browser/`), as §4.7: headless Chromium, a fake `h
 | ID | Case | Expected | Status |
 |---|---|---|---|
 | F-ACARD-01 | Armed, swinging (300 s) | *Watching*; distance against `50 m` in large figures with the gauge; bearing, largest distance, time at anchor; anchor, circle and boat on the map, circle filling it; tiles with the policy of F-CARD-10; the own boat line of F-CARD-11 | Done |
-| F-ACARD-02 | Drag alarm (700 s) | *Dragging* in red with its start time; gauge and circle red | Done |
+| F-ACARD-02 | Drag alarm (700 s) | *Dragging* in red with its start time; gauge and circle red; the boat, outside the circle, in view (E-09 pre-run) | Done |
 | F-ACARD-03 | Position lost | *Position lost*; distance `—`; the boat's last position faded; own boat line *position lost since HH:MM* | Done |
 | F-ACARD-04 | Watch off; tap *Drop anchor here*; then own position unavailable | One `switch.turn_on` on the configured switch; button disabled with the reason, no call | Done |
 | F-ACARD-05 | Armed; tap *Raise anchor*, cancel; tap again, confirm | Confirmation naming the boat; no call after cancel; one `switch.turn_off` after confirm | Done |
 | F-ACARD-06 | Radius 50, tap +; radius 500; radius 10 | `number.set_value` 55 on the configured radius; + disabled; − disabled | Done |
-| F-ACARD-07 | Swing track | One history request for the tracker since `armed_at`; the recorded positions drawn as a line; a new state adds a point without a new request; `track_hours: 0`: no request, no line | Planned |
+| F-ACARD-07 | Swing track | One history request for the tracker since `armed_at`; the recorded positions drawn as a line; a new state adds a point without a new request; `track_hours: 0`: no request, no line | Done |
 | F-ACARD-08 | A refused call (Home Assistant error) | The error message shown in the card; states and controls unchanged | Done |
 | F-ACARD-09 | `hass.locale` French | Every card string and figure in French (`55,4 m`) | Done |
 | F-ACARD-10 | Every test above | The only calls are the three of SPEC §9.8 on the configured entities, and the history request; never another service or entity | Done |
-| F-ACARD-11 | Visual editor | Every option editable; a one-line configuration (`switch` only) round trips | Planned |
+| F-ACARD-11 | Visual editor | Every option editable; a one-line configuration (`switch` only) round trips | Done |
 
 ## 5. End-to-end tests
 
@@ -403,7 +404,7 @@ Setup (TP-01, TP-02, SPEC OD-12 — resolved v0.3):
 | E-06 | HA restart during replay | Integration reloads, entities come back, no duplicates |
 | E-07 | P5: replay `anchor-drag` at real speed, drop the anchor at the start with `vigie.drop_anchor` (latitude 43.5, longitude 7.25, radius 50), README anchor automation installed; restart HA once while armed | Anchor shown on the map card; no alarm while swinging; alarm `drag` where `--list` says (± 2 s) and one notification on the phone; armed state and anchor point survive the restart. Checklist in `docs/test-reports/P5-report.md` |
 | E-08 | P6: the card on a dashboard (phone and tablet), replay `multi-target` then `named-traffic` at real speed | Every target drawn where `--list` puts it, threats red with their CPA point and values matching `sensor.<boat>_closest_threat_cpa`/`_tcpa` (± 0.02 NM, ± 0.2 min); names as in P3; no visible lag beyond the 5 s list rebuild; with the network cut, boat, targets and rings still drawn. Checklist in `docs/test-reports/P6-report.md` |
-| E-09 | P7: the anchor card on a dashboard (phone and tablet), replay `anchor-drag` at real speed; drop the anchor at the start with `vigie.drop_anchor` (latitude 43.5, longitude 7.25, radius 50) as in E-07; from the card, radius − to 45 m then + back to 50 m before 600 s (the boat stays inside, below 40 m); after the alarm, *Raise anchor* (cancel once, then confirm), then *Drop anchor here* | Status, distance and gauge follow `sensor.<boat>_anchor_distance`; the swing track draws the swing; *Dragging* where `--list` says (± 2 s), shown on both screens; reloading the page keeps the track; *Raise* only after confirmation; *Drop anchor here* arms at the boat's position; with the network cut everything but the tiles drawn. Checklist in `docs/test-reports/P7-report.md` |
+| E-09 | P7: the anchor card on a dashboard (phone and tablet), replay `anchor-drag` at real speed; drop the anchor at the start with `vigie.drop_anchor` (latitude 43.5, longitude 7.25, radius 50) as in E-07; from the card, radius − to 45 m then + back to 50 m before 600 s (the boat stays inside, below 40 m); after the alarm, *Raise anchor* (cancel once, then confirm), then *Drop anchor here* | Status, distance and gauge follow `sensor.<boat>_anchor_distance`; the swing track draws the swing; *Outside the circle* (amber) from 678 s with the boat in view, then *Dragging* where `--list` says (± 2 s), shown on both screens; reloading the page keeps the track; *Raise* only after confirmation; *Drop anchor here* arms at the boat's position; with the network cut everything but the tiles drawn. Checklist in `docs/test-reports/P7-report.md` |
 
 ### 5.2 Stage E-2 — On board, in port (real receiver)
 
