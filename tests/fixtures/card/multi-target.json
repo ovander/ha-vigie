@@ -1,0 +1,163 @@
+{
+  "binary_sensor.garnet_collision_risk": {
+    "attributes": {
+      "beam_m": null,
+      "callsign": null,
+      "destination": null,
+      "device_class": "safety",
+      "draught_m": null,
+      "imo": null,
+      "length_m": null,
+      "mmsi": 235000002,
+      "name": null,
+      "ship_type": null,
+      "ship_type_code": null,
+      "threat_count": 2
+    },
+    "state": "on"
+  },
+  "device_tracker.garnet": {
+    "attributes": {
+      "cog": 0.0,
+      "gps_accuracy": 0,
+      "heading": null,
+      "latitude": 43.501916666666666,
+      "longitude": 7.25,
+      "position_source": "gps",
+      "sog": 6.0,
+      "source_type": "gps"
+    },
+    "state": "not_home"
+  },
+  "sensor.garnet_ais_targets": {
+    "attributes": {
+      "state_class": "measurement",
+      "targets": [
+        {
+          "age_s": 5,
+          "class": "A",
+          "cog": 0.0,
+          "cpa_nm": 0.0,
+          "distance_nm": 0.28,
+          "heading": null,
+          "lat": 43.50667,
+          "length_m": null,
+          "lon": 7.25,
+          "mmsi": 235000003,
+          "name": null,
+          "ship_type": null,
+          "sog": 0.0,
+          "tcpa_min": 2.7,
+          "threat": false
+        },
+        {
+          "age_s": 5,
+          "class": "A",
+          "cog": 270.0,
+          "cpa_nm": 0.45,
+          "distance_nm": 0.78,
+          "heading": null,
+          "lat": 43.5,
+          "length_m": null,
+          "lon": 7.26762,
+          "mmsi": 235000002,
+          "name": null,
+          "ship_type": null,
+          "sog": 12.0,
+          "tcpa_min": 2.7,
+          "threat": true
+        },
+        {
+          "age_s": 5,
+          "class": "A",
+          "cog": 0.0,
+          "cpa_nm": 0.0,
+          "distance_nm": 0.96,
+          "heading": null,
+          "lat": 43.51796,
+          "length_m": null,
+          "lon": 7.25,
+          "mmsi": 235000004,
+          "name": null,
+          "ship_type": null,
+          "sog": 4.0,
+          "tcpa_min": 28.7,
+          "threat": false
+        },
+        {
+          "age_s": 5,
+          "class": "A",
+          "cog": 180.0,
+          "cpa_nm": 0.0,
+          "distance_nm": 1.77,
+          "heading": null,
+          "lat": 43.53139,
+          "length_m": null,
+          "lon": 7.25,
+          "mmsi": 235000001,
+          "name": null,
+          "ship_type": null,
+          "sog": 6.0,
+          "tcpa_min": 8.7,
+          "threat": true
+        }
+      ]
+    },
+    "state": "4"
+  },
+  "sensor.garnet_anchor_distance": {
+    "attributes": {
+      "bearing_to_anchor": 180.0,
+      "device_class": "distance",
+      "latitude": 43.5,
+      "longitude": 7.25,
+      "max_distance_m": 216.3,
+      "radius_m": 500.0,
+      "state_class": "measurement",
+      "unit_of_measurement": "m"
+    },
+    "state": "216.274431054217"
+  },
+  "sensor.garnet_closest_threat_cpa": {
+    "attributes": {
+      "beam_m": null,
+      "bearing": 91.0,
+      "callsign": null,
+      "cpa_nm": 0.45,
+      "destination": null,
+      "device_class": "distance",
+      "distance_nm": 0.98,
+      "draught_m": null,
+      "imo": null,
+      "length_m": null,
+      "mmsi": 235000002,
+      "name": null,
+      "ship_type": null,
+      "ship_type_code": null,
+      "tcpa_min": 3.9,
+      "unit_of_measurement": "nmi"
+    },
+    "state": "0.453205840668986"
+  },
+  "sensor.garnet_closest_threat_tcpa": {
+    "attributes": {
+      "beam_m": null,
+      "bearing": 99.0,
+      "callsign": null,
+      "cpa_nm": 0.45,
+      "destination": null,
+      "device_class": "duration",
+      "distance_nm": 0.76,
+      "draught_m": null,
+      "imo": null,
+      "length_m": null,
+      "mmsi": 235000002,
+      "name": null,
+      "ship_type": null,
+      "ship_type_code": null,
+      "tcpa_min": 2.7,
+      "unit_of_measurement": "min"
+    },
+    "state": "2.74980758654725"
+  }
+}
