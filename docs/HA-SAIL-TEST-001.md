@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.27 (draft) |
+| Version | 0.28 (draft) |
 | Date | 2026-10-21 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.28 | 2026-10-22 | WP23 (#67): F-CARD-08 done (form logic unit-tested, editor checked in a browser and in Home Assistant 2026.2.3); E-08 pre-run in the official HA container recorded in `docs/test-reports/P6-report.md`, its five findings fixed in the card, each reproduced by a browser test first. |
 | 0.27 | 2026-10-22 | WP21 (ovander/ha-vigie-card#1) and WP22 (ovander/ha-vigie-card#2, #65): U-CARD-01…07 and F-CARD-01…07, 09 implemented in the card repository; F-CARD runs in Vitest browser mode with Playwright's Chromium (instead of Web Test Runner), plus a smoke test of the built file and a check that untrusted AIS names stay text; the card's fixtures are written and checked by `tests/integration/test_card_fixtures.py`. F-CARD-08 (editor) moves to WP23. |
 | 0.26 | 2026-10-22 | WP20 (#62): F-TRF-12 implemented (`tests/integration/test_traffic_entities.py`): `heading` and `threat` in every `targets` row, `threat` following the stationary exclusion and false without own position; F-PERF-03 still under the size limit. SPEC OD-29…OD-33 resolved (v0.20). |
 | 0.25 | 2026-10-22 | WP19 (#60): traffic map card tests planned (SPEC v0.19 §9.7): new §3.8 `U-CARD`, §4.7 `F-CARD` (in the card repository), F-TRF-12 (Vigie side), E-08 bench check; §9 row P6. All Planned; values follow the recommended options of SPEC OD-29…OD-33, re-checked once the owner decides. |
@@ -333,7 +334,7 @@ In the card repository (`test/browser/`): the card rendered in headless Chromium
 | F-CARD-05 | Own position unavailable | Targets drawn, no vectors from own boat, no rings, message shown | Done |
 | F-CARD-06 | Anchor watch on, alarm off then on | Anchor and circle drawn; circle red when the alarm is on | Done |
 | F-CARD-07 | Tap a target | Details popup with name, MMSI, ship type, length, SOG, COG, distance, CPA, TCPA, age | Done |
-| F-CARD-08 | Visual editor | Every option editable; YAML round trip | Planned |
+| F-CARD-08 | Visual editor | Every option editable; YAML round trip | Done |
 | F-CARD-09 | `hass.locale` French | Every card string in French | Done |
 
 Vigie side (WP20, in this repository, Done): F-TRF-12 (§4.4) — `heading` and `threat` in every `targets` row, `threat` equal to the target being in the traffic picture's threats with the configured thresholds and stationary exclusion; F-PERF-03 still under the attribute size limit with 50 rows.
@@ -361,7 +362,7 @@ Setup (TP-01, TP-02, SPEC OD-12 — resolved v0.3):
 | E-05 | D-08 burst at real speed on the Pi | CPU and event-loop lag within F-PERF-01 limits on the target hardware |
 | E-06 | HA restart during replay | Integration reloads, entities come back, no duplicates |
 | E-07 | P5: replay `anchor-drag` at real speed, drop the anchor at the start with `vigie.drop_anchor` (latitude 43.5, longitude 7.25, radius 50), README anchor automation installed; restart HA once while armed | Anchor shown on the map card; no alarm while swinging; alarm `drag` where `--list` says (± 2 s) and one notification on the phone; armed state and anchor point survive the restart. Checklist in `docs/test-reports/P5-report.md` |
-| E-08 | P6: the card on a dashboard (phone and tablet), replay `multi-target` then `named-traffic` at real speed | Every target drawn where `--list` puts it, threats red with their CPA point and values matching `sensor.<boat>_closest_threat_cpa`/`_tcpa` (± 0.02 NM, ± 0.2 min); names as in P3; no visible lag beyond the 5 s list rebuild; with the network cut, boat, targets and rings still drawn |
+| E-08 | P6: the card on a dashboard (phone and tablet), replay `multi-target` then `named-traffic` at real speed | Every target drawn where `--list` puts it, threats red with their CPA point and values matching `sensor.<boat>_closest_threat_cpa`/`_tcpa` (± 0.02 NM, ± 0.2 min); names as in P3; no visible lag beyond the 5 s list rebuild; with the network cut, boat, targets and rings still drawn. Checklist in `docs/test-reports/P6-report.md` |
 
 ### 5.2 Stage E-2 — On board, in port (real receiver)
 
