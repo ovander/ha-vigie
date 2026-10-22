@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.24 (draft) |
+| Version | 0.25 (draft) |
 | Date | 2026-10-22 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.25 | 2026-10-22 | #77 (owner): the own boat's details also give the position in decimal degrees, signed with a point and six decimals whatever the language (`43.501917, 7.250000`), to paste into a charting app or `vigie.drop_anchor`; the line under the map keeps degrees and minutes (§9.7, §9.8). |
 | 0.24 | 2026-10-22 | Anchor card decisions (owner, "following your recommendations") and WP25 (#76): OD-34…OD-38 resolved with the recommended options; phase P7 confirmed. #77 (owner's lab finding): both cards show the own boat's position, SOG, COG, heading and whether the position is current, in a line under the map and in details on tapping the boat (§9.7, §9.8). |
 | 0.23 | 2026-10-22 | WP24 (#74): anchor card specified, not implemented. New §9.8 (custom card `vigie-anchor-card`: distance against radius, alarm and its reason, a small map with the swing circle and the swing track, controls drop / raise / radius), component C-13, §13 phase P7 (proposed), §2.1 scope line for the dashboard cards. New open decisions OD-34…OD-38 with recommendations. |
 | 0.22 | 2026-10-22 | #71: §9.7 tile requests send the page's origin as `Referer` (OpenStreetMap refuses tile requests without one, and Home Assistant's page sends none to other sites); found in the owner's lab with the card v0.1.0-beta.1. |
@@ -407,7 +408,7 @@ WP20 adds two fields to each `targets` row so that the card applies Vigie's rule
 | Labels | Ship name, else MMSI; shown from a zoom level, always for threats |
 | Range rings | 0.5, 1 and 2 NM around the own boat (configurable, can be off) |
 | Anchor | When the anchor watch is on: anchor symbol and the swing circle (radius); red when the alarm is on |
-| Details | Tap a target: name, MMSI, ship type, length, SOG, COG, distance, CPA, TCPA, age. Tap the own boat: its position, SOG, COG, heading and the position's state (below) |
+| Details | Tap a target: name, MMSI, ship type, length, SOG, COG, distance, CPA, TCPA, age. Tap the own boat: its position in degrees and minutes and in decimal degrees (`43.501917, 7.250000`: signed, point and six decimals whatever the language, to paste into a charting app or `vigie.drop_anchor`), SOG, COG, heading and the position's state (below) |
 | Own boat line | Under the map, always shown (#77): position in degrees and minutes (`43° 30,000′ N 7° 15,000′ E`), SOG, COG, heading (`—` when unknown); *position current* while `device_tracker.<boat>` is available, else *position lost since HH:MM* (the tracker's last change), with the last position the card saw drawn faded |
 | View | First view: the outer range ring around the own boat, fitted once the card has a size (Home Assistant lays a card out after its first states); then centred on the own boat (follow mode on by default, off after a manual pan, button to come back, paused while a details popup is open); north-up |
 

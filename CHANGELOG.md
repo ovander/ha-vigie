@@ -6,6 +6,9 @@ versioning: SemVer.
 ## [Unreleased]
 
 ### Added
+- README: the anchor card for the cockpit in the *Anchor watch* section (#76).
+- Specification: the own boat's details also give the position in decimal degrees (SPEC
+  v0.25 §9.7, TEST v0.32 U-CARD-08) (#77).
 - Specification: anchor card for the cockpit (SPEC v0.23 §9.8, C-13, proposed phase P7;
   open decisions OD-34…OD-38) and its planned tests (TEST v0.30: U-ACARD, F-ACARD, E-09)
   (#74); decisions OD-34…OD-38 taken with the recommended options (SPEC v0.24, phase P7).
