@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.33 (draft) |
+| Version | 0.34 (draft) |
 | Date | 2026-10-22 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.34 | 2026-10-22 | WP27 (#81, OD-39): U-ANC-13 and F-ANC-10 (recentering in Vigie), U-ACARD-09 (circle fit), F-ACARD-12 and -13 (recenter on the swing, move by hand); F-ACARD-10 now allows the fourth call. U-ANC and F-ANC in this repository, Done; the card's in ovander/ha-vigie-card. |
 | 0.33 | 2026-10-22 | WP26 (#80): U-ACARD-04, F-ACARD-07 (swing track) and F-ACARD-11 (editor) Done in ovander/ha-vigie-card#13; U-ACARD-02 and F-ACARD-02 extended with the E-09 pre-run findings; the anchor fixture also records the tracker's history in Home Assistant's compressed format (`s`, `a`, `lu`); F-ACARD-10 also checks that the only WebSocket message is the history request. E-09 pre-run in `docs/test-reports/P7-report.md`. |
 | 0.32 | 2026-10-22 | #77: U-CARD-08 adds the position in decimal degrees, F-CARD-11 and F-ACARD-01 check it in the own boat's details (SPEC v0.25 §9.7); Done in ovander/ha-vigie-card#11. |
 | 0.31 | 2026-10-22 | Anchor card decisions (SPEC v0.24 OD-34…OD-38) and WP25 (#76): §3.9 and §4.8 no longer proposed; U-ACARD-01…03, 05…08 and F-ACARD-01…06, 08…10 Done in ovander/ha-vigie-card#8 (U-ACARD-05 and -07 moved to WP25 with the map and the details); U-ACARD-04, F-ACARD-07 (swing track) and F-ACARD-11 (editor) stay for WP26. The anchor fixtures are written and checked by `tests/integration/test_card_fixtures.py`. #77: own boat line and details on both cards, U-CARD-08 and F-CARD-11 Done in ovander/ha-vigie-card#7, F-ACARD-01 and -03 extended. |
@@ -224,6 +225,7 @@ The merge logic is written as plain classes in `state.py` (no HA) wrapped by the
 | U-ANC-10 | Snapshot (`to_dict` / `restore`) armed with a latched alarm; disarmed; `no_position` alarm; invalid snapshots | Round trip keeps point, radius, arming time, maximum distance and the drag alarm; the position-loss timer restarts from the restore time; disarmed is `None`; a `no_position` alarm is not kept (it re-times); invalid data refused (`ValueError`), watch unchanged | Done |
 | U-ANC-11 | Arm without position and without coordinates; latitude outside ±90, longitude outside ±180; only one of latitude/longitude; radius outside 10–500 m or NaN; non-positive confirmation or timeout | Refused (`ValueError`), state unchanged; a radius set while disarmed is used at arming | Done |
 | U-ANC-12 | 10 min of positions on a 30 m circle with ± 8 m noise (fixed seed), radius 50 m | No alarm; maximum distance < 50 m | Done |
+| U-ANC-13 | Recenter (OD-39): armed at A with radius 50 m, largest distance 38 m, 10 s outside; recenter to 25 m north of A; boat 55 m north of A. Then recenter disarmed; during a `drag` alarm; during a `no_position` alarm | Point moved, radius and arming time kept; boat 30 m from the new point, inside, no alarm; largest distance 30 m (restarted). Refused (not armed); refused (alarm), point and alarm unchanged | Done |
 
 ### 3.8 Traffic map card — `U-CARD` (SPEC §9.7, P6)
 
@@ -254,6 +256,7 @@ In the card repository (`test/unit/`), pure TypeScript functions, as §3.8; valu
 | U-ACARD-06 | Config: missing `switch`; `switch.garnet_anchor_watch` alone; a switch not named `switch.<boat>_anchor_watch` without the other entities; `track_hours` negative | Error naming `switch`; derived `sensor.garnet_anchor_distance`, `binary_sensor.garnet_anchor_alarm`, `number.garnet_anchor_radius`, `device_tracker.garnet`; error naming the first missing entity; error naming `track_hours` | Done |
 | U-ACARD-07 | Time at anchor: armed 59 s, 2 h 05 min, 26 h ago | `< 1 min`; `2 h 05`; `26 h 00` | Done |
 | U-ACARD-08 | Translations: every anchor-card key in `en` and `fr` | Same key sets, no empty string (with U-CARD-07) | Done |
+| U-ACARD-09 | Anchor from the swing (OD-39 A): points on a 30 m circle around 43.5° N, 7.25° E over 120°; ±3 m noise over 180°; 9 min at anchor; 9 points; 60° of arc; an 80 m circle with a 50 m watch | Centre within 0.01 m, radius 30 m, arc 120°; within 3 m; refused: too soon, too few, small arc, implausible | Done |
 
 ## 4. Functional tests (`tests/integration/`)
 
@@ -341,6 +344,7 @@ Marked `@pytest.mark.perf`, excluded from the default run and executed by the ni
 | F-ANC-07 | Radius changed on `number.anchor_radius` while armed | Applied at the next tick; restored after a restart | §9.6 | Done |
 | F-ANC-08 | Translations | `reason` values, attribute labels, service fields and errors in `strings.json`, `en.json`, `fr.json` (F-ENT-08 extended to the anchor entities) | §9.6, CLAUDE.md | Done |
 | F-ANC-09 | Two boats (two entries) armed at different points | Independent watches; a service call targets one entry only | §9.6, NFR-06 | Done |
+| F-ANC-10 | `vigie.drop_anchor` with `keep_since: true` (OD-39): armed, boat at 38 m; recenter to 25 m north; then without coordinates, with the watch off, during a `drag` alarm | `armed_at` and radius unchanged, distance and largest distance about 13 m; refused with `recenter_needs_position`, `anchor_not_armed`, `anchor_alarm_on` (translated), alarm still on | §8.4, §9.6 | Done |
 
 ### 4.7 Traffic map card — `F-CARD` (SPEC §9.7, P6)
 
@@ -377,8 +381,10 @@ In the card repository (`test/browser/`), as §4.7: headless Chromium, a fake `h
 | F-ACARD-07 | Swing track | One history request for the tracker since `armed_at`; the recorded positions drawn as a line; a new state adds a point without a new request; `track_hours: 0`: no request, no line | Done |
 | F-ACARD-08 | A refused call (Home Assistant error) | The error message shown in the card; states and controls unchanged | Done |
 | F-ACARD-09 | `hass.locale` French | Every card string and figure in French (`55,4 m`) | Done |
-| F-ACARD-10 | Every test above | The only calls are the three of SPEC §9.8 on the configured entities, and the history request; never another service or entity | Done |
+| F-ACARD-10 | Every test above | The only calls are the four of SPEC §9.8 (the fourth, recentering, only with `keep_since: true`) on the configured entities, and the history request; never another service or entity | Done |
 | F-ACARD-11 | Visual editor | Every option editable; a one-line configuration (`switch` only) round trips | Done |
+| F-ACARD-12 | Recenter on the swing (OD-39 A): anchor written 20 m north of the recorded swing, 15 min at anchor; then 5 min; then the drag alarm | Dashed preview and "Recenter garnet's circle here? (≈ 20 m…)"; *Cancel*: no call; *Recenter*: `vigie.drop_anchor` with the entry from the registries, `keep_since: true`, a point within 5 m of the swing's centre. *Too soon* with *Place it by hand*. Buttons disabled during the alarm | Done |
+| F-ACARD-13 | Move the anchor by hand (OD-39 B): tap the map | Preview at the tapped point; *Recenter* calls `vigie.drop_anchor` with exactly that point and `keep_since: true` | Done |
 
 ## 5. End-to-end tests
 

@@ -96,6 +96,13 @@ anchor's position yourself with the `vigie.drop_anchor` action (for example read
 chartplotter). Set the swing radius on `number.<boat>_anchor_radius` (10–500 m, default
 50 m): chain out plus boat length plus a margin for GPS noise.
 
+The boat has usually dropped back by the time the watch is turned on, so the circle is
+centred a chain length from the anchor. Move it without restarting the watch with
+`vigie.drop_anchor` and `keep_since: true` and the anchor's position: the time at anchor
+and the radius are kept, the largest distance starts again. The anchor card below does it
+for you, from the swing or by tapping the map. A recentering is refused while the anchor
+alarm is on.
+
 `binary_sensor.<boat>_anchor_alarm` turns on when
 
 - the boat has stayed outside the radius for 20 s (*Dragging*). It stays on until you
@@ -158,7 +165,10 @@ For the cockpit, the **anchor card** of
 same HACS download as the traffic map below, 0.2.0-beta.1 or later) shows the watch's
 state in large type, the distance against the radius with a gauge, the swing circle and
 your boat, and has three buttons: **Drop anchor here**, **Raise anchor** (only after a
-confirmation) and the radius **−** / **+**. One line is enough:
+confirmation) and the radius **−** / **+**. After 10 minutes at anchor, **Recenter** moves
+the circle to the centre of the swing, where the anchor is; **Move the anchor** lets you
+tap it on the map. Both show the new circle and ask before changing anything. One line is
+enough:
 
 ```yaml
 type: custom:vigie-anchor-card

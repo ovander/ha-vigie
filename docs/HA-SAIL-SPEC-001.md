@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.26 (draft) |
+| Version | 0.27 (draft) |
 | Date | 2026-10-22 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.27 | 2026-10-22 | WP27 (#81): recentering built. §8.4 recentering; §9.6 `keep_since` on `vigie.drop_anchor`; §9.8 the two buttons, the fit's conditions, the confirmation. OD-39 amended (owner): the largest distance restarts from the new point (it was measured from the old one), and Vigie itself refuses a recentering while an alarm is on. |
 | 0.26 | 2026-10-22 | WP26 (#80): swing track and editor of the anchor card built (§9.8); E-09 pre-run findings: *Outside the circle* status, the boat kept in view when outside the circle, times in the user's 12/24 h format. New OD-39, resolved (owner, "A + B following your recommendations"): recentering the anchor circle, specified and built in WP27 (#81); it adds a fourth call to the anchor card (amends OD-35) and a `keep_since` field to `vigie.drop_anchor`. |
 | 0.25 | 2026-10-22 | #77 (owner): the own boat's details also give the position in decimal degrees, signed with a point and six decimals whatever the language (`43.501917, 7.250000`), to paste into a charting app or `vigie.drop_anchor`; the line under the map keeps degrees and minutes (§9.7, §9.8). |
 | 0.24 | 2026-10-22 | Anchor card decisions (owner, "following your recommendations") and WP25 (#76): OD-34…OD-38 resolved with the recommended options; phase P7 confirmed. #77 (owner's lab finding): both cards show the own boat's position, SOG, COG, heading and whether the position is current, in a line under the map and in details on tapping the boat (§9.7, §9.8). |
@@ -304,6 +305,8 @@ The anchor watch uses own position only (RMC/GGA, VDO fallback, §7.4). It needs
 
 **Position-loss alarm.** While armed, when no own position has been received for `anchor_position_timeout` (default 60 s, OD-24), the alarm turns on with reason `no_position`. A port disconnect counts the same. This alarm clears by itself when a position returns and the boat is inside. If the position returns outside, the alarm stays on (`no_position`) and the drag timer starts; after `anchor_confirm` outside it becomes a latched `drag` alarm. A position whose fix is older than the timeout counts as no position. The watch must never stay silent because its input is gone.
 
+**Recentering (OD-39, v0.27).** An armed watch's anchor point can be moved to where the anchor really is (the boat had dropped back before the watch was armed): the radius and the arming time are kept, the largest distance restarts from the new point (the only one it is measured from), and so does the drag timer. Refused when disarmed or while an alarm is on, so a recentering never clears a drag alarm: re-dropping the anchor does that, deliberately.
+
 **Clean room (§3.1).** `ha-smart-anchor` (X-06) is prior art only: nothing is read from it or reused.
 
 **Limits.** An aid, not a substitute for an anchor watch kept by the crew (README, as §8.3). The alarm is only as fast as the confirmation time plus one tick. The receiver's GNSS antenna position defines the boat's position.
@@ -376,7 +379,7 @@ Controls per OD-22 (resolved v0.15); implemented in WP17 (#53). All on the boat'
 
 Services (registered once for the domain, target a config entry):
 
-- `vigie.drop_anchor`: optional `latitude`, `longitude` (both or none) and `radius` (m). Arms or re-drops (§8.4).
+- `vigie.drop_anchor`: optional `latitude`, `longitude` (both or none) and `radius` (m). Arms or re-drops (§8.4). With `keep_since: true` (OD-39, v0.27) it recenters an armed watch instead: the point is required, the arming time is kept, the largest distance restarts; refused, with a translated message, when the watch is off or while an alarm is on.
 - `vigie.raise_anchor`: disarms and clears the alarm.
 
 Every service field and error has a translated label and description (`strings.json`, `en.json`, `fr.json`). The switch and the distance sensor show an anchor icon, the radius a radius icon (`icons.json`).
@@ -467,7 +470,12 @@ Figures in the user's locale (`32,5 m` in French), as in §9.7; times follow the
 
 No other service is called: no `vigie.drop_anchor` with typed coordinates (an anchor position from the chartplotter stays in the Actions page or an automation), no notification, no automation. Exception from WP27: recentering the circle (OD-39, below).
 
-**Recentering the circle (OD-39, WP27, #81).** The anchor reaches the bottom before the button is pressed, by which time the boat has dropped back: the circle is centred on the boat, not on the anchor. The card can recenter it: (A) on the circle fitted to the swing track after at least 10 min at anchor, previewed dashed on the map, with a message instead when the track covers too little arc; (B) by hand, tapping the map where the anchor is. Both ask for a confirmation, keep the radius, are disabled while the alarm is on (a re-drop clears a latched drag alarm, OD-23), and call `vigie.drop_anchor` with `latitude`, `longitude` and `keep_since: true`, which keeps `armed_at` and the largest distance so the track and the time at anchor carry on (§9.6). Details, values and tests in WP27. A refused call (for example no own position) shows Home Assistant's error message in the card. The traffic card (§9.7) stays read only.
+**Recentering the circle (OD-39, built in WP27, #81).** The anchor reaches the bottom before the button is pressed, by which time the boat has dropped back: the circle is centred on the boat, not on the anchor. Two buttons under the controls, disabled while the alarm is on:
+
+- *Recenter* (option A): the centre of the circle that best fits the swing track since the drop (least squares, Kåsa) is the anchor. Offered only after 10 min at anchor, with at least 20 track points covering at least 90° of the circle, and a fitted swing radius between 3 m and the watch's radius; otherwise the card says why (*too soon*, *not enough swing*, *the swing does not fit a circle inside the radius*) and offers to place the anchor by hand.
+- *Move the anchor* (option B): the next tap on the map is the anchor.
+
+Either way the proposed circle is drawn dashed on the map and the card asks "Recenter Garnet's circle here? (12 m from the current one)"; only *Recenter* calls Vigie: `vigie.drop_anchor` with `config_entry_id` (found from the switch's device in Home Assistant's registries), `latitude`, `longitude` and `keep_since: true`, nothing else (the fourth call, F-ACARD-10). Vigie then moves the circle, keeps the radius and the arming time, so the swing track and the time at anchor carry on, and restarts the largest distance from the new point (§8.4, §9.6). An alarm, or the watch turned off, ends a recentering in progress.
 
 **Sound (OD-37).** None. Browsers block sound until the page has been touched, phones and tablets sleep, and the critical phone notification already rings through silent mode; a sound in the card would give a false sense of safety.
 
@@ -588,7 +596,7 @@ Changing an option reloads the entry. The anchor radius is not an option: it cha
 | ~~OD-36~~ | ~~Anchor card: swing track source~~ | **Resolved v0.24:** Home Assistant's history of `device_tracker.<boat>` since `armed_at`, then the live updates (§9.8) | — |
 | ~~OD-37~~ | ~~Anchor card: sound on alarm~~ | **Resolved v0.24:** no sound; the alert is the critical phone notification (§9.8) | — |
 | ~~OD-38~~ | ~~Anchor card: phase~~ | **Resolved v0.24:** new phase P7, after P5 and P6, independent of P4 (§13) | — |
-| ~~OD-39~~ | ~~Anchor card: recentering the circle (the boat has dropped back when the button is pressed)~~ | **Resolved v0.26** (owner, options A + B): (A) recenter on the circle fitted to the swing track, (B) move the anchor by tapping the map; confirmation, radius kept, disabled during an alarm; a fourth call `vigie.drop_anchor` with coordinates and `keep_since: true` (amends OD-35, new service field, §9.6, §9.8). Rejected: (C) back in time by a chosen delay, (D) chain length and bearing typed in | — |
+| ~~OD-39~~ | ~~Anchor card: recentering the circle (the boat has dropped back when the button is pressed)~~ | **Resolved v0.26** (owner, options A + B): (A) recenter on the circle fitted to the swing track, (B) move the anchor by tapping the map; confirmation, radius kept, disabled during an alarm; a fourth call `vigie.drop_anchor` with coordinates and `keep_since: true` (amends OD-35, §9.6, §9.8). **Amended v0.27** (owner): the largest distance restarts from the new point; Vigie itself refuses a recentering while an alarm is on (§8.4). Rejected: (C) back in time by a chosen delay, (D) chain length and bearing typed in | — |
 
 (OD-05 and OD-09 from v0.1 were tied to NMEA 2000 and polars; both moved to P4 and are no longer open for v1.)
 
