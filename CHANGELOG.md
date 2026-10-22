@@ -5,6 +5,11 @@ versioning: SemVer.
 
 ## [Unreleased]
 
+### Added
+- Bench: the replay tool serves a scenario over TCP (`--tcp PORT`): Home Assistant reads it
+  with the serial port `socket://<laptop IP>:PORT`, no cable. Recipe in `CONTRIBUTING.md`,
+  including the anchor card checks.
+
 ## [0.4.0-beta.1] - 2026-10-22
 
 Fourth beta: recentering the anchor watch's circle, for the new anchor card of

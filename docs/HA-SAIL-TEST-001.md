@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.34 (draft) |
+| Version | 0.35 (draft) |
 | Date | 2026-10-22 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.35 | 2026-10-22 | §5.1 feed: the replay tool serves over TCP (`--tcp PORT`, Vigie port `socket://HOST:PORT`) for a network bench from a laptop; tested in `tests/tools/test_replay.py`. |
 | 0.34 | 2026-10-22 | WP27 (#81, OD-39): U-ANC-13 and F-ANC-10 (recentering in Vigie), U-ACARD-09 (circle fit), F-ACARD-12 and -13 (recenter on the swing, move by hand); F-ACARD-10 now allows the fourth call. U-ANC and F-ANC in this repository, Done; the card's in ovander/ha-vigie-card. |
 | 0.33 | 2026-10-22 | WP26 (#80): U-ACARD-04, F-ACARD-07 (swing track) and F-ACARD-11 (editor) Done in ovander/ha-vigie-card#13; U-ACARD-02 and F-ACARD-02 extended with the E-09 pre-run findings; the anchor fixture also records the tracker's history in Home Assistant's compressed format (`s`, `a`, `lu`); F-ACARD-10 also checks that the only WebSocket message is the history request. E-09 pre-run in `docs/test-reports/P7-report.md`. |
 | 0.32 | 2026-10-22 | #77: U-CARD-08 adds the position in decimal degrees, F-CARD-11 and F-ACARD-01 check it in the own boat's details (SPEC v0.25 §9.7); Done in ovander/ha-vigie-card#11. |
@@ -397,6 +398,7 @@ Setup (TP-01, TP-02, SPEC OD-12 — resolved v0.3):
 - **Where:** Home Assistant **Container** on a Linux host — a dev box for quick checks, a Raspberry Pi with Raspberry Pi OS for E-05 on target hardware. HA OS restricts host tools, so it is used only for E-01.
 - **Feed:** `tests/tools/replay.py --pty /tmp/ttyAIS <capture>` creates its own pseudo-TTY and links it to `/tmp/ttyAIS`; the integration is configured on that path (the container needs the PTY mapped). `socat` is optional: `socat -d -d pty,raw,echo=0,link=/tmp/ttyAIS pty,raw,echo=0,link=/tmp/ttyAIS_feed` then `replay.py --device /tmp/ttyAIS_feed`.
 - **E-01 on HA OS:** two USB-serial adapters wired null-modem; the Pi reads one, a laptop runs `replay.py --device /dev/ttyUSBx` on the other.
+- **Over the network:** `replay.py --tcp PORT <capture>` serves the replay from a laptop; Vigie's serial port is `socket://<laptop>:PORT` (pyserial URL). No cable; one client at a time, each from the start of the file. Recipe in `CONTRIBUTING.md` (network bench).
 - **Two-Pi bench (v0.24):** the same serial link between the HA OS Pi and a second Raspberry Pi running the replay tool runs every E-1 check on the target hardware (recipe in `CONTRIBUTING.md`). On a real link, stopping the replay leaves the port open and silent: E-04 then expects the entities unavailable after the staleness timeout with `connected` on; the reconnect path is tested by unplugging the HA Pi's adapter for 30 s.
 - The integration contains no file or replay source of its own.
 

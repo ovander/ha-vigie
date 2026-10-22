@@ -1,4 +1,4 @@
-"""Timed replay tool (TEST §2 timed format, §5.1 E-1 bench, SPEC OD-12)."""
+"""Timed replay tool (TEST §2 timed format, §5.1 E-1 bench, SPEC OD-12), incl. `--tcp`."""
 
 import os
 import select
@@ -99,3 +99,68 @@ def test_cli_to_file(tmp_path):
     out = tmp_path / "out.nmea"
     assert replay.main([str(src), "--device", str(out), "--speed", "1000"]) == 0
     assert out.read_bytes().count(b"\r\n") == 3
+
+
+def _serve(scheduled, clients, loops=1):
+    """A TCP replay server on an ephemeral port, in a thread; returns (thread, port)."""
+    import threading
+
+    bound = threading.Event()
+    port: list[int] = []
+
+    def ready(p: int) -> None:
+        port.append(p)
+        bound.set()
+
+    thread = threading.Thread(
+        target=replay.serve_tcp,
+        args=(scheduled, "127.0.0.1", 0),
+        kwargs={"loops": loops, "clients": clients, "ready": ready},
+        daemon=True,
+    )
+    thread.start()
+    assert bound.wait(5)
+    return thread, port[0]
+
+
+def _read_lines(sock, count: int) -> list[bytes]:
+    data = b""
+    while data.count(b"\r\n") < count:
+        chunk = sock.recv(4096)
+        if not chunk:
+            break
+        data += chunk
+    return data.split(b"\r\n")[:count]
+
+
+def test_tcp_serves_the_replay_to_a_client(socket_enabled):  # loopback only
+    """`--tcp`: Vigie connects with `socket://HOST:PORT` and gets CRLF sentences in order."""
+    import socket
+
+    scheduled = schedule(parse_lines(TIMED), speed=100)
+    thread, port = _serve(scheduled, clients=1)
+    with socket.create_connection(("127.0.0.1", port), timeout=5) as sock:
+        lines = _read_lines(sock, 3)
+    assert [line[:6] for line in lines] == [b"$GPRMC", b"!AIVDM", b"$GPRMC"]
+    thread.join(5)
+    assert not thread.is_alive()  # one client served, the replay done
+
+
+def test_tcp_restarts_the_replay_for_the_next_client(socket_enabled):  # loopback only
+    """A client that goes away (Vigie restarting) lets the next one start from the beginning."""
+    import socket
+
+    scheduled = schedule(parse_lines(TIMED), speed=0.5)  # 4 s: the first client leaves early
+    thread, port = _serve(scheduled, clients=2)
+    with socket.create_connection(("127.0.0.1", port), timeout=5) as first:
+        assert _read_lines(first, 1)[0].startswith(b"$GPRMC")
+    with socket.create_connection(("127.0.0.1", port), timeout=10) as second:
+        assert _read_lines(second, 1)[0].startswith(b"$GPRMC,080000")  # from the start again
+    thread.join(10)
+
+
+def test_cli_tcp_option_is_exclusive_with_pty(tmp_path):
+    capture = tmp_path / "c.nmea"
+    capture.write_text(TIMED)
+    with pytest.raises(SystemExit):
+        replay.main([str(capture), "--tcp", "10110", "--pty", str(tmp_path / "p")])
