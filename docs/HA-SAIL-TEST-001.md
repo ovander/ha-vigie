@@ -221,7 +221,7 @@ The merge logic is written as plain classes in `state.py` (no HA) wrapped by the
 
 ### 3.8 Traffic map card — `U-CARD` (SPEC §9.7, P6)
 
-In the card repository (`test/unit/`). In the card repository (`ha-vigie-card`), pure TypeScript functions tested without a browser map (Vitest); values hand-computed like §3.4.
+In the card repository (`ha-vigie-card`, `test/unit/`), pure TypeScript functions tested without a browser map (Vitest); values hand-computed like §3.4.
 
 | ID | Case | Expected | Status |
 |---|---|---|---|
