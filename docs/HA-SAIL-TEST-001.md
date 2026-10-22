@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.23 (draft) |
+| Version | 0.24 (draft) |
 | Date | 2026-10-21 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.24 | 2026-10-22 | §5.1: the E-1 bench may also run on two Raspberry Pis (HA OS with Vigie on one, the replay tool on the other, over a serial link); recipe in `CONTRIBUTING.md`; E-04 on a real link differs (silence vs lost port). |
 | 0.23 | 2026-10-21 | WP18 (#55): E-07 checklist in `docs/test-reports/P5-report.md`, pre-run recorded; README anchor map card checked against real entities (`tests/integration/test_readme_map_card.py`); P5 report template. |
 | 0.22 | 2026-10-21 | WP17 (#53): F-ANC-01…09 implemented (`tests/integration/test_anchor_watch.py`); F-ANC-06 made concrete (state injected in Home Assistant's storage, saved about 1 s after a change, invalid state starts disarmed, deleted with the entry); F-ENT-08 extended to the anchor entities (watch armed); D-07 preset `anchor-drag` implemented (`AnchorSwing`, checked in `tests/tools/test_scenario.py`); E-07 drops the anchor with the preset's coordinates. |
 | 0.21 | 2026-10-21 | WP16 (#49): U-ANC-01…12 implemented (`tests/domain/test_anchor.py`) after SPEC OD-21…OD-26 were resolved (SPEC v0.15); U-ANC-06 and U-ANC-07 made precise (radius change restarts the timer; a position returning outside keeps `no_position` until inside or `drag`); U-ANC-10 names `restore()`; §7 gate 2 covers `anchor.py`. |
@@ -312,6 +313,7 @@ Setup (TP-01, TP-02, SPEC OD-12 — resolved v0.3):
 - **Where:** Home Assistant **Container** on a Linux host — a dev box for quick checks, a Raspberry Pi with Raspberry Pi OS for E-05 on target hardware. HA OS restricts host tools, so it is used only for E-01.
 - **Feed:** `tests/tools/replay.py --pty /tmp/ttyAIS <capture>` creates its own pseudo-TTY and links it to `/tmp/ttyAIS`; the integration is configured on that path (the container needs the PTY mapped). `socat` is optional: `socat -d -d pty,raw,echo=0,link=/tmp/ttyAIS pty,raw,echo=0,link=/tmp/ttyAIS_feed` then `replay.py --device /tmp/ttyAIS_feed`.
 - **E-01 on HA OS:** two USB-serial adapters wired null-modem; the Pi reads one, a laptop runs `replay.py --device /dev/ttyUSBx` on the other.
+- **Two-Pi bench (v0.24):** the same serial link between the HA OS Pi and a second Raspberry Pi running the replay tool runs every E-1 check on the target hardware (recipe in `CONTRIBUTING.md`). On a real link, stopping the replay leaves the port open and silent: E-04 then expects the entities unavailable after the staleness timeout with `connected` on; the reconnect path is tested by unplugging the HA Pi's adapter for 30 s.
 - The integration contains no file or replay source of its own.
 
 | ID | Case | Expected |

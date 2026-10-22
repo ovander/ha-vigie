@@ -5,6 +5,10 @@ versioning: SemVer.
 
 ## [Unreleased]
 
+### Added
+- Two-Pi bench recipe in `CONTRIBUTING.md` (HA OS on one Raspberry Pi, the replay tool on
+  another, over a USB null-modem cable or 3.3 V USB-TTL adapters); TEST v0.24.
+
 ## [0.2.0-beta.1] - 2026-10-21
 
 Second beta: the anchor watch (phase P5) on top of 0.1.0-beta.1. Tested on synthetic data

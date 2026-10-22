@@ -66,7 +66,74 @@ Home Assistant **Container** on a Linux host (a Raspberry Pi with Raspberry Pi O
    up to a minute after the feed is back.
 
 For E-01 on HA OS, wire two USB-serial adapters null-modem (TX↔RX, GND↔GND): one on the HA
-host, one on a laptop running `replay ... --device /dev/ttyUSBx --baud 38400`.
+host, one on a laptop running `replay ... --device /dev/ttyUSBx --baud 38400`. A second
+Raspberry Pi can take the laptop's place: see the two-Pi bench below.
+
+### Two-Pi bench (HA OS on the target Pi)
+
+Runs every bench check on the boat's own hardware: the HA Pi runs HA OS with Vigie from
+HACS, a second Pi with Raspberry Pi OS plays the scenarios into a serial link.
+
+```
+ Bench Pi (Raspberry Pi OS)                         HA Pi (HA OS + Vigie)
+ replay --device … --baud 38400                     Vigie entry "Bench" on that port
+ [USB-serial adapter] TX ──────────────────────► RX [USB-serial adapter]
+                      GND ─────────────────────── GND
+```
+
+**Link.** Either of:
+
+- an FTDI USB null-modem cable (two USB-serial chips back to back, TX/RX already crossed,
+  e.g. FTDI *USB-NMC-2.5M*): plug-and-play, each Pi sees `/dev/serial/by-id/usb-FTDI_…`;
+- two 3.3 V USB-to-TTL adapters (FT232 or CP2102) and jumper wires: bench TX → HA RX and
+  GND ↔ GND (data flows one way; crossing the other pair does no harm). The bench Pi's own
+  UART can replace its adapter: GPIO pin 8 (TXD) and pin 6 (GND), enabled with
+  `sudo raspi-config` → Interface Options → Serial Port → login shell **No**, serial
+  hardware **Yes**, reboot; the port is then `/dev/serial0`.
+
+A plain USB A-to-A cable does not work (two USB hosts; it only ties the 5 V supplies
+together), and "USB data link" cables do not appear as serial ports. Use 3.3 V TTL only:
+never wire an RS-232 adapter (±12 V) to a Pi's GPIO pins.
+
+**Bench Pi.** The bench tools need only `pyserial` and `pyais`:
+
+```bash
+sudo apt install -y git python3-venv
+sudo usermod -aG dialout $USER     # once, then log out and back in
+git clone https://github.com/ovander/ha-vigie && cd ha-vigie
+git checkout v0.2.0-beta.1         # the release installed on the HA Pi
+python3 -m venv .venv && . .venv/bin/activate
+pip install pyserial pyais
+for p in head-on crossing clear-crossing not-urgent anchored multi-target named-traffic anchor-drag; do
+  python -m tests.tools.scenario --preset $p -o $p.nmea
+done
+python -m tests.tools.scenario --preset multi-target --duration 3600 -o long.nmea
+ls -l /dev/serial/by-id/           # the adapter; nothing listed: try another cable (some carry power only)
+python -m tests.tools.replay head-on.nmea --baud 38400 --loop \
+  --device /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_XXXXXXXX-if00-port0
+```
+
+Type the real device name (Tab completes it after `/dev/serial/by-id/u`): a placeholder
+such as `<adapter>` is read by bash as a redirection.
+
+**HA Pi.** Keep the entry on the real AIS receiver. Add a second one for the bench, with the
+replay running: Settings → Devices & services → Add integration → Vigie, boat name
+*Bench*, the bench adapter's `/dev/serial/by-id/…` (not the receiver's), 38400 baud. Its
+entities are `…bench_…`. Give the bench its own copies of the README automations, with the
+`bench` entity IDs, so bench alerts are labelled as such on the phone.
+
+**What it covers, and what differs from the container recipe:**
+
+- E-02 (six presets), the P3 check (`named-traffic`, watch list 235000011 and 235000012 on
+  the *Bench* entry), E-03 (`long.nmea` without `--loop`), E-06 and E-07 (`anchor-drag`,
+  P5 bench above) run as written.
+- E-05 measures HA OS on the Pi itself: replay `tests/fixtures/burst_60s.nmea --speed 1`
+  and read the CPU under Settings → System → Hardware.
+- E-04 differs on a real link: stopping the replay is *silence* on an open port, not a lost
+  port. After about 10 s the *Bench* entities go unavailable while `connected` stays on,
+  which is correct. To test the reconnect path, unplug the adapter from the HA Pi for 30 s
+  instead: `connected` turns off, then Vigie recovers within about a minute.
+- Note in the report that the bench was HA OS on a Raspberry Pi with a serial link.
 
 ### E-02 traffic bench (TEST-001 §5.1)
 
