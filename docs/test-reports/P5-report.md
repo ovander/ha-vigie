@@ -8,9 +8,9 @@ they are.
 |---|---|
 | Phase | P5 Anchor watch (SPEC HA-SAIL-SPEC-001 v0.18 §13) |
 | Documents | SPEC v0.18, TEST v0.23, NFL-TRACK-API-001 v0.2.0 (X-12, not part of P5) |
-| Code state | `main` at `a449836` (WP15–WP17 merged) plus this PR (WP18) |
-| Release | candidate `v0.2.0-beta.1` (CHANGELOG prepared); the tag is the owner's call |
-| CI | `lint`, `unit`, `hassfest`, `hacs` green on every P5 PR |
+| Code state | `main` at `3af0d5b` (WP15–WP18 and the 0.2.0-beta.1 changelog merged) |
+| Release | [`v0.2.0-beta.1`](https://github.com/ovander/ha-vigie/releases/tag/v0.2.0-beta.1), pre-release, 2026-10-22, tag on `3af0d5b`; `vigie.zip` checked (manifest `0.2.0-beta.1`, anchor files, EN/FR translations). Run the formal checks below on this release |
+| CI | `lint`, `unit`, `hassfest`, `hacs` green on every P5 PR; nightly `perf` green on `3af0d5b` (2026-10-21 and 2026-10-22), release workflow green |
 | Automated tests | 517 passed, 1 skipped (U-GPS-08, #2), 3 `perf` tests run separately |
 | Coverage | 99 % of the pure modules (`nmea/`, `state.py`, `geo.py`, `hub.py`, `traffic.py`, `anchor.py`; `anchor.py` 100 %); gate ≥ 90 % |
 | Exit criterion | **Not met yet**: the formal bench check E-07 (§5.2), E-17 in port (§6) and E-24 at an anchorage (§7) |
@@ -22,7 +22,7 @@ they are.
 | #48 | #47 | WP15: anchor watch specified (SPEC §8.4, §9.6, §10.4, §11.2), tests planned (TEST §3.7, §4.6, E-07, E-17, E-24), OD-21…OD-26 opened |
 | #50 | #49 | WP16: pure module `anchor.py` (arm/re-drop, radius, drag alarm latched, position-loss alarm, maximum distance, snapshot); OD-21…OD-26 resolved, OD-27 (track sharing by Home Assistant) |
 | #54 | #53 | WP17: switch, radius, alarm and distance entities; `drop_anchor` / `raise_anchor` actions; options; state saved about 1 s after a change; diagnostics; README alert; `anchor-drag` scenario |
-| this PR | #55 | WP18: bench recipe, E-07 pre-run (§5.1), README anchor map card and anchor icons (findings of the pre-run), this report |
+| #56 | #55 | WP18: bench recipe, E-07 pre-run (§5.1), README anchor map card and anchor icons (findings of the pre-run), this report |
 
 ## 2. Test status (TEST §9, row P5)
 
@@ -79,13 +79,13 @@ they are.
 | 5 | HA restart while armed | Switch on with the same point, radius and `armed_at`; alarm on, `drag`; stored state written in `.storage/vigie.anchor.<entry>`; no second notification | Pass |
 | 6 | Power cut 3 s after a re-drop (43.51, 7.26, 75 m), `docker kill` | After start: new point and radius 75 m restored, alarm cleared by the re-drop | Pass |
 | 7 | No position after the restart | `no_position` exactly 60 s after start (03:30:13 → 03:31:13); automation logged "No position from the receiver: check the GPS and the power." | Pass |
-| 8 | Map card | **Found:** the built-in card merged the boat and the anchor, 30 m apart, into one marker "2"; fixed with `cluster: false` and `default_zoom: 18`, which show the boat, its swinging track and the anchor separately | Pass after fix |
+| 8 | Map card | **Found:** the built-in card merged the boat and the anchor, 30 m apart, into one marker "2"; fixed with `cluster: false` and `default_zoom: 18`, which show the boat, its swinging track and the anchor separately | Pass after fix (#56) |
 
 Findings:
 
-- **Map card** (fixed in this PR): see check 8. The README now has an anchor map card with
+- **Map card** (fixed in #56): see check 8. The README now has an anchor map card with
   both settings, tested against real entities.
-- **Icons** (fixed in this PR): the switch and the distance sensor showed the generic
+- **Icons** (fixed in #56): the switch and the distance sensor showed the generic
   distance arrow on the map and in the entities card; they now show an anchor
   (`icons.json`), the radius a radius icon.
 - The distance shown lags the raw distance by up to 1 m (dead-band, SPEC §10.2): it read
