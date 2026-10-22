@@ -6,6 +6,10 @@ versioning: SemVer.
 ## [Unreleased]
 
 ### Added
+- Tests: the anchor card fixture also records your boat's tracker history, for the swing
+  track (#80).
+- Specification: recentering the anchor circle decided (OD-39, SPEC v0.26 §9.8), to be built
+  in WP27 (#81); TEST v0.33 (WP26 tests done).
 - README: the anchor card for the cockpit in the *Anchor watch* section (#76).
 - Specification: the own boat's details also give the position in decimal degrees (SPEC
   v0.25 §9.7, TEST v0.32 U-CARD-08) (#77).
