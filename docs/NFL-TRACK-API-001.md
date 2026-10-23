@@ -212,7 +212,7 @@ R-1 is met by the separate uploader `ovander/ha-noforeignland` (HA-SAIL-SPEC-001
 | OD-5 | Any delete / replace endpoint for erroneous points | Recovery from duplicates | Assume none; invest in idempotent sending instead |
 | OD-6 | Server tolerance to out-of-order or backdated points | Buffer replay after outage (R-1) | Always send ascending; test with a backdated segment before relying on it |
 | OD-7 | Producer host for Olivier's boat: Home Assistant vs standalone Go service on the boat computer | Architecture of the producer | **Settled:** Home Assistant is the producer (HA-SAIL-SPEC-001 OD-27), in a separate integration `ha-noforeignland` (OD-28, resolved v0.29); not the Go service of §11 |
-| OD-8 | Which integration key to use during development | Must not reuse the SignalK plugin's shared key | Request a dedicated key before first live send; use a local mock server until then |
+| OD-8 | Which integration key to use during development | Must not reuse the SignalK plugin's shared key | Request a dedicated key before first live send; use a local mock server until then. That key is then built into `ha-noforeignland` (HA-SAIL-SPEC-001 OD-45), with noforeignland's agreement to its publication |
 
 ## 11. Go producer — design notes
 

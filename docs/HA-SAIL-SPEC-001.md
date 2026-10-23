@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.30 (draft) |
+| Version | 0.31 (draft) |
 | Date | 2026-10-22 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.31 | 2026-10-23 | WP31 (#96): new OD-45, resolved (owner): noforeignland's integration key is built into the uploader, as noforeignland's SignalK plugin ships its own; setup asks only for the source and the boat key, with an optional override required while the built-in key is empty (§9.10). |
 | 0.30 | 2026-10-23 | WP30 (#93): the uploader built in ovander/ha-noforeignland#1 (§9.10). A logged point's time is the sampling time, not the source state's last update: Vigie's tracker does not update while the boat is still (dead-band), so the keepalive point would carry an old time. Keys can be changed with a reconfigure step. OD-43 amended (owner): points still logged each minute, but sent once an hour, and one point every 6 h when stationary (was every 10 min and 24 h). |
 | 0.29 | 2026-10-23 | WP29 (#91): OD-28 resolved (owner, option b): sharing the track on noforeignland is a separate integration, `ovander/ha-noforeignland` (domain `noforeignland`), that uploads any `device_tracker` with outage buffering; Vigie stays offline. Specified in new §9.10 (component C-15), not implemented. New OD-41…OD-44, resolved by the owner: the name, a new phase P8 *Track sharing* (§13), the reference client's defaults, a *Sharing* switch for privacy. §2.1, §2.2 updated. |
 | 0.28 | 2026-10-23 | WP28 (#87): owner's lab finding, the cards were hard to install and to put on a dashboard. New §9.9 and component C-14: a ready-made dashboard (dashboard strategy `custom:vigie`) shipped in the cards' file, one view per boat with both cards, found from Home Assistant's entity registry. New OD-40, resolved (owner): the auto dashboard, rather than a YAML to paste. §2.1 and §13 P7 rows extended. No change in Vigie's code. |
@@ -522,9 +523,9 @@ Specified in v0.29 (WP29, #91) after OD-28 was resolved (owner, option b); built
 |---|---|
 | Source | A `device_tracker` entity (entity selector); proposes Vigie's own boat tracker when there is one |
 | Boat key | The boat's API key from noforeignland's website (X-12 §4.2); a password field |
-| Integration key | noforeignland's key for this integration (X-12 §4.1); a password field, UUID format checked |
+| Integration key | Optional (OD-45): an override of the built-in key, a password field, UUID format checked; required only while the integration has no built-in key |
 
-No request is sent during setup: a test send would put a point on the public map. A key is only proved by the first send (status *rejected* otherwise, below). Both keys stay in the config entry, are never logged and are redacted from diagnostics. The integration key is never committed to the repository; the shared key of the SignalK plugin is never used (X-12 §4.1, OD-8).
+No request is sent during setup: a test send would put a point on the public map. A key is only proved by the first send (status *rejected* otherwise, below). **Integration key (OD-45, v0.31):** noforeignland's key identifies the software, not the boat (X-12 §4.1), so it is built into the integration (`protocol.BUILTIN_INTEGRATION_KEY`), as noforeignland's own SignalK plugin ships its key; it is added once noforeignland has issued it and agreed to its publication. Until then setup requires the optional field. Neither the shared key of the SignalK plugin nor any other project's key is used (X-12 OD-8). The boat key and an override stay in the config entry, are never logged and are redacted from diagnostics, which only say which integration key is used (`override`, `built-in` or `none`); sending with no key at all is a rejection.
 
 **Options (OD-43: the reference client's defaults, X-12 §8.1, §8.3, except sending and the stationary point, amended v0.30).**
 
@@ -676,6 +677,7 @@ Changing an option reloads the entry. The anchor radius is not an option: it cha
 | ~~OD-42~~ | ~~Track uploader: phase~~ | **Resolved v0.29** (owner): new phase P8 *Track sharing*, after P7, independent of P4; #51 moves into it (§13) | — |
 | ~~OD-43~~ | ~~Track uploader: sampling and sending defaults~~ | **Resolved v0.29** (owner): the reference client's (X-12 §8.1, §8.3): 60 s, 80 m, 1.5 kn, 24 h keepalive, send every 10 min; buffer 10 000 points; all in the options (§9.10). Rejected: a lighter default (5 min, hourly). **Amended v0.30** (owner): send every 60 min and a stationary point every 6 h; logging stays at one point a minute after 80 m, so the track keeps its detail (rejected: one point an hour, which would cut across headlands) | — |
 | ~~OD-44~~ | ~~Track uploader: privacy~~ | **Resolved v0.29** (owner): a *Sharing* switch; off, nothing is logged or sent (§9.10). Rejected: also pausing inside a chosen zone; no control | — |
+| ~~OD-45~~ | ~~Track uploader: where noforeignland's integration key lives~~ | **Resolved v0.31** (owner): built into the integration, as noforeignland's SignalK plugin ships its own; an optional override in setup and Reconfigure (§9.10). Publication agreed with noforeignland when the key is requested. Rejected: every user asking noforeignland for a key of their own | — |
 
 (OD-05 and OD-09 from v0.1 were tied to NMEA 2000 and polars; both moved to P4 and are no longer open for v1.)
 

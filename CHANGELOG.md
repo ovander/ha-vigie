@@ -19,6 +19,8 @@ versioning: SemVer.
   [ha-noforeignland](https://github.com/ovander/ha-noforeignland) (SPEC v0.30, TEST v0.38
   U-NFL and F-NFL Done; P8 report; #93). Defaults amended by the owner: sent once an hour,
   one point every 6 h when stationary (OD-43).
+- Docs: noforeignland's integration key is built into ha-noforeignland, with an optional
+  override (SPEC v0.31 OD-45, TEST v0.39; #96).
 
 ## [0.4.0-beta.1] - 2026-10-22
 
