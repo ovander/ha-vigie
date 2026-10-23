@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.35 (draft) |
+| Version | 0.36 (draft) |
 | Date | 2026-10-22 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.36 | 2026-10-23 | WP28 (#87, SPEC v0.28 §9.9, OD-40): new §3.10 `U-DASH` and §4.9 `F-DASH` for the ready-made dashboard, in the card repository, Done; E-09 also checks the dashboard; §9 row P7. Pre-run in Home Assistant 2026.2.3 in `docs/test-reports/P7-report.md`. |
 | 0.35 | 2026-10-22 | §5.1 feed: the replay tool serves over TCP (`--tcp PORT`, Vigie port `socket://HOST:PORT`) for a network bench from a laptop; tested in `tests/tools/test_replay.py`. |
 | 0.34 | 2026-10-22 | WP27 (#81, OD-39): U-ANC-13 and F-ANC-10 (recentering in Vigie), U-ACARD-09 (circle fit), F-ACARD-12 and -13 (recenter on the swing, move by hand); F-ACARD-10 now allows the fourth call. U-ANC and F-ANC in this repository, Done; the card's in ovander/ha-vigie-card. |
 | 0.33 | 2026-10-22 | WP26 (#80): U-ACARD-04, F-ACARD-07 (swing track) and F-ACARD-11 (editor) Done in ovander/ha-vigie-card#13; U-ACARD-02 and F-ACARD-02 extended with the E-09 pre-run findings; the anchor fixture also records the tracker's history in Home Assistant's compressed format (`s`, `a`, `lu`); F-ACARD-10 also checks that the only WebSocket message is the history request. E-09 pre-run in `docs/test-reports/P7-report.md`. |
@@ -259,6 +260,18 @@ In the card repository (`test/unit/`), pure TypeScript functions, as §3.8; valu
 | U-ACARD-08 | Translations: every anchor-card key in `en` and `fr` | Same key sets, no empty string (with U-CARD-07) | Done |
 | U-ACARD-09 | Anchor from the swing (OD-39 A): points on a 30 m circle around 43.5° N, 7.25° E over 120°; ±3 m noise over 180°; 9 min at anchor; 9 points; 60° of arc; an 80 m circle with a 50 m watch | Centre within 0.01 m, radius 30 m, arc 120°; within 3 m; refused: too soon, too few, small arc, implausible | Done |
 
+### 3.10 Vigie dashboard — `U-DASH` (SPEC §9.9, P7)
+
+In the card repository (`test/unit/`), pure TypeScript functions, as §3.8.
+
+| ID | Case | Expected | Status |
+|---|---|---|---|
+| U-DASH-01 | Registry with two Vigie boats (one device renamed by the user, one with renamed entity IDs), a watched-target tracker and another integration's entity | Two boats in name order, each with its entities by translation key; the target and the other entity left out | Done |
+| U-DASH-02 | No registry: the recorded states of `multi-target` and `anchor-drag`; a tracker with a friendly name; a Home Assistant without Vigie | Garnet with its seven entities by Vigie's default IDs; named after the tracker's friendly name; no boat | Done |
+| U-DASH-03 | One boat's view; a boat without collision risk, anchor distance, alarm or radius; French | A sections view (3 columns, the traffic section over 2) with a heading and the traffic map, a heading and the anchor card, each configuration accepted by its card's validation; the missing keys left out, never guessed; headings in French; one view per boat | Done |
+| U-DASH-04 | No Vigie boat; `boat` naming no boat | One view with a message on how to set Vigie up (French when HA is); the message names the boat asked for | Done |
+| U-DASH-05 | `boat` by name, by path, in another case; view paths of `Garnet II`, `Éole & Cie`, `***` | The one boat; `garnet-ii`, `eole-cie`, `vigie` | Done |
+
 ## 4. Functional tests (`tests/integration/`)
 
 Run inside Home Assistant's test harness (`pytest-homeassistant-custom-component==0.13.316`, HA 2026.2.3 — SPEC OD-06). The serial port is replaced by a **fake transport** that feeds lines from a fixture or scenario (D-04 to D-08), under control of the test (pause, disconnect, burst). Time is controlled with the harness's time-travel helpers, so no test sleeps in real time.
@@ -387,6 +400,14 @@ In the card repository (`test/browser/`), as §4.7: headless Chromium, a fake `h
 | F-ACARD-12 | Recenter on the swing (OD-39 A): anchor written 20 m north of the recorded swing, 15 min at anchor; then 5 min; then the drag alarm | Dashed preview and "Recenter garnet's circle here? (≈ 20 m…)"; *Cancel*: no call; *Recenter*: `vigie.drop_anchor` with the entry from the registries, `keep_since: true`, a point within 5 m of the swing's centre. *Too soon* with *Place it by hand*. Buttons disabled during the alarm | Done |
 | F-ACARD-13 | Move the anchor by hand (OD-39 B): tap the map | Preview at the tapped point; *Recenter* calls `vigie.drop_anchor` with exactly that point and `keep_since: true` | Done |
 
+### 4.9 Vigie dashboard — `F-DASH` (SPEC §9.9, P7)
+
+In the card repository (`test/browser/`), as §4.7; the smoke test of the built file also generates the dashboard.
+
+| ID | Case | Expected | Status |
+|---|---|---|---|
+| F-DASH-01 | The file loaded; the dashboard strategy and the view strategy called with the recorded states, then each generated card built from its `type` as Home Assistant does | Both strategy elements defined; one view with the traffic map and the anchor card; each card draws the boat, with no "not found" message; the view strategy gives the two sections | Done |
+
 ## 5. End-to-end tests
 
 E2E runs on a real Home Assistant instance, in three stages of increasing realism. Each stage has a written checklist; results are recorded in the test report (§9).
@@ -412,7 +433,7 @@ Setup (TP-01, TP-02, SPEC OD-12 — resolved v0.3):
 | E-06 | HA restart during replay | Integration reloads, entities come back, no duplicates |
 | E-07 | P5: replay `anchor-drag` at real speed, drop the anchor at the start with `vigie.drop_anchor` (latitude 43.5, longitude 7.25, radius 50), README anchor automation installed; restart HA once while armed | Anchor shown on the map card; no alarm while swinging; alarm `drag` where `--list` says (± 2 s) and one notification on the phone; armed state and anchor point survive the restart. Checklist in `docs/test-reports/P5-report.md` |
 | E-08 | P6: the card on a dashboard (phone and tablet), replay `multi-target` then `named-traffic` at real speed | Every target drawn where `--list` puts it, threats red with their CPA point and values matching `sensor.<boat>_closest_threat_cpa`/`_tcpa` (± 0.02 NM, ± 0.2 min); names as in P3; no visible lag beyond the 5 s list rebuild; with the network cut, boat, targets and rings still drawn. Checklist in `docs/test-reports/P6-report.md` |
-| E-09 | P7: the anchor card on a dashboard (phone and tablet), replay `anchor-drag` at real speed; drop the anchor at the start with `vigie.drop_anchor` (latitude 43.5, longitude 7.25, radius 50) as in E-07; from the card, radius − to 45 m then + back to 50 m before 600 s (the boat stays inside, below 40 m); after the alarm, *Raise anchor* (cancel once, then confirm), then *Drop anchor here* | Status, distance and gauge follow `sensor.<boat>_anchor_distance`; the swing track draws the swing; *Outside the circle* (amber) from 678 s with the boat in view, then *Dragging* where `--list` says (± 2 s), shown on both screens; reloading the page keeps the track; *Raise* only after confirmation; *Drop anchor here* arms at the boat's position; with the network cut everything but the tiles drawn. Checklist in `docs/test-reports/P7-report.md` |
+| E-09 | P7: the anchor card on a dashboard (phone and tablet), replay `anchor-drag` at real speed; drop the anchor at the start with `vigie.drop_anchor` (latitude 43.5, longitude 7.25, radius 50) as in E-07; from the card, radius − to 45 m then + back to 50 m before 600 s (the boat stays inside, below 40 m); after the alarm, *Raise anchor* (cancel once, then confirm), then *Drop anchor here* | Status, distance and gauge follow `sensor.<boat>_anchor_distance`; the swing track draws the swing; *Outside the circle* (amber) from 678 s with the boat in view, then *Dragging* where `--list` says (± 2 s), shown on both screens; reloading the page keeps the track; *Raise* only after confirmation; *Drop anchor here* arms at the boat's position; with the network cut everything but the tiles drawn; the ready-made dashboard (`strategy: custom:vigie`, SPEC §9.9) shows both cards for the boat. Checklist in `docs/test-reports/P7-report.md` |
 
 ### 5.2 Stage E-2 — On board, in port (real receiver)
 
@@ -494,7 +515,7 @@ Functional requirements map by SPEC section: §7.2 → U-GPS; §7.3 → U-AIS; �
 | P3 Static data | U-AIS-04, U-AIS-15…22; U-STA (static store, WP12); F-TRF static checks (entities, WP13); E-12 extended to names and ship types | All green; on board, names and ship types of 5 targets match the chartplotter (E-12); U-AIS-13 on the receiver capture (#2) decodes its type 5/24 lines without rejects |
 | P5 Anchor watch (SPEC OD-21) | U-ANC, F-ANC, E-07, E-17, E-24 | All green; on board, no false alarm overnight (E-17) and the alarm fires when motoring out of the radius (E-24) |
 | P6 Traffic map card (SPEC OD-33) | U-CARD, F-CARD (card repository), F-TRF-12, F-PERF-03, E-08 | All green; on the bench every target drawn where expected, threats with the right CPA (E-08) |
-| P7 Anchor card (SPEC OD-38) | U-ACARD, F-ACARD (card repository), the anchor fixtures (Vigie), E-09 | All green; on the bench the card drives `anchor-drag` and shows *Dragging* where expected (E-09) |
+| P7 Anchor card (SPEC OD-38) | U-ACARD, F-ACARD, U-DASH, F-DASH (card repository), the anchor fixtures (Vigie), E-09 | All green; on the bench the card drives `anchor-drag` and shows *Dragging* where expected (E-09) |
 
 **Test report** per release: version, commit, CI run link, coverage figures, E-stage checklists with date/location/conditions, deviations and their tickets. Stored in the repository under `docs/test-reports/`.
 

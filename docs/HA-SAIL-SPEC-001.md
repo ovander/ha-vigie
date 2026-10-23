@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.27 (draft) |
+| Version | 0.28 (draft) |
 | Date | 2026-10-22 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.28 | 2026-10-23 | WP28 (#87): owner's lab finding, the cards were hard to install and to put on a dashboard. New §9.9 and component C-14: a ready-made dashboard (dashboard strategy `custom:vigie`) shipped in the cards' file, one view per boat with both cards, found from Home Assistant's entity registry. New OD-40, resolved (owner): the auto dashboard, rather than a YAML to paste. §2.1 and §13 P7 rows extended. No change in Vigie's code. |
 | 0.27 | 2026-10-22 | WP27 (#81): recentering built. §8.4 recentering; §9.6 `keep_since` on `vigie.drop_anchor`; §9.8 the two buttons, the fit's conditions, the confirmation. OD-39 amended (owner): the largest distance restarts from the new point (it was measured from the old one), and Vigie itself refuses a recentering while an alarm is on. |
 | 0.26 | 2026-10-22 | WP26 (#80): swing track and editor of the anchor card built (§9.8); E-09 pre-run findings: *Outside the circle* status, the boat kept in view when outside the circle, times in the user's 12/24 h format. New OD-39, resolved (owner, "A + B following your recommendations"): recentering the anchor circle, specified and built in WP27 (#81); it adds a fourth call to the anchor card (amends OD-35) and a `keep_since` field to `vigie.drop_anchor`. |
 | 0.25 | 2026-10-22 | #77 (owner): the own boat's details also give the position in decimal degrees, signed with a point and six decimals whatever the language (`43.501917, 7.250000`), to paste into a charting app or `vigie.drop_anchor`; the line under the map keeps degrees and minutes (§9.7, §9.8). |
@@ -66,7 +67,7 @@ The integration must run standalone on a boat-mounted Home Assistant instance (t
 - CPA/TCPA computation for each target and a closest-threat alert (§8).
 - UI configuration (config flow + options flow), HACS-installable.
 - Anchor watch on own position: swing radius, drag and position-loss alarm (§8.4, §9.6). Phase P5 (OD-21, resolved v0.15).
-- Dashboard cards, in a separate repository: the AIS traffic map (§9.7, P6) and the anchor card (§9.8, P7; OD-34, OD-38 resolved v0.24).
+- Dashboard cards, in a separate repository: the AIS traffic map (§9.7, P6) and the anchor card (§9.8, P7; OD-34, OD-38 resolved v0.24), and a ready-made dashboard with both (§9.9, OD-40).
 
 ### 2.2 Out of scope (v1)
 
@@ -160,6 +161,7 @@ Pure-Python modules (no `homeassistant` import, `mypy --strict`, covered by the 
 | C-11 | Anchor watch (P5) | `anchor.py` (pure), `switch.py`, `number.py`, `services.py`, `services.yaml` | Anchor point, swing radius, drag and position-loss alarm (§8.4); entities and services (§9.6). `anchor.py` has no HA import. |
 | C-12 | AIS traffic map card (P6) | separate repository `ha-vigie-card` (TypeScript, Lit, Leaflet) | Lovelace card drawing the own boat, every target of the `targets` list, threats with their CPA point, range rings and the anchor (§9.7). Reads Home Assistant states only; no code in this repository apart from the `targets` fields (WP20). |
 | C-13 | Anchor card (P7) | `vigie-anchor-card`, in `ha-vigie-card` next to C-12, in the same JavaScript file (OD-34) | Lovelace card for the anchor watch in the cockpit: distance against radius, alarm and its reason, swing circle and swing track, controls drop / raise / radius (§9.8). No code in this repository: it uses the entities and services of §9.6 as they are. |
+| C-14 | Vigie dashboard (P7, OD-40) | dashboard strategy `custom:vigie` in `ha-vigie-card`, in the same JavaScript file as C-12 and C-13 | Builds a dashboard (or one view) with C-12 and C-13 for each Vigie boat, from Home Assistant's entity registry (§9.9). Reads `hass` only; no code in this repository. |
 
 ### 5.3 File layout
 
@@ -483,6 +485,25 @@ Either way the proposed circle is drawn dashed on the map and the card asks "Rec
 
 **Clean room (§3.1).** As §9.7; prior art for anchor alarms (X-06) is a reference for behaviour only.
 
+### 9.9 Vigie dashboard (C-14, P7)
+
+Added in v0.28 (WP28, #87) after the owner's lab finding: installing the cards and configuring them on a dashboard was too hard for a newcomer to Home Assistant. Decision OD-40 (owner): an automatic dashboard rather than a YAML to paste.
+
+**What it is.** A Home Assistant *dashboard strategy* registered by the cards' file (`ll-strategy-dashboard-vigie`): a dashboard whose whole configuration is
+
+```yaml
+strategy:
+  type: custom:vigie
+```
+
+is generated each time it loads. The same file registers the view strategy (`ll-strategy-view-vigie`), so one Vigie view can be added to an existing dashboard (`views: [{title: Boat, strategy: {type: custom:vigie}}]`).
+
+**Finding the boats.** From Home Assistant's entity registry as the frontend has it (`hass.entities`, `hass.devices`): the entities of platform `vigie`, grouped by device, recognised by domain and translation key (`sensor` `ais_targets`, `device_tracker` `position`, `binary_sensor` `collision_risk`, `sensor` `anchor_distance`, `switch` `anchor_watch`, `binary_sensor` `anchor_alarm`, `number` `anchor_radius`), so entity IDs the user renamed still work; watched-target trackers are other devices and are left out. The boat's name is the device's (the user's name for it first). Without the registry, Vigie's default entity IDs (`sensor.<boat>_ais_targets`, `switch.<boat>_anchor_watch`…). Option `boat`: only the boat of that name (case aside, or its view path).
+
+**What it builds.** One *sections* view per boat, in name order, titled with the boat's name: a heading and the traffic map (C-12, §9.7) over two columns, with the boat's targets, tracker, collision risk and anchor distance; a heading and the anchor card (C-13, §9.8) in the third, with each anchor entity given explicitly. On a phone the two stack. A card is left out when the boat lacks its required entities. No Vigie boat (or not the one asked for): one view that says how to set Vigie up, in English or French.
+
+**Limits.** The strategy only reads `hass`: no service call, no request of its own. The generated dashboard is not editable as such; Home Assistant's *Take control* turns it into an ordinary dashboard (no longer generated). Options of the cards themselves (tiles, overlay, heights) keep their defaults until then.
+
 ## 10. Runtime behaviour
 
 ### 10.1 Availability
@@ -553,7 +574,7 @@ Changing an option reloads the entry. The anchor radius is not an option: it cha
 | P3 | AIS static data (types 5, 24): names, ship type, dimensions; Lovelace map card configuration (built-in map card: own boat and watched targets, OD-19) | U-AIS static tests, U-STA and the F-TRF static checks green; on board, names and ship types of 5 targets match the chartplotter (E-12); the receiver capture (#2) decodes its type 5/24 lines without rejects |
 | P5 | Anchor watch (§8.4, §9.6, §10.4): `anchor.py`, switch, radius, alarm, distance, services, restore; independent of P4 (OD-21) | U-ANC and F-ANC green; bench `anchor-drag` scenario raises the alarm where the preset says (E-07); in port, armed overnight at 20 m without a false alarm (E-17); at an anchorage, motoring out of the radius raises the alarm and the phone notification (E-24) |
 | P6 | AIS traffic map card (§9.7, C-12): `heading` and `threat` in the `targets` rows (Vigie, done in WP20); custom card `vigie-traffic-card` in its own repository, HACS plugin (OD-29, OD-33) | U-CARD and F-CARD green in the card repository; Vigie's F-TRF/F-PERF checks still green with the new fields; on the bench, every target of `multi-target` and `named-traffic` drawn where `--list` says, threats red with their CPA point (E-08) |
-| P7 (OD-38) | Anchor card (§9.8, C-13): `vigie-anchor-card` next to the traffic card (OD-34), with drop / raise / radius controls (OD-35); no Vigie change | U-ACARD and F-ACARD green in the card repository; on the bench, `anchor-drag` driven from the card: drop, radius, swing track, the *Dragging* status where `--list` says, raise only after confirmation (E-09) |
+| P7 (OD-38) | Anchor card (§9.8, C-13): `vigie-anchor-card` next to the traffic card (OD-34), with drop / raise / radius controls (OD-35); the ready-made dashboard (§9.9, C-14, OD-40); no Vigie change | U-ACARD and F-ACARD green in the card repository; on the bench, `anchor-drag` driven from the card: drop, radius, swing track, the *Dragging* status where `--list` says, raise only after confirmation (E-09) |
 | P4 | Optional additional sources if instruments are added (wind, depth, log) and the performance layer (true wind, VMG, polars), via a second port or TCP | Requires new hardware; re-opens §2.2 |
 
 ## 14. Open decisions
@@ -597,6 +618,7 @@ Changing an option reloads the entry. The anchor radius is not an option: it cha
 | ~~OD-37~~ | ~~Anchor card: sound on alarm~~ | **Resolved v0.24:** no sound; the alert is the critical phone notification (§9.8) | — |
 | ~~OD-38~~ | ~~Anchor card: phase~~ | **Resolved v0.24:** new phase P7, after P5 and P6, independent of P4 (§13) | — |
 | ~~OD-39~~ | ~~Anchor card: recentering the circle (the boat has dropped back when the button is pressed)~~ | **Resolved v0.26** (owner, options A + B): (A) recenter on the circle fitted to the swing track, (B) move the anchor by tapping the map; confirmation, radius kept, disabled during an alarm; a fourth call `vigie.drop_anchor` with coordinates and `keep_since: true` (amends OD-35, §9.6, §9.8). **Amended v0.27** (owner): the largest distance restarts from the new point; Vigie itself refuses a recentering while an alarm is on (§8.4). Rejected: (C) back in time by a chosen delay, (D) chain length and bearing typed in | — |
+| ~~OD-40~~ | ~~A ready-made dashboard with both cards (owner's request, #87)~~ | **Resolved v0.28** (owner): an automatic dashboard, a dashboard strategy `custom:vigie` in the cards' file that finds the boat's entities itself (§9.9, C-14). Rejected: a complete dashboard YAML to paste and edit by hand (entity names to replace, out of date when entities are renamed); a dashboard created by Vigie itself (no supported Home Assistant API for an integration to create a dashboard) | — |
 
 (OD-05 and OD-09 from v0.1 were tied to NMEA 2000 and polars; both moved to P4 and are no longer open for v1.)
 
