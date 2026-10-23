@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.31 (draft) |
+| Version | 0.32 (draft) |
 | Date | 2026-10-22 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.32 | 2026-10-23 | WP32 (#98): owner's request. §11.1 *Reconfigure*: the serial port and the baud rate of a configured boat can be changed, with the setup probe, keeping the entities, their history, the options and the anchor watch; a port of another Vigie boat is refused. |
 | 0.31 | 2026-10-23 | WP31 (#96): new OD-45, resolved (owner): noforeignland's integration key is built into the uploader, as noforeignland's SignalK plugin ships its own; setup asks only for the source and the boat key, with an optional override required while the built-in key is empty (§9.10). |
 | 0.30 | 2026-10-23 | WP30 (#93): the uploader built in ovander/ha-noforeignland#1 (§9.10). A logged point's time is the sampling time, not the source state's last update: Vigie's tracker does not update while the boat is still (dead-band), so the keepalive point would carry an old time. Keys can be changed with a reconfigure step. OD-43 amended (owner): points still logged each minute, but sent once an hour, and one point every 6 h when stationary (was every 10 min and 24 h). |
 | 0.29 | 2026-10-23 | WP29 (#91): OD-28 resolved (owner, option b): sharing the track on noforeignland is a separate integration, `ovander/ha-noforeignland` (domain `noforeignland`), that uploads any `device_tracker` with outage buffering; Vigie stays offline. Specified in new §9.10 (component C-15), not implemented. New OD-41…OD-44, resolved by the owner: the name, a new phase P8 *Track sharing* (§13), the reference client's defaults, a *Sharing* switch for privacy. §2.1, §2.2 updated. |
@@ -587,6 +588,7 @@ Power on board can be intermittent (§3.2). The armed state, anchor point, radiu
 3. Baud rate: 38 400 default, 4 800 and custom offered. Nothing in the code assumes a rate (OD-14 stays open until X-09).
 4. Validation: open the port and wait up to 5 s for one valid sentence. With no data, a confirmation step shows `no_data` and lets the user save anyway. If the probe shows only garbage, the form shows `wrong_baud` and suggests the other baud rate.
 5. The config entry's unique ID is the serial port; configuring the same port twice is aborted.
+6. **Reconfigure** (WP32, v0.32): the port and the baud rate of a configured boat can be changed (⋮ → Reconfigure), with the same form and probe as steps 2–4. The probe is skipped when only the baud rate changes on the port Vigie already holds (it is busy). The entry keeps its ID, so the entities, their history, the options and the anchor watch are kept; its unique ID becomes the new port, and a port already used by another Vigie entry is refused (`port_in_use`). The entry then reloads on the new settings.
 
 ### 11.2 Options flow
 

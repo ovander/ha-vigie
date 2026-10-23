@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.39 (draft) |
+| Version | 0.40 (draft) |
 | Date | 2026-10-22 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.40 | 2026-10-23 | WP32 (#98, SPEC v0.32 §11.1): F-LIFE-09…12, reconfiguring the port and the baud rate, Done. |
 | 0.39 | 2026-10-23 | WP31 (#96, SPEC v0.31 OD-45): U-NFL-09 and F-NFL-01 extended to the built-in integration key and its optional override, Done in ovander/ha-noforeignland#3. |
 | 0.38 | 2026-10-23 | WP30 (#93): U-NFL-01…09 and F-NFL-01…09 Done in ovander/ha-noforeignland#1 (46 tests, noforeignland mocked, 100 % coverage on the pure core); U-NFL-03 and F-NFL-03 follow OD-43 as amended (hourly sends, a stationary point every 6 h). E-25 sets the send to 10 min to stay short. E-25 and E-26 wait for the integration key. |
 | 0.37 | 2026-10-23 | WP29 (#91, SPEC v0.29 §9.10, OD-28): the noforeignland uploader's tests planned: new §3.11 `U-NFL` and §4.10 `F-NFL` (in `ovander/ha-noforeignland`), E-25 (bench, with a test boat) and E-26 (under way); §9 row P8. All Planned. |
@@ -307,6 +308,10 @@ Run inside Home Assistant's test harness (`pytest-homeassistant-custom-component
 | F-LIFE-06 | Reload after options change | New options applied, entities keep unique IDs | NFR-06 | Done |
 | F-LIFE-07 | Options flow: every option round-trips | Stored and applied | §11.2 | Done |
 | F-LIFE-08 | Diagnostics download | Config redacted, counters present | §9.5 | Done |
+| F-LIFE-09 | Reconfigure a running boat to another port and baud rate, data arriving | Form shows the current port; probe on the new port; entry updated (data, unique ID), reloaded on the new port; same entry, entities and unique IDs | §11.1 | Done |
+| F-LIFE-10 | Reconfigure: port cannot be opened; garbage; invalid baud rate | `cannot_connect`; `wrong_baud` with the other rate; `invalid_baudrate`; the entry unchanged | §11.1 | Done |
+| F-LIFE-11 | Reconfigure: no data on the new port; same port, other baud rate | `no_data`, saved anyway; no probe of Vigie's own busy port, saved and reloaded at the new rate | §11.1 | Done |
+| F-LIFE-12 | Reconfigure to the port of another Vigie boat | `port_in_use`, the entry unchanged | §11.1 | Done |
 
 ### 4.2 Hub and transport — `F-HUB`
 

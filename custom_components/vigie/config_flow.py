@@ -8,6 +8,7 @@ from typing import Any
 
 import voluptuous as vol
 from homeassistant.config_entries import (
+    SOURCE_RECONFIGURE,
     ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
@@ -91,42 +92,15 @@ class VigieConfigFlow(ConfigFlow, domain=DOMAIN):
                     CONF_SERIAL_PORT: port,
                     CONF_BAUDRATE: baudrate,
                 }
-                try:
-                    result = await probe(serial_transport(port, baudrate))
-                except HubConnectionError:
-                    errors["base"] = "cannot_connect"
-                else:
-                    if result is ProbeResult.OK:
-                        return self._create()
-                    if result is ProbeResult.NO_DATA:
-                        return await self.async_step_no_data()
-                    errors["base"] = "wrong_baud"
-                    placeholders["other_baudrate"] = str(_other_baudrate(baudrate))
+                result = await self._async_probe(errors, placeholders)
+                if result is not None:
+                    return result
 
-        ports = await self.hass.async_add_executor_job(list_serial_ports)
         defaults = user_input or {}
         schema = vol.Schema(
             {
                 vol.Required(CONF_NAME, default=defaults.get(CONF_NAME, "")): str,
-                vol.Required(
-                    CONF_SERIAL_PORT,
-                    default=defaults.get(
-                        CONF_SERIAL_PORT, ports[0] if ports else DEFAULT_SERIAL_PORT
-                    ),
-                ): SelectSelector(
-                    SelectSelectorConfig(
-                        options=ports, custom_value=True, mode=SelectSelectorMode.DROPDOWN
-                    )
-                ),
-                vol.Required(
-                    CONF_BAUDRATE, default=str(defaults.get(CONF_BAUDRATE, DEFAULT_BAUDRATE))
-                ): SelectSelector(
-                    SelectSelectorConfig(
-                        options=[str(b) for b in BAUDRATES],
-                        custom_value=True,
-                        mode=SelectSelectorMode.DROPDOWN,
-                    )
-                ),
+                **await self._port_fields(defaults),
             }
         )
         return self.async_show_form(
@@ -135,6 +109,83 @@ class VigieConfigFlow(ConfigFlow, domain=DOMAIN):
             errors=errors,
             description_placeholders=placeholders or None,
         )
+
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Another port or baud rate for a configured boat (WP32): entities and state kept."""
+        entry = self._get_reconfigure_entry()
+        errors: dict[str, str] = {}
+        placeholders: dict[str, str] = {}
+        if user_input is not None:
+            port = user_input[CONF_SERIAL_PORT].strip()
+            baudrate = _parse_baudrate(user_input[CONF_BAUDRATE])
+            if baudrate is None:
+                errors[CONF_BAUDRATE] = "invalid_baudrate"
+            elif any(
+                other.unique_id == port and other.entry_id != entry.entry_id
+                for other in self._async_current_entries(include_ignore=False)
+            ):
+                errors[CONF_SERIAL_PORT] = "port_in_use"
+            else:
+                self._data = {**entry.data, CONF_SERIAL_PORT: port, CONF_BAUDRATE: baudrate}
+                if port == entry.data[CONF_SERIAL_PORT]:
+                    # Vigie holds this port: it cannot be probed, the reload shows the result
+                    return self._create()
+                result = await self._async_probe(errors, placeholders)
+                if result is not None:
+                    return result
+
+        defaults = user_input or dict(entry.data)
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=vol.Schema(await self._port_fields(defaults)),
+            errors=errors,
+            description_placeholders={"name": entry.title, **placeholders},
+        )
+
+    async def _port_fields(self, defaults: dict[str, Any]) -> dict[Any, Any]:
+        """Port (discovered by-id paths, or typed) and baud rate, as setup and reconfigure."""
+        ports = await self.hass.async_add_executor_job(list_serial_ports)
+        current = defaults.get(CONF_SERIAL_PORT)
+        options = ports if current is None or current in ports else [current, *ports]
+        return {
+            vol.Required(
+                CONF_SERIAL_PORT,
+                default=current or (ports[0] if ports else DEFAULT_SERIAL_PORT),
+            ): SelectSelector(
+                SelectSelectorConfig(
+                    options=options, custom_value=True, mode=SelectSelectorMode.DROPDOWN
+                )
+            ),
+            vol.Required(
+                CONF_BAUDRATE, default=str(defaults.get(CONF_BAUDRATE, DEFAULT_BAUDRATE))
+            ): SelectSelector(
+                SelectSelectorConfig(
+                    options=[str(b) for b in BAUDRATES],
+                    custom_value=True,
+                    mode=SelectSelectorMode.DROPDOWN,
+                )
+            ),
+        }
+
+    async def _async_probe(
+        self, errors: dict[str, str], placeholders: dict[str, str]
+    ) -> ConfigFlowResult | None:
+        """Listen on `self._data`'s port; a result to return, or None with `errors` set."""
+        port, baudrate = self._data[CONF_SERIAL_PORT], self._data[CONF_BAUDRATE]
+        try:
+            result = await probe(serial_transport(port, baudrate))
+        except HubConnectionError:
+            errors["base"] = "cannot_connect"
+            return None
+        if result is ProbeResult.OK:
+            return self._create()
+        if result is ProbeResult.NO_DATA:
+            return await self.async_step_no_data()
+        errors["base"] = "wrong_baud"
+        placeholders["other_baudrate"] = str(_other_baudrate(baudrate))
+        return None
 
     async def async_step_no_data(
         self, user_input: dict[str, Any] | None = None
@@ -150,6 +201,12 @@ class VigieConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     def _create(self) -> ConfigFlowResult:
+        if self.source == SOURCE_RECONFIGURE:
+            return self.async_update_reload_and_abort(
+                self._get_reconfigure_entry(),
+                unique_id=self._data[CONF_SERIAL_PORT],
+                data=self._data,
+            )
         return self.async_create_entry(title=self._data[CONF_NAME], data=self._data)
 
 
