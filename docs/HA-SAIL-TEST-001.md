@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.38 (draft) |
+| Version | 0.39 (draft) |
 | Date | 2026-10-22 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.39 | 2026-10-23 | WP31 (#96, SPEC v0.31 OD-45): U-NFL-09 and F-NFL-01 extended to the built-in integration key and its optional override, Done in ovander/ha-noforeignland#3. |
 | 0.38 | 2026-10-23 | WP30 (#93): U-NFL-01…09 and F-NFL-01…09 Done in ovander/ha-noforeignland#1 (46 tests, noforeignland mocked, 100 % coverage on the pure core); U-NFL-03 and F-NFL-03 follow OD-43 as amended (hourly sends, a stationary point every 6 h). E-25 sets the send to 10 min to stay short. E-25 and E-26 wait for the integration key. |
 | 0.37 | 2026-10-23 | WP29 (#91, SPEC v0.29 §9.10, OD-28): the noforeignland uploader's tests planned: new §3.11 `U-NFL` and §4.10 `F-NFL` (in `ovander/ha-noforeignland`), E-25 (bench, with a test boat) and E-26 (under way); §9 row P8. All Planned. |
 | 0.36 | 2026-10-23 | WP28 (#87, SPEC v0.28 §9.9, OD-40): new §3.10 `U-DASH` and §4.9 `F-DASH` for the ready-made dashboard, in the card repository, Done; E-09 also checks the dashboard; §9 row P7. Pre-run in Home Assistant 2026.2.3 in `docs/test-reports/P7-report.md`. |
@@ -288,7 +289,7 @@ In the uploader's repository (`ovander/ha-noforeignland`, `tests/core/`): pure P
 | U-NFL-06 | Request: two points | Form body `boatApiKey`, `timestamp` = the last point's epoch ms, `track` = `[[ms, lat, lon], …]` ascending, `pluginVersion` `ha-noforeignland/<version>`; headers `X-NFL-API-Key`, `Accept-Encoding: identity`; keys never in a log line | Done |
 | U-NFL-07 | Response classification: 200 `{"status":"ok"}`; 200 unreadable body; 200 `{"status":"error","message":"Invalid boat API key"}`; 401; 503; timeout | sent; sent (X-12 §6); rejected with the message; rejected; retry; retry | Done |
 | U-NFL-08 | Buffer round trip (to and from the stored form) after a partial send | Exactly the unsent points, in order | Done |
-| U-NFL-09 | Integration key format | A UUID accepted; anything else refused | Done |
+| U-NFL-09 | Integration key format; which key is sent (OD-45): an override, an empty override, none, with and without a built-in key | A UUID accepted, anything else refused; the override when set, else the built-in key, else none | Done |
 
 ## 4. Functional tests (`tests/integration/`)
 
@@ -432,7 +433,7 @@ In the uploader's repository (`tests/integration/`), with `pytest-homeassistant-
 
 | ID | Case | Expected | Status |
 |---|---|---|---|
-| F-NFL-01 | Config flow: source, boat key, integration key; a non-UUID integration key; Vigie's tracker present | Entry created, no request sent; error on the key field; Vigie's tracker proposed | Done |
+| F-NFL-01 | Config flow: source, boat key and an override; a non-UUID override; Vigie's tracker present; with a built-in key, no override; without one, no override (OD-45) | Entry created, no request sent; error on the key field; Vigie's tracker proposed; entry created from the source and boat key only; a key asked for. Sending: the built-in key in the header, diagnostics `built-in` without the key; no key at all, *rejected* and no request | Done |
 | F-NFL-02 | Entities | *Sharing* (on), *Status*, *Buffered points*, *Last point logged*, *Last send*, with translations in English and French | Done |
 | F-NFL-03 | Boat moving at 6 kn, server answering `ok`: with a 10-min send for 30 min; with the defaults for 2 h, then stationary for 7 h | A point each minute, a send at each interval with the points since the last one; *Status* `ok`. Defaults: a send each hour (59 then 60 points); stationary, one point at 6 h; a still boat logs nothing else | Done |
 | F-NFL-04 | Outage (R-1): server unreachable for 2 h while moving, then back | Points kept (*Status* `waiting`, buffer grows); at recovery one send of all of them, in order, in chunks; no point sent twice, none lost | Done |

@@ -6,7 +6,7 @@ checks are filled in when they are run, and the exit criterion is assessed then.
 | Item | Value |
 |---|---|
 | Phase | P8 Track sharing (SPEC HA-SAIL-SPEC-001 v0.30 §9.10, §13; X-12 0.3.0) |
-| Documents | SPEC v0.30, TEST v0.38 |
+| Documents | SPEC v0.31, TEST v0.39 |
 | Code | `ovander/ha-noforeignland` (C-15). No change in Vigie |
 | Releases | [`v0.1.0-beta.1`](https://github.com/ovander/ha-noforeignland/releases/tag/v0.1.0-beta.1) (pre-release, 2026-10-23, `812caf7`): `noforeignland.zip`, manifest stamped `0.1.0-beta.1`, every other file identical to `main`. Tested against a simulated noforeignland only |
 | CI | `lint`, `unit`, `hassfest`, `hacs` in `ovander/ha-noforeignland` |
@@ -19,7 +19,8 @@ checks are filled in when they are run, and the exit criterion is assessed then.
 |---|---|---|
 | ovander/ha-vigie#92 | #91 | WP29: the uploader specified (SPEC §9.10, C-15); OD-28, OD-41…OD-44 resolved by the owner; tests planned |
 | ovander/ha-noforeignland#1, ovander/ha-vigie#94 | #93 | WP30: the uploader built and tested; TEST statuses; this report |
-| ovander/ha-noforeignland#2, this PR | #93 | Changelog and README (step-by-step install, where the keys and options live, an *Entities* card) for `v0.1.0-beta.1`; the release recorded here |
+| ovander/ha-noforeignland#2, ovander/ha-vigie#95 | #93 | Changelog and README (step-by-step install, where the keys and options live, an *Entities* card) for `v0.1.0-beta.1`; the release recorded here |
+| ovander/ha-noforeignland#3, this PR | #96 | WP31: the integration key built in, an optional override (OD-45) |
 
 ## 2. Test status (TEST §9, row P8)
 
@@ -39,6 +40,7 @@ checks are filled in when they are run, and the exit criterion is assessed then.
 | OD-42 | New phase P8 |
 | OD-43 | The reference client's defaults, in the options; amended (owner): sent once an hour, a stationary point every 6 h |
 | OD-44 | A *Sharing* switch |
+| OD-45 | noforeignland's integration key built into the integration; an optional override |
 
 ## 4. Deviations from SPEC / TEST / CLAUDE.md
 
