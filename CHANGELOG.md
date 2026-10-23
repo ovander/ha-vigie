@@ -15,6 +15,10 @@ versioning: SemVer.
 - Docs: sharing the boat's track on noforeignland is specified as a separate integration,
   `ha-noforeignland`, with outage buffering; Vigie stays offline (SPEC v0.29 §9.10,
   OD-28, OD-41…OD-44, phase P8; TEST v0.37 U-NFL, F-NFL, E-25, E-26; X-12 0.3.0; #91).
+- Docs: the noforeignland uploader is built in
+  [ha-noforeignland](https://github.com/ovander/ha-noforeignland) (SPEC v0.30, TEST v0.38
+  U-NFL and F-NFL Done; P8 report; #93). Defaults amended by the owner: sent once an hour,
+  one point every 6 h when stationary (OD-43).
 
 ## [0.4.0-beta.1] - 2026-10-22
 
