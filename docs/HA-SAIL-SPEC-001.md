@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.28 (draft) |
+| Version | 0.29 (draft) |
 | Date | 2026-10-22 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.29 | 2026-10-23 | WP29 (#91): OD-28 resolved (owner, option b): sharing the track on noforeignland is a separate integration, `ovander/ha-noforeignland` (domain `noforeignland`), that uploads any `device_tracker` with outage buffering; Vigie stays offline. Specified in new §9.10 (component C-15), not implemented. New OD-41…OD-44, resolved by the owner: the name, a new phase P8 *Track sharing* (§13), the reference client's defaults, a *Sharing* switch for privacy. §2.1, §2.2 updated. |
 | 0.28 | 2026-10-23 | WP28 (#87): owner's lab finding, the cards were hard to install and to put on a dashboard. New §9.9 and component C-14: a ready-made dashboard (dashboard strategy `custom:vigie`) shipped in the cards' file, one view per boat with both cards, found from Home Assistant's entity registry. New OD-40, resolved (owner): the auto dashboard, rather than a YAML to paste. §2.1 and §13 P7 rows extended. No change in Vigie's code. |
 | 0.27 | 2026-10-22 | WP27 (#81): recentering built. §8.4 recentering; §9.6 `keep_since` on `vigie.drop_anchor`; §9.8 the two buttons, the fit's conditions, the confirmation. OD-39 amended (owner): the largest distance restarts from the new point (it was measured from the old one), and Vigie itself refuses a recentering while an alarm is on. |
 | 0.26 | 2026-10-22 | WP26 (#80): swing track and editor of the anchor card built (§9.8); E-09 pre-run findings: *Outside the circle* status, the boat kept in view when outside the circle, times in the user's 12/24 h format. New OD-39, resolved (owner, "A + B following your recommendations"): recentering the anchor circle, specified and built in WP27 (#81); it adds a fourth call to the anchor card (amends OD-35) and a `keep_since` field to `vigie.drop_anchor`. |
@@ -68,6 +69,7 @@ The integration must run standalone on a boat-mounted Home Assistant instance (t
 - UI configuration (config flow + options flow), HACS-installable.
 - Anchor watch on own position: swing radius, drag and position-loss alarm (§8.4, §9.6). Phase P5 (OD-21, resolved v0.15).
 - Dashboard cards, in a separate repository: the AIS traffic map (§9.7, P6) and the anchor card (§9.8, P7; OD-34, OD-38 resolved v0.24), and a ready-made dashboard with both (§9.9, OD-40).
+- Sharing the boat's track on noforeignland, with outage buffering, by a separate integration in its own repository (§9.10, P8; OD-28 resolved v0.29). Vigie itself stays offline.
 
 ### 2.2 Out of scope (v1)
 
@@ -75,7 +77,7 @@ The integration must run standalone on a boat-mounted Home Assistant instance (t
 - Navigation / charting (OpenCPN covers this).
 - Transmitting NMEA or AIS (read-only integration).
 - Multiple ports, TCP/UDP input, NMEA 2000.
-- Cloud services of any kind. Sharing the boat's track online (for example with friends and family on a tracking site) is done by Home Assistant itself, from `device_tracker.<boat>`, Vigie opens no connection (OD-27). Positions logged during an internet outage are buffered and sent when it recovers (X-12 §8.5, R-1); where that producer lives is OD-28.
+- Cloud services of any kind. Sharing the boat's track online (for example with friends and family on a tracking site) is done by Home Assistant itself, from `device_tracker.<boat>`, Vigie opens no connection (OD-27). Positions logged during an internet outage are buffered and sent when it recovers (X-12 §8.5, R-1), by the separate uploader of §9.10 (OD-28, resolved v0.29), not by Vigie.
 
 ## 3. Context and constraints
 
@@ -162,6 +164,7 @@ Pure-Python modules (no `homeassistant` import, `mypy --strict`, covered by the 
 | C-12 | AIS traffic map card (P6) | separate repository `ha-vigie-card` (TypeScript, Lit, Leaflet) | Lovelace card drawing the own boat, every target of the `targets` list, threats with their CPA point, range rings and the anchor (§9.7). Reads Home Assistant states only; no code in this repository apart from the `targets` fields (WP20). |
 | C-13 | Anchor card (P7) | `vigie-anchor-card`, in `ha-vigie-card` next to C-12, in the same JavaScript file (OD-34) | Lovelace card for the anchor watch in the cockpit: distance against radius, alarm and its reason, swing circle and swing track, controls drop / raise / radius (§9.8). No code in this repository: it uses the entities and services of §9.6 as they are. |
 | C-14 | Vigie dashboard (P7, OD-40) | dashboard strategy `custom:vigie` in `ha-vigie-card`, in the same JavaScript file as C-12 and C-13 | Builds a dashboard (or one view) with C-12 and C-13 for each Vigie boat, from Home Assistant's entity registry (§9.9). Reads `hass` only; no code in this repository. |
+| C-15 | noforeignland track uploader (P8, OD-28) | separate repository `ha-noforeignland`, Home Assistant integration `noforeignland` (HACS *Integration*) | Logs the positions of a chosen `device_tracker` (Vigie's boat by default), keeps them through restarts and internet outages, and sends them to noforeignland (X-12, §9.10). The only part of the project that opens an outbound connection; Vigie makes none. |
 
 ### 5.3 File layout
 
@@ -504,6 +507,54 @@ is generated each time it loads. The same file registers the view strategy (`ll-
 
 **Limits.** The strategy only reads `hass`: no service call, no request of its own. The generated dashboard is not editable as such; Home Assistant's *Take control* turns it into an ordinary dashboard (no longer generated). Options of the cards themselves (tiles, overlay, heights) keep their defaults until then.
 
+### 9.10 noforeignland track uploader (C-15, P8)
+
+Specified in v0.29 (WP29, #91) after OD-28 was resolved (owner, option b). Not implemented. Nothing in Vigie changes: the uploader reads the boat's tracker like any other entity.
+
+**Purpose.** Friends and family follow the boat on noforeignland's map (X-12). The track has no gap after an internet outage: positions logged offline are sent when the connection returns (X-12 §8.5, R-1). Power on board is intermittent, so the buffer survives a restart.
+
+**Where it lives (OD-28, OD-41).** A Home Assistant custom integration in its own repository, `ovander/ha-noforeignland`, domain `noforeignland`, shown as *noforeignland tracking*; installed through HACS (category *Integration*) and released on its own. It reads any `device_tracker` with a latitude and longitude, so it is not tied to Vigie. The same engineering rules as Vigie apply (CLAUDE.md): a pure-Python core (sampling, buffer, thinning, chunking, request and response handling) with no `homeassistant` import, `mypy --strict`, coverage ≥ 90 %, translations in English and French. Clean room (§3.1): the reference client `nfl-signalk` (MIT) is a reference for behaviour only.
+
+**Setup (config flow).** One entry per boat:
+
+| Field | Rule |
+|---|---|
+| Source | A `device_tracker` entity (entity selector); proposes Vigie's own boat tracker when there is one |
+| Boat key | The boat's API key from noforeignland's website (X-12 §4.2); a password field |
+| Integration key | noforeignland's key for this integration (X-12 §4.1); a password field, UUID format checked |
+
+No request is sent during setup: a test send would put a point on the public map. A key is only proved by the first send (status *rejected* otherwise, below). Both keys stay in the config entry, are never logged and are redacted from diagnostics. The integration key is never committed to the repository; the shared key of the SignalK plugin is never used (X-12 §4.1, OD-8).
+
+**Options (OD-43: the reference client's defaults, X-12 §8.1, §8.3).**
+
+| Option | Default |
+|---|---|
+| Sampling period | 60 s |
+| Minimum move from the last logged point | 80 m |
+| Minimum speed | 1.5 kn |
+| Keepalive: one point when none was logged for | 24 h |
+| Send every | 10 min |
+| Buffer capacity | 10 000 points (about a week under way at one point a minute) |
+
+**Logging.** Every sampling period, and while *Sharing* is on, the source's current position is a candidate point (time = the source state's last update). It is kept when it is at least the minimum move from the last logged point and the speed is at least the minimum speed; the speed is the source's `sog` attribute (knots, Vigie) when present, else the distance from the last logged point over the time between them. A point implying more than 50 m/s from the last logged point is an outlier and dropped. A source unavailable, without position, or with a position out of range logs nothing. The keepalive logs the current position even when stationary. Points go to the buffer first, never straight to the network.
+
+**Buffer (R-1).** Persistent, in Home Assistant's storage (`.storage/noforeignland.<entry_id>`), written at once on every change. Oldest first. When full, the oldest half is thinned (every second point dropped) rather than truncated, so a long passage keeps its shape.
+
+**Sending.** On the send schedule, while *Sharing* is on and the buffer is not empty: the buffer goes oldest first in chunks of at most 1 000 points (X-12 OD-2), one request per chunk, as X-12 §3–§5 (`X-NFL-API-Key` header, `Accept-Encoding: identity`, form body with `boatApiKey`, `timestamp` of the last point, `track`, `pluginVersion` = `ha-noforeignland/<version>`). A chunk leaves the buffer only after a 2xx without an error body (X-12 §6), and the buffer is saved at once, so a 2xx is never repeated (X-12 §7). Network error, timeout or 5xx: up to 3 attempts (timeout 30 s × attempt), then the points wait for the next send. A 4xx or an error body: sending stops, the buffer is kept, the status turns *rejected* with noforeignland's message, and a Repairs issue asks to check the keys; sending resumes after the entry is reconfigured or reloaded. At most one send runs at a time.
+
+**Entities** (one device per entry, *noforeignland* plus the source's name):
+
+| Entity | Rule |
+|---|---|
+| `switch` *Sharing* (OD-44) | On by default; restored after a restart. Off: nothing is logged and nothing is sent; the buffer keeps what it has, and sends it once switched on again |
+| `sensor` *Status* | Enum: `ok`, `waiting` (buffered points not yet sent, for example offline), `rejected`, `paused` (Sharing off) |
+| `sensor` *Buffered points* | Points not yet sent |
+| `sensor` *Last point logged*, *Last send* | Timestamps (`device_class: timestamp`) |
+
+Diagnostics: options, counters (points logged, sent, dropped as outliers, thinned; sends and their outcomes), the last error message; keys redacted.
+
+**Limits.** Outbound HTTPS to `www.noforeignland.com` only; no listener. No other noforeignland API (X-12 §1). Positions already sent cannot be deleted from noforeignland (X-12 OD-5): switch *Sharing* off before the position should stay private.
+
 ## 10. Runtime behaviour
 
 ### 10.1 Availability
@@ -575,6 +626,7 @@ Changing an option reloads the entry. The anchor radius is not an option: it cha
 | P5 | Anchor watch (§8.4, §9.6, §10.4): `anchor.py`, switch, radius, alarm, distance, services, restore; independent of P4 (OD-21) | U-ANC and F-ANC green; bench `anchor-drag` scenario raises the alarm where the preset says (E-07); in port, armed overnight at 20 m without a false alarm (E-17); at an anchorage, motoring out of the radius raises the alarm and the phone notification (E-24) |
 | P6 | AIS traffic map card (§9.7, C-12): `heading` and `threat` in the `targets` rows (Vigie, done in WP20); custom card `vigie-traffic-card` in its own repository, HACS plugin (OD-29, OD-33) | U-CARD and F-CARD green in the card repository; Vigie's F-TRF/F-PERF checks still green with the new fields; on the bench, every target of `multi-target` and `named-traffic` drawn where `--list` says, threats red with their CPA point (E-08) |
 | P7 (OD-38) | Anchor card (§9.8, C-13): `vigie-anchor-card` next to the traffic card (OD-34), with drop / raise / radius controls (OD-35); the ready-made dashboard (§9.9, C-14, OD-40); no Vigie change | U-ACARD and F-ACARD green in the card repository; on the bench, `anchor-drag` driven from the card: drop, radius, swing track, the *Dragging* status where `--list` says, raise only after confirmation (E-09) |
+| P8 (OD-42) | Track sharing (§9.10, C-15): the noforeignland uploader in `ha-noforeignland` (OD-28, OD-41), with outage buffering; no Vigie change | U-NFL and F-NFL green in the uploader's repository; on the bench a test boat's track appears on noforeignland after an internet cut without a gap (E-25); under way, the same at sea (E-26) |
 | P4 | Optional additional sources if instruments are added (wind, depth, log) and the performance layer (true wind, VMG, polars), via a second port or TCP | Requires new hardware; re-opens §2.2 |
 
 ## 14. Open decisions
@@ -606,7 +658,7 @@ Changing an option reloads the entry. The anchor radius is not an option: it cha
 | ~~OD-25~~ | ~~Anchor watch: anchor point and defaults~~ | **Resolved v0.15:** own position at arming or explicit coordinates, no bow offset; radius 50 m (10–500), 20 s continuously outside (§8.4, §11.2) | — |
 | ~~OD-26~~ | ~~Anchor watch: HA restart while armed~~ | **Resolved v0.15:** armed state, anchor point, radius, maximum distance and a latched drag alarm restored (§10.4) | — |
 | ~~OD-27~~ | ~~Sharing the boat's track online (tracking site for friends and family)~~ | **Resolved v0.15:** Vigie stays offline (§2.2, §12); Home Assistant uploads `device_tracker.<boat>` with its own automation, documented and tested as a README recipe in a later work package | — |
-| OD-28 | Sharing the track with outage buffering (X-12 §8.5, R-1): where does the producer live? | (a) Home Assistant YAML only: buffer in a trigger-based template sensor (restored at restart), automation sends it with `rest_command` and clears it on 2xx — no code, but fragile, size-limited, no thinning; (b) **recommended:** a separate small integration in its own repository (pure buffer/sender logic, HA `Store` persistence, sensors per X-12 §8.4), reading any `device_tracker` — Vigie stays offline and the uploader is reusable; (c) an optional, off-by-default platform inside Vigie — reverses OD-27 and the no-outbound-traffic rule; (d) standalone Go service on the boat computer (X-12 §11), outside Home Assistant | Before #51 work; integration key from noforeignland needed first (X-12 OD-8) |
+| ~~OD-28~~ | ~~Sharing the track with outage buffering (X-12 §8.5, R-1): where does the producer live?~~ | **Resolved v0.29** (owner): (b) a separate small integration in its own repository, reading any `device_tracker`, with a persistent buffer; Vigie stays offline (§9.10, C-15). Rejected: (a) Home Assistant YAML only (fragile, size-limited, no thinning), (c) a platform inside Vigie (reverses OD-27), (d) a standalone service outside Home Assistant | — |
 | ~~OD-29~~ | ~~Traffic map card: where it lives~~ | **Resolved v0.20:** own repository `ha-vigie-card`, HACS *Dashboard* (plugin) category, released on its own (§9.7) | — |
 | ~~OD-30~~ | ~~Traffic map card: map engine~~ | **Resolved v0.20:** Leaflet (BSD-2, X-13) bundled in the card; TypeScript and Lit (§9.7) | — |
 | ~~OD-31~~ | ~~Traffic map card: data path~~ | **Resolved v0.20:** the `targets` attribute of `sensor.<boat>_ais_targets`, with `heading` and `threat` in every row (§9.2, §9.7) | — |
@@ -619,6 +671,10 @@ Changing an option reloads the entry. The anchor radius is not an option: it cha
 | ~~OD-38~~ | ~~Anchor card: phase~~ | **Resolved v0.24:** new phase P7, after P5 and P6, independent of P4 (§13) | — |
 | ~~OD-39~~ | ~~Anchor card: recentering the circle (the boat has dropped back when the button is pressed)~~ | **Resolved v0.26** (owner, options A + B): (A) recenter on the circle fitted to the swing track, (B) move the anchor by tapping the map; confirmation, radius kept, disabled during an alarm; a fourth call `vigie.drop_anchor` with coordinates and `keep_since: true` (amends OD-35, §9.6, §9.8). **Amended v0.27** (owner): the largest distance restarts from the new point; Vigie itself refuses a recentering while an alarm is on (§8.4). Rejected: (C) back in time by a chosen delay, (D) chain length and bearing typed in | — |
 | ~~OD-40~~ | ~~A ready-made dashboard with both cards (owner's request, #87)~~ | **Resolved v0.28** (owner): an automatic dashboard, a dashboard strategy `custom:vigie` in the cards' file that finds the boat's entities itself (§9.9, C-14). Rejected: a complete dashboard YAML to paste and edit by hand (entity names to replace, out of date when entities are renamed); a dashboard created by Vigie itself (no supported Home Assistant API for an integration to create a dashboard) | — |
+| ~~OD-41~~ | ~~Track uploader: name~~ | **Resolved v0.29** (owner): repository `ovander/ha-noforeignland`, domain `noforeignland`, *noforeignland tracking* (§9.10). Rejected: `ha-vigie-track` (ties a generic uploader to Vigie) | — |
+| ~~OD-42~~ | ~~Track uploader: phase~~ | **Resolved v0.29** (owner): new phase P8 *Track sharing*, after P7, independent of P4; #51 moves into it (§13) | — |
+| ~~OD-43~~ | ~~Track uploader: sampling and sending defaults~~ | **Resolved v0.29** (owner): the reference client's (X-12 §8.1, §8.3): 60 s, 80 m, 1.5 kn, 24 h keepalive, send every 10 min; buffer 10 000 points; all in the options (§9.10). Rejected: a lighter default (5 min, hourly) | — |
+| ~~OD-44~~ | ~~Track uploader: privacy~~ | **Resolved v0.29** (owner): a *Sharing* switch; off, nothing is logged or sent (§9.10). Rejected: also pausing inside a chosen zone; no control | — |
 
 (OD-05 and OD-09 from v0.1 were tied to NMEA 2000 and polars; both moved to P4 and are no longer open for v1.)
 
@@ -636,5 +692,5 @@ Changing an option reloads the entry. The anchor radius is not an option: it cha
 | X-09 | Raw capture of the AIS receiver's serial output (to be produced; ≥ 15 min, ideally in port and under way; tracked in issue #2) | §3.3, §7.2, OD-13, OD-14, tests |
 | X-10 | HA-SAIL-TEST-001 — Test protocol (unit, functional, end-to-end) | §12, §13 |
 | X-11 | Repository `ha-vigie` — bootstrap kit (skeleton, CI, GitHub setup script) | §5.3, §12 |
-| X-12 | NFL-TRACK-API-001 — noforeignland boat tracking API, reverse-engineered contract (`docs/NFL-TRACK-API-001.md`) | §2.2, OD-27, OD-28 |
+| X-12 | NFL-TRACK-API-001 — noforeignland boat tracking API, reverse-engineered contract (`docs/NFL-TRACK-API-001.md`) | §2.2, §9.10, OD-27, OD-28 |
 | X-13 | Leaflet (BSD-2-Clause) — https://leafletjs.com — map engine of the traffic card (OD-30) | §9.7, C-12 |
