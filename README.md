@@ -258,8 +258,8 @@ strategy:
 ```
 
 The dashboard finds your boat by itself and shows the traffic map and the anchor card,
-one tab per boat; nothing to rename. Needs Vigie cards with the dashboard (after
-0.2.0-beta.3).
+one tab per boat; nothing to rename. Needs Vigie cards
+0.2.0-beta.4 or later.
 
 ## Requirements
 
