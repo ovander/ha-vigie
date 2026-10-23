@@ -4,13 +4,13 @@
 |---|---|
 | Spec ID | NFL-TRACK-API-001 |
 | Status | Draft |
-| Version | 0.2.0 |
-| Date | 2026-10-21 |
+| Version | 0.3.0 |
+| Date | 2026-10-23 |
 | Owner | Olivier |
 | Nature | Reverse-engineered contract of a third-party, undocumented API |
 | Primary source | `noforeignland/nfl-signalk` v1.4.0 (GitHub, maintained by noforeignland, MIT) |
 | Secondary sources | noforeignland.com/help/tracking, Saillogger and Boat Logbook integration notes |
-| Used by | HA-SAIL-SPEC-001 X-12, OD-27; issue #51 |
+| Used by | HA-SAIL-SPEC-001 X-12, OD-27, OD-28, §9.10; issues #51, #91 |
 
 ---
 
@@ -192,7 +192,7 @@ The reference client exposes: last point saved, last successful send, status str
 - A 4xx or an error body (§6) does not retry the same request forever: the buffer is kept and the failure surfaced (§8.4), since a bad key needs the owner.
 - The buffer is bounded. When full, it is thinned (for example every second point of the oldest half) rather than truncated, so a long offshore passage keeps its shape. Size to be fixed with OD-2.
 
-How Vigie meets R-1 is open (HA-SAIL-SPEC-001 OD-28, issue #51).
+R-1 is met by the separate uploader `ovander/ha-noforeignland` (HA-SAIL-SPEC-001 OD-28 resolved v0.29, §9.10).
 
 ## 9. Alternative channels (for completeness)
 
@@ -211,7 +211,7 @@ How Vigie meets R-1 is open (HA-SAIL-SPEC-001 OD-28, issue #51).
 | OD-4 | Rate limits per integration key | Scheduling | Keep ≥ 10 min between sends; ask support |
 | OD-5 | Any delete / replace endpoint for erroneous points | Recovery from duplicates | Assume none; invest in idempotent sending instead |
 | OD-6 | Server tolerance to out-of-order or backdated points | Buffer replay after outage (R-1) | Always send ascending; test with a backdated segment before relying on it |
-| OD-7 | Producer host for Olivier's boat: Home Assistant vs standalone Go service on the boat computer | Architecture of the producer | Partly settled by HA-SAIL-SPEC-001 OD-27: Home Assistant is the producer, Vigie stays offline. With R-1 the remaining choice is HA-SAIL-SPEC-001 OD-28 |
+| OD-7 | Producer host for Olivier's boat: Home Assistant vs standalone Go service on the boat computer | Architecture of the producer | **Settled:** Home Assistant is the producer (HA-SAIL-SPEC-001 OD-27), in a separate integration `ha-noforeignland` (OD-28, resolved v0.29); not the Go service of §11 |
 | OD-8 | Which integration key to use during development | Must not reuse the SignalK plugin's shared key | Request a dedicated key before first live send; use a local mock server until then |
 
 ## 11. Go producer — design notes
@@ -236,5 +236,6 @@ For a producer aligned with the standard stack (Go, layered handler → service 
 
 | Version | Date | Change |
 |---|---|---|
+| 0.3.0 | 2026-10-23 | OD-7 settled: the producer is the separate Home Assistant integration `ha-noforeignland` (HA-SAIL-SPEC-001 OD-28 option b, §9.10); §8.5 and §1 updated. §11 (Go producer) kept as background only. |
 | 0.2.0 | 2026-10-21 | Added to the Vigie repository (#51). New §8.5 R-1 outage buffering (owner requirement). §9 email channel corrected (`tracking@noforeignland.com`, matched by Iridium number or SPOT name), feed URLs noted as unusable. §2 notes what was checked in the npm package. OD-7 partly settled by Vigie OD-27; Vigie context added (§1, §8.1, §12). |
 | 0.1.0 | 2026-10-21 | Initial draft from nfl-signalk v1.4.0 source review |

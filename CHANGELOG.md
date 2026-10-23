@@ -12,6 +12,9 @@ versioning: SemVer.
 - Docs: a ready-made Vigie dashboard (`strategy: {type: custom:vigie}`), shipped with
   Vigie cards, that shows the traffic map and the anchor card for each boat without any
   entity to rename (SPEC v0.28 §9.9, OD-40; TEST v0.36 U-DASH, F-DASH; #87).
+- Docs: sharing the boat's track on noforeignland is specified as a separate integration,
+  `ha-noforeignland`, with outage buffering; Vigie stays offline (SPEC v0.29 §9.10,
+  OD-28, OD-41…OD-44, phase P8; TEST v0.37 U-NFL, F-NFL, E-25, E-26; X-12 0.3.0; #91).
 
 ## [0.4.0-beta.1] - 2026-10-22
 

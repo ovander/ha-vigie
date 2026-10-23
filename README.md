@@ -304,6 +304,7 @@ one tab per boat; nothing to rename. Needs Vigie cards
 | P5 | Anchor watch | built; bench and on-board checks pending |
 | P6 | AIS traffic map card (every target on one map) | built ([ha-vigie-card](https://github.com/ovander/ha-vigie-card)); bench check pending |
 | P7 | Anchor card (the anchor watch in the cockpit, with drop / raise / radius) | in progress ([ha-vigie-card](https://github.com/ovander/ha-vigie-card)) |
+| P8 | Sharing the boat's track on noforeignland, kept through internet outages (separate integration [ha-noforeignland](https://github.com/ovander/ha-noforeignland); Vigie stays offline) | specified |
 
 ## Documentation
 
