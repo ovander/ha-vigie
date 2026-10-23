@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.40 (draft) |
+| Version | 0.41 (draft) |
 | Date | 2026-10-22 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.41 | 2026-10-23 | WP33 (#100, SPEC v0.33 §9.2): F-TRF-13 and F-ANC-11, the alarm blueprints imported and run, Done. |
 | 0.40 | 2026-10-23 | WP32 (#98, SPEC v0.32 §11.1): F-LIFE-09…12, reconfiguring the port and the baud rate, Done. |
 | 0.39 | 2026-10-23 | WP31 (#96, SPEC v0.31 OD-45): U-NFL-09 and F-NFL-01 extended to the built-in integration key and its optional override, Done in ovander/ha-noforeignland#3. |
 | 0.38 | 2026-10-23 | WP30 (#93): U-NFL-01…09 and F-NFL-01…09 Done in ovander/ha-noforeignland#1 (46 tests, noforeignland mocked, 100 % coverage on the pure core); U-NFL-03 and F-NFL-03 follow OD-43 as amended (hourly sends, a stationary point every 6 h). E-25 sets the send to 10 min to stay short. E-25 and E-26 wait for the integration key. |
@@ -356,6 +357,7 @@ Driven by D-07 scenarios replayed in accelerated time.
 | F-TRF-10 | Stationary threat: static data arrives after the position, then its destination changes | `collision_risk` and the tracker are written although their state and position do not change | §9.4 | Done |
 | F-TRF-11 | Ship-type translations | Every category in `strings.json`, `en.json`, `fr.json` for every entity with the attribute; French strings loaded by HA | CLAUDE.md, OD-17 | Done |
 | F-TRF-12 | `heading` reported by one target, not by another; a crossing threat, a clear crossing and an anchored Class A, with the stationary exclusion on and off; no own position | Every row has `heading` (`None` when not reported) and `threat`; `threat` true exactly for the traffic picture's threats (anchored target only without the exclusion); false while own position is unknown | §9.2, §9.7, OD-31 | Done |
+| F-TRF-13 | Collision blueprint (WP33): imported, an automation made with the risk sensor and a phone device; `crossing` played past the CPA; again with *Critical alert* off | One notification to `notify.mobile_app_my_phone`, `⚠️ Collision risk`, `MMSI 235000001: CPA 0.45 NM in 4.0 min` (± 0.02 NM, ± 0.2 min), critical push data; without critical, `priority: high` only | §9.2 | Done |
 
 ### 4.5 Load and recorder — `F-PERF`
 
@@ -383,6 +385,7 @@ Marked `@pytest.mark.perf`, excluded from the default run and executed by the ni
 | F-ANC-08 | Translations | `reason` values, attribute labels, service fields and errors in `strings.json`, `en.json`, `fr.json` (F-ENT-08 extended to the anchor entities) | §9.6, CLAUDE.md | Done |
 | F-ANC-09 | Two boats (two entries) armed at different points | Independent watches; a service call targets one entry only | §9.6, NFR-06 | Done |
 | F-ANC-10 | `vigie.drop_anchor` with `keep_since: true` (OD-39): armed, boat at 38 m; recenter to 25 m north; then without coordinates, with the watch off, during a `drag` alarm | `armed_at` and radius unchanged, distance and largest distance about 13 m; refused with `recenter_needs_position`, `anchor_not_armed`, `anchor_alarm_on` (translated), alarm still on | §8.4, §9.6 | Done |
+| F-ANC-11 | Anchor blueprint (WP33): imported, an automation made with the alarm sensor and a phone device; `anchor-drag` with the anchor dropped at 43.5, 7.25, radius 50; then the receiver silent 61 s | One notification each: `⚓ Anchor alarm`, `Dragging: N m from the anchor (radius 50 m)`; `No position from the receiver` | §9.6 | Done |
 
 ### 4.7 Traffic map card — `F-CARD` (SPEC §9.7, P6)
 

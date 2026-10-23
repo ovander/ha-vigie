@@ -6,6 +6,9 @@ versioning: SemVer.
 ## [Unreleased]
 
 ### Added
+- Phone alerts in two clicks: blueprints for the collision alert and the anchor alarm,
+  with an *Import blueprint* button in the README. Pick the boat's sensor and your phone;
+  critical alerts (ringing through silent mode) are on by default (#100).
 - Change the serial port or the baud rate after setup: Vigie → ⋮ → **Reconfigure**, with
   the same check as at setup; the entities, their history, the options and the anchor watch
   are kept (#98).

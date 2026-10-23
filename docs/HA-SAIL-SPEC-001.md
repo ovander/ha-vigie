@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.32 (draft) |
+| Version | 0.33 (draft) |
 | Date | 2026-10-22 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.33 | 2026-10-23 | WP33 (#100): owner's request. §9.2 *Phone alerts*: two blueprints (collision alert, anchor alarm) turn the README automations into an import button and three choices (sensor, phone, critical alert); §9.6 points to it. |
 | 0.32 | 2026-10-23 | WP32 (#98): owner's request. §11.1 *Reconfigure*: the serial port and the baud rate of a configured boat can be changed, with the setup probe, keeping the entities, their history, the options and the anchor watch; a port of another Vigie boat is refused. |
 | 0.31 | 2026-10-23 | WP31 (#96): new OD-45, resolved (owner): noforeignland's integration key is built into the uploader, as noforeignland's SignalK plugin ships its own; setup asks only for the source and the boat key, with an optional override required while the built-in key is empty (§9.10). |
 | 0.30 | 2026-10-23 | WP30 (#93): the uploader built in ovander/ha-noforeignland#1 (§9.10). A logged point's time is the sampling time, not the source state's last update: Vigie's tracker does not update while the boat is still (dead-band), so the keepalive point would carry an old time. Keys can be changed with a reconfigure step. OD-43 amended (owner): points still logged each minute, but sent once an hour, and one point every 6 h when stationary (was every 10 min and 24 h). |
@@ -349,6 +350,8 @@ Speed: HA does not convert knots automatically under either the metric or the US
 | `sensor.closest_threat_cpa` / `_tcpa` | CPA (nmi, suggested nmi, dead-band 0.01 NM) and TCPA (min, device_class duration, dead-band 0.1 min) of the most urgent threat (§8.2); no state_class, since the underlying target changes. Attributes: MMSI, name, distance, bearing, CPA, TCPA, and the target's static data (§9.4). Unavailable when there is no threat or no own position. A change of target, or of its static data, is always written. |
 | `binary_sensor.collision_risk` | On while at least one threat exists, with the anti-flapping latch of §8.2 (device_class safety). **Unavailable** when own position is unavailable: "off" would wrongly reassure. Attributes: `threat_count`, and MMSI, name and static data (§9.4) of the most urgent threat. Designed to drive automations (notification, buzzer, lights); trigger on `to: "on"`. |
 
+**Phone alerts (WP33, v0.33).** Two blueprints in `blueprints/automation/vigie/`, imported with a button from the README: `collision_alert.yaml` (on `binary_sensor.collision_risk` → `on`: the most urgent target's name or MMSI, its CPA and TCPA) and `anchor_alarm.yaml` (on `binary_sensor.anchor_alarm` → `on`: *Dragging* with the distance against the radius, or *Position lost*). Inputs: the Vigie sensor, the phone (companion app device; its `notify.mobile_app_<device>` action) and a critical alert (on by default). The boat's other sensors are found from the sensor's device. No `from: "off"` (the sensor is unavailable until a position is known). The README automations stay as the manual alternative. Blueprints are files for Home Assistant's automation engine, not code of the integration: Vigie still sends nothing itself.
+
 ### 9.3 Watched targets
 
 `device_tracker.ais_<mmsi>` exists only for MMSIs in the user's watch list (options flow), for example friends' boats or a tender. Never auto-created for every target.
@@ -393,6 +396,8 @@ Services (registered once for the domain, target a config entry):
 Every service field and error has a translated label and description (`strings.json`, `en.json`, `fr.json`). The switch and the distance sensor show an anchor icon, the radius a radius icon (`icons.json`).
 
 Map card: the README documents a built-in map card with the boat and `sensor.<boat>_anchor_distance` (whose `latitude`/`longitude` are the anchor point), with `cluster: false` and `default_zoom: 18`. Without them the card merges the boat and the anchor, metres apart, into one numbered marker (found in the E-07 pre-run).
+
+Phone alert for the anchor alarm: the `anchor_alarm.yaml` blueprint (§9.2, *Phone alerts*).
 
 ### 9.7 AIS traffic map card (C-12, P6)
 

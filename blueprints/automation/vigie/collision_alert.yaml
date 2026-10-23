@@ -1,0 +1,67 @@
+blueprint:
+  name: Vigie — collision alert
+  description: >-
+    Sends a notification to your phone when Vigie predicts that a ship will pass too close:
+    the ship's name (or MMSI), the closest point of approach (CPA) and when (TCPA). Once per
+    encounter. Thresholds are in Vigie's options. The alert is an aid: keep a lookout.
+  domain: automation
+  author: ovander
+  source_url: https://github.com/ovander/ha-vigie/blob/main/blueprints/automation/vigie/collision_alert.yaml
+  homeassistant:
+    min_version: 2026.2.0
+  input:
+    collision_risk:
+      name: Collision risk
+      description: Your boat's collision risk sensor, binary_sensor.<boat>_collision_risk.
+      selector:
+        entity:
+          filter:
+            - integration: vigie
+              domain: binary_sensor
+    phone:
+      name: Phone
+      description: The phone to notify (Home Assistant companion app).
+      selector:
+        device:
+          filter:
+            - integration: mobile_app
+    critical:
+      name: Critical alert
+      description: >-
+        Rings even when the phone is silenced (iOS needs the companion app's critical-alert
+        permission; Android delivers it at once with high priority).
+      default: true
+      selector:
+        boolean: {}
+
+mode: single
+
+triggers:
+  # No `from: "off"`: the sensor is unavailable until the own position is known, so the
+  # first alert after a start-up or a GPS outage comes as unavailable → on (README)
+  - trigger: state
+    entity_id: !input collision_risk
+    to: "on"
+
+variables:
+  risk: !input collision_risk
+  phone: !input phone
+  critical: !input critical
+  boat_entities: "{{ device_entities(device_id(risk)) }}"
+  cpa_entity: "{{ boat_entities | select('search', '_closest_threat_cpa$') | first | default('') }}"
+  tcpa_entity: "{{ boat_entities | select('search', '_closest_threat_tcpa$') | first | default('') }}"
+  notify_action: "notify.mobile_app_{{ device_attr(phone, 'name') | slugify }}"
+  push_data: >-
+    {{ {'ttl': 0, 'priority': 'high', 'push': {'interruption-level': 'critical'}}
+       if critical else {'priority': 'high'} }}
+
+actions:
+  - action: "{{ notify_action }}"
+    data:
+      title: "⚠️ Collision risk"
+      message: >-
+        {{ state_attr(risk, 'name') or 'MMSI ' ~ state_attr(risk, 'mmsi') }}:
+        CPA {{ states(cpa_entity, rounded=True) }} NM
+        in {{ states(tcpa_entity, rounded=True) }} min.
+        Check the lookout.
+      data: "{{ push_data }}"
