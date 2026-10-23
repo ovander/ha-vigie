@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.37 (draft) |
+| Version | 0.38 (draft) |
 | Date | 2026-10-22 |
 | Parent specification | HA-SAIL-SPEC-001 v0.5 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.38 | 2026-10-23 | WP30 (#93): U-NFL-01…09 and F-NFL-01…09 Done in ovander/ha-noforeignland#1 (46 tests, noforeignland mocked, 100 % coverage on the pure core); U-NFL-03 and F-NFL-03 follow OD-43 as amended (hourly sends, a stationary point every 6 h). E-25 sets the send to 10 min to stay short. E-25 and E-26 wait for the integration key. |
 | 0.37 | 2026-10-23 | WP29 (#91, SPEC v0.29 §9.10, OD-28): the noforeignland uploader's tests planned: new §3.11 `U-NFL` and §4.10 `F-NFL` (in `ovander/ha-noforeignland`), E-25 (bench, with a test boat) and E-26 (under way); §9 row P8. All Planned. |
 | 0.36 | 2026-10-23 | WP28 (#87, SPEC v0.28 §9.9, OD-40): new §3.10 `U-DASH` and §4.9 `F-DASH` for the ready-made dashboard, in the card repository, Done; E-09 also checks the dashboard; §9 row P7. Pre-run in Home Assistant 2026.2.3 in `docs/test-reports/P7-report.md`. |
 | 0.35 | 2026-10-22 | §5.1 feed: the replay tool serves over TCP (`--tcp PORT`, Vigie port `socket://HOST:PORT`) for a network bench from a laptop; tested in `tests/tools/test_replay.py`. |
@@ -279,15 +280,15 @@ In the uploader's repository (`ovander/ha-noforeignland`, `tests/core/`): pure P
 
 | ID | Case | Expected | Status |
 |---|---|---|---|
-| U-NFL-01 | Sampling filters (defaults): a point 79 m then 81 m from the last logged one at 3 kn; 81 m at 1.4 kn; no `sog`, 200 m in 60 s; latitude 91 | Kept only at 81 m and 3 kn; dropped below 1.5 kn; speed derived 6.5 kn, kept; dropped | Planned |
-| U-NFL-02 | Outlier: 4 km from the last point in 60 s (67 m/s) | Dropped, counted | Planned |
-| U-NFL-03 | Keepalive: stationary, last point 23 h 59 min then 24 h ago | Nothing; one point logged | Planned |
-| U-NFL-04 | Buffer full (capacity 10): add an 11th point | Oldest half thinned (every second point dropped), the new point kept, order preserved | Planned |
-| U-NFL-05 | Chunking: 2 500 buffered points | Three chunks of 1 000, 1 000, 500, oldest first | Planned |
-| U-NFL-06 | Request: two points | Form body `boatApiKey`, `timestamp` = the last point's epoch ms, `track` = `[[ms, lat, lon], …]` ascending, `pluginVersion` `ha-noforeignland/<version>`; headers `X-NFL-API-Key`, `Accept-Encoding: identity`; keys never in a log line | Planned |
-| U-NFL-07 | Response classification: 200 `{"status":"ok"}`; 200 unreadable body; 200 `{"status":"error","message":"Invalid boat API key"}`; 401; 503; timeout | sent; sent (X-12 §6); rejected with the message; rejected; retry; retry | Planned |
-| U-NFL-08 | Buffer round trip (to and from the stored form) after a partial send | Exactly the unsent points, in order | Planned |
-| U-NFL-09 | Integration key format | A UUID accepted; anything else refused | Planned |
+| U-NFL-01 | Sampling filters (defaults): a point 79 m then 81 m from the last logged one at 3 kn; 81 m at 1.4 kn; no `sog`, 200 m in 60 s; latitude 91 | Kept only at 81 m and 3 kn; dropped below 1.5 kn; speed derived 6.5 kn, kept; dropped | Done |
+| U-NFL-02 | Outlier: 4 km from the last point in 60 s (67 m/s) | Dropped, counted | Done |
+| U-NFL-03 | Keepalive (6 h, OD-43 amended): stationary, last point 5 h 59 min then 6 h ago | Nothing; one point logged | Done |
+| U-NFL-04 | Buffer full (capacity 10): add an 11th point | Oldest half thinned (every second point dropped), the new point kept, order preserved | Done |
+| U-NFL-05 | Chunking: 2 500 buffered points | Three chunks of 1 000, 1 000, 500, oldest first | Done |
+| U-NFL-06 | Request: two points | Form body `boatApiKey`, `timestamp` = the last point's epoch ms, `track` = `[[ms, lat, lon], …]` ascending, `pluginVersion` `ha-noforeignland/<version>`; headers `X-NFL-API-Key`, `Accept-Encoding: identity`; keys never in a log line | Done |
+| U-NFL-07 | Response classification: 200 `{"status":"ok"}`; 200 unreadable body; 200 `{"status":"error","message":"Invalid boat API key"}`; 401; 503; timeout | sent; sent (X-12 §6); rejected with the message; rejected; retry; retry | Done |
+| U-NFL-08 | Buffer round trip (to and from the stored form) after a partial send | Exactly the unsent points, in order | Done |
+| U-NFL-09 | Integration key format | A UUID accepted; anything else refused | Done |
 
 ## 4. Functional tests (`tests/integration/`)
 
@@ -431,15 +432,15 @@ In the uploader's repository (`tests/integration/`), with `pytest-homeassistant-
 
 | ID | Case | Expected | Status |
 |---|---|---|---|
-| F-NFL-01 | Config flow: source, boat key, integration key; a non-UUID integration key; Vigie's tracker present | Entry created, no request sent; error on the key field; Vigie's tracker proposed | Planned |
-| F-NFL-02 | Entities | *Sharing* (on), *Status*, *Buffered points*, *Last point logged*, *Last send*, with translations in English and French | Planned |
-| F-NFL-03 | Boat moving at 6 kn for 30 min, server answering `ok` | A point each minute, a send every 10 min with the points since the last one; buffer empty after each; *Status* `ok` | Planned |
-| F-NFL-04 | Outage (R-1): server unreachable for 2 h while moving, then back | Points kept (*Status* `waiting`, buffer grows); at recovery one send of all of them, in order, in chunks; no point sent twice, none lost | Planned |
-| F-NFL-05 | Home Assistant restarted with 50 buffered points | The 50 points restored and sent at the next send | Planned |
-| F-NFL-06 | Server answers 401 | *Status* `rejected`, the message in diagnostics, a Repairs issue; no further request until reloaded; buffer kept | Planned |
-| F-NFL-07 | *Sharing* switched off for 20 min while moving, then on | Nothing logged or sent while off; switch state restored after a restart; buffered points sent once on again | Planned |
-| F-NFL-08 | Diagnostics | Options and counters present; both keys redacted | Planned |
-| F-NFL-09 | Source unavailable, or without position | Nothing logged, no error flood (one log line per outage) | Planned |
+| F-NFL-01 | Config flow: source, boat key, integration key; a non-UUID integration key; Vigie's tracker present | Entry created, no request sent; error on the key field; Vigie's tracker proposed | Done |
+| F-NFL-02 | Entities | *Sharing* (on), *Status*, *Buffered points*, *Last point logged*, *Last send*, with translations in English and French | Done |
+| F-NFL-03 | Boat moving at 6 kn, server answering `ok`: with a 10-min send for 30 min; with the defaults for 2 h, then stationary for 7 h | A point each minute, a send at each interval with the points since the last one; *Status* `ok`. Defaults: a send each hour (59 then 60 points); stationary, one point at 6 h; a still boat logs nothing else | Done |
+| F-NFL-04 | Outage (R-1): server unreachable for 2 h while moving, then back | Points kept (*Status* `waiting`, buffer grows); at recovery one send of all of them, in order, in chunks; no point sent twice, none lost | Done |
+| F-NFL-05 | Home Assistant restarted with 50 buffered points | The 50 points restored and sent at the next send | Done |
+| F-NFL-06 | Server answers 401 | *Status* `rejected`, the message in diagnostics, a Repairs issue; no further request until reloaded; buffer kept | Done |
+| F-NFL-07 | *Sharing* switched off for 20 min while moving, then on | Nothing logged or sent while off; switch state restored after a restart; buffered points sent once on again | Done |
+| F-NFL-08 | Diagnostics | Options and counters present; both keys redacted | Done |
+| F-NFL-09 | Source unavailable, or without position | Nothing logged, no error flood (one log line per outage) | Done |
 
 ## 5. End-to-end tests
 
@@ -467,7 +468,7 @@ Setup (TP-01, TP-02, SPEC OD-12 — resolved v0.3):
 | E-07 | P5: replay `anchor-drag` at real speed, drop the anchor at the start with `vigie.drop_anchor` (latitude 43.5, longitude 7.25, radius 50), README anchor automation installed; restart HA once while armed | Anchor shown on the map card; no alarm while swinging; alarm `drag` where `--list` says (± 2 s) and one notification on the phone; armed state and anchor point survive the restart. Checklist in `docs/test-reports/P5-report.md` |
 | E-08 | P6: the card on a dashboard (phone and tablet), replay `multi-target` then `named-traffic` at real speed | Every target drawn where `--list` puts it, threats red with their CPA point and values matching `sensor.<boat>_closest_threat_cpa`/`_tcpa` (± 0.02 NM, ± 0.2 min); names as in P3; no visible lag beyond the 5 s list rebuild; with the network cut, boat, targets and rings still drawn. Checklist in `docs/test-reports/P6-report.md` |
 | E-09 | P7: the anchor card on a dashboard (phone and tablet), replay `anchor-drag` at real speed; drop the anchor at the start with `vigie.drop_anchor` (latitude 43.5, longitude 7.25, radius 50) as in E-07; from the card, radius − to 45 m then + back to 50 m before 600 s (the boat stays inside, below 40 m); after the alarm, *Raise anchor* (cancel once, then confirm), then *Drop anchor here* | Status, distance and gauge follow `sensor.<boat>_anchor_distance`; the swing track draws the swing; *Outside the circle* (amber) from 678 s with the boat in view, then *Dragging* where `--list` says (± 2 s), shown on both screens; reloading the page keeps the track; *Raise* only after confirmation; *Drop anchor here* arms at the boat's position; with the network cut everything but the tiles drawn; the ready-made dashboard (`strategy: custom:vigie`, SPEC §9.9) shows both cards for the boat. Checklist in `docs/test-reports/P7-report.md` |
-| E-25 | P8: the uploader on the bench, with a **test boat** on noforeignland (never the real boat's key) and the integration key (X-12 OD-8); replay `multi-target` (own boat at 6 kn) for 30 min; cut the bench's internet for 10 min in the middle | The test boat's track on noforeignland's map follows the replay without a gap; *Buffered points* rises during the cut and returns to 0 after; no duplicate point |
+| E-25 | P8: the uploader on the bench, with a **test boat** on noforeignland (never the real boat's key) and the integration key (X-12 OD-8); the send set to 10 min in the options; replay `multi-target` (own boat at 6 kn) for 30 min; cut the bench's internet for 10 min in the middle | The test boat's track on noforeignland's map follows the replay without a gap; *Buffered points* rises during the cut and returns to 0 after; no duplicate point |
 
 ### 5.2 Stage E-2 — On board, in port (real receiver)
 

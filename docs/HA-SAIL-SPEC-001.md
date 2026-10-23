@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.29 (draft) |
+| Version | 0.30 (draft) |
 | Date | 2026-10-22 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.30 | 2026-10-23 | WP30 (#93): the uploader built in ovander/ha-noforeignland#1 (§9.10). A logged point's time is the sampling time, not the source state's last update: Vigie's tracker does not update while the boat is still (dead-band), so the keepalive point would carry an old time. Keys can be changed with a reconfigure step. OD-43 amended (owner): points still logged each minute, but sent once an hour, and one point every 6 h when stationary (was every 10 min and 24 h). |
 | 0.29 | 2026-10-23 | WP29 (#91): OD-28 resolved (owner, option b): sharing the track on noforeignland is a separate integration, `ovander/ha-noforeignland` (domain `noforeignland`), that uploads any `device_tracker` with outage buffering; Vigie stays offline. Specified in new §9.10 (component C-15), not implemented. New OD-41…OD-44, resolved by the owner: the name, a new phase P8 *Track sharing* (§13), the reference client's defaults, a *Sharing* switch for privacy. §2.1, §2.2 updated. |
 | 0.28 | 2026-10-23 | WP28 (#87): owner's lab finding, the cards were hard to install and to put on a dashboard. New §9.9 and component C-14: a ready-made dashboard (dashboard strategy `custom:vigie`) shipped in the cards' file, one view per boat with both cards, found from Home Assistant's entity registry. New OD-40, resolved (owner): the auto dashboard, rather than a YAML to paste. §2.1 and §13 P7 rows extended. No change in Vigie's code. |
 | 0.27 | 2026-10-22 | WP27 (#81): recentering built. §8.4 recentering; §9.6 `keep_since` on `vigie.drop_anchor`; §9.8 the two buttons, the fit's conditions, the confirmation. OD-39 amended (owner): the largest distance restarts from the new point (it was measured from the old one), and Vigie itself refuses a recentering while an alarm is on. |
@@ -509,7 +510,7 @@ is generated each time it loads. The same file registers the view strategy (`ll-
 
 ### 9.10 noforeignland track uploader (C-15, P8)
 
-Specified in v0.29 (WP29, #91) after OD-28 was resolved (owner, option b). Not implemented. Nothing in Vigie changes: the uploader reads the boat's tracker like any other entity.
+Specified in v0.29 (WP29, #91) after OD-28 was resolved (owner, option b); built in WP30 (#93, ovander/ha-noforeignland#1). Nothing in Vigie changes: the uploader reads the boat's tracker like any other entity.
 
 **Purpose.** Friends and family follow the boat on noforeignland's map (X-12). The track has no gap after an internet outage: positions logged offline are sent when the connection returns (X-12 §8.5, R-1). Power on board is intermittent, so the buffer survives a restart.
 
@@ -525,22 +526,22 @@ Specified in v0.29 (WP29, #91) after OD-28 was resolved (owner, option b). Not i
 
 No request is sent during setup: a test send would put a point on the public map. A key is only proved by the first send (status *rejected* otherwise, below). Both keys stay in the config entry, are never logged and are redacted from diagnostics. The integration key is never committed to the repository; the shared key of the SignalK plugin is never used (X-12 §4.1, OD-8).
 
-**Options (OD-43: the reference client's defaults, X-12 §8.1, §8.3).**
+**Options (OD-43: the reference client's defaults, X-12 §8.1, §8.3, except sending and the stationary point, amended v0.30).**
 
 | Option | Default |
 |---|---|
 | Sampling period | 60 s |
 | Minimum move from the last logged point | 80 m |
 | Minimum speed | 1.5 kn |
-| Keepalive: one point when none was logged for | 24 h |
-| Send every | 10 min |
+| Keepalive: one point when none was logged for | 6 h (amended v0.30; the reference client: 24 h) |
+| Send every | 60 min (amended v0.30; the reference client: 10 min): the track keeps each minute's detail, the map is at most an hour late |
 | Buffer capacity | 10 000 points (about a week under way at one point a minute) |
 
-**Logging.** Every sampling period, and while *Sharing* is on, the source's current position is a candidate point (time = the source state's last update). It is kept when it is at least the minimum move from the last logged point and the speed is at least the minimum speed; the speed is the source's `sog` attribute (knots, Vigie) when present, else the distance from the last logged point over the time between them. A point implying more than 50 m/s from the last logged point is an outlier and dropped. A source unavailable, without position, or with a position out of range logs nothing. The keepalive logs the current position even when stationary. Points go to the buffer first, never straight to the network.
+**Logging.** Every sampling period, and while *Sharing* is on, the source's current position is a candidate point, timed at the sampling (v0.30: the source's last update would be stale for a still boat, whose tracker no longer changes). It is kept when it is at least the minimum move from the last logged point and the speed is at least the minimum speed; the speed is the source's `sog` attribute (knots, Vigie) when present, else the distance from the last logged point over the time between them. A point implying more than 50 m/s from the last logged point is an outlier and dropped. A source unavailable, without position, or with a position out of range logs nothing. The keepalive logs the current position even when stationary. Points go to the buffer first, never straight to the network.
 
 **Buffer (R-1).** Persistent, in Home Assistant's storage (`.storage/noforeignland.<entry_id>`), written at once on every change. Oldest first. When full, the oldest half is thinned (every second point dropped) rather than truncated, so a long passage keeps its shape.
 
-**Sending.** On the send schedule, while *Sharing* is on and the buffer is not empty: the buffer goes oldest first in chunks of at most 1 000 points (X-12 OD-2), one request per chunk, as X-12 §3–§5 (`X-NFL-API-Key` header, `Accept-Encoding: identity`, form body with `boatApiKey`, `timestamp` of the last point, `track`, `pluginVersion` = `ha-noforeignland/<version>`). A chunk leaves the buffer only after a 2xx without an error body (X-12 §6), and the buffer is saved at once, so a 2xx is never repeated (X-12 §7). Network error, timeout or 5xx: up to 3 attempts (timeout 30 s × attempt), then the points wait for the next send. A 4xx or an error body: sending stops, the buffer is kept, the status turns *rejected* with noforeignland's message, and a Repairs issue asks to check the keys; sending resumes after the entry is reconfigured or reloaded. At most one send runs at a time.
+**Sending.** On the send schedule, while *Sharing* is on and the buffer is not empty: the buffer goes oldest first in chunks of at most 1 000 points (X-12 OD-2), one request per chunk, as X-12 §3–§5 (`X-NFL-API-Key` header, `Accept-Encoding: identity`, form body with `boatApiKey`, `timestamp` of the last point, `track`, `pluginVersion` = `ha-noforeignland/<version>`). A chunk leaves the buffer only after a 2xx without an error body (X-12 §6), and the buffer is saved at once, so a 2xx is never repeated (X-12 §7). Network error, timeout or 5xx: up to 3 attempts (timeout 30 s × attempt), then the points wait for the next send. A 4xx or an error body: sending stops, the buffer is kept, the status turns *rejected* with noforeignland's message, and a Repairs issue asks to check the keys; sending resumes after the entry is reconfigured (new keys, its *Reconfigure* step) or reloaded. At most one send runs at a time.
 
 **Entities** (one device per entry, *noforeignland* plus the source's name):
 
@@ -673,7 +674,7 @@ Changing an option reloads the entry. The anchor radius is not an option: it cha
 | ~~OD-40~~ | ~~A ready-made dashboard with both cards (owner's request, #87)~~ | **Resolved v0.28** (owner): an automatic dashboard, a dashboard strategy `custom:vigie` in the cards' file that finds the boat's entities itself (§9.9, C-14). Rejected: a complete dashboard YAML to paste and edit by hand (entity names to replace, out of date when entities are renamed); a dashboard created by Vigie itself (no supported Home Assistant API for an integration to create a dashboard) | — |
 | ~~OD-41~~ | ~~Track uploader: name~~ | **Resolved v0.29** (owner): repository `ovander/ha-noforeignland`, domain `noforeignland`, *noforeignland tracking* (§9.10). Rejected: `ha-vigie-track` (ties a generic uploader to Vigie) | — |
 | ~~OD-42~~ | ~~Track uploader: phase~~ | **Resolved v0.29** (owner): new phase P8 *Track sharing*, after P7, independent of P4; #51 moves into it (§13) | — |
-| ~~OD-43~~ | ~~Track uploader: sampling and sending defaults~~ | **Resolved v0.29** (owner): the reference client's (X-12 §8.1, §8.3): 60 s, 80 m, 1.5 kn, 24 h keepalive, send every 10 min; buffer 10 000 points; all in the options (§9.10). Rejected: a lighter default (5 min, hourly) | — |
+| ~~OD-43~~ | ~~Track uploader: sampling and sending defaults~~ | **Resolved v0.29** (owner): the reference client's (X-12 §8.1, §8.3): 60 s, 80 m, 1.5 kn, 24 h keepalive, send every 10 min; buffer 10 000 points; all in the options (§9.10). Rejected: a lighter default (5 min, hourly). **Amended v0.30** (owner): send every 60 min and a stationary point every 6 h; logging stays at one point a minute after 80 m, so the track keeps its detail (rejected: one point an hour, which would cut across headlands) | — |
 | ~~OD-44~~ | ~~Track uploader: privacy~~ | **Resolved v0.29** (owner): a *Sharing* switch; off, nothing is logged or sent (§9.10). Rejected: also pausing inside a chosen zone; no control | — |
 
 (OD-05 and OD-09 from v0.1 were tied to NMEA 2000 and polars; both moved to P4 and are no longer open for v1.)
