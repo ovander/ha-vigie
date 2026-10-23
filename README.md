@@ -245,6 +245,22 @@ anchor: sensor.garnet_anchor_distance
 
 Like the rest of Vigie, it is an aid to awareness, not a navigation display.
 
+### Ready-made Vigie dashboard
+
+The simplest way to see both cards: once *Vigie cards* is downloaded (its README walks
+through it step by step), create a dashboard (*Settings → Dashboards → + Add dashboard →
+New dashboard from scratch*), open it, click the pencil, then **⋮ → Raw configuration
+editor**, and replace everything with:
+
+```yaml
+strategy:
+  type: custom:vigie
+```
+
+The dashboard finds your boat by itself and shows the traffic map and the anchor card,
+one tab per boat; nothing to rename. Needs Vigie cards with the dashboard (after
+0.2.0-beta.3).
+
 ## Requirements
 
 - Home Assistant 2026.2.0 or later.

@@ -9,6 +9,9 @@ versioning: SemVer.
 - Bench: the replay tool serves a scenario over TCP (`--tcp PORT`): Home Assistant reads it
   with the serial port `socket://<laptop IP>:PORT`, no cable. Recipe in `CONTRIBUTING.md`,
   including the anchor card checks.
+- Docs: a ready-made Vigie dashboard (`strategy: {type: custom:vigie}`), shipped with
+  Vigie cards, that shows the traffic map and the anchor card for each boat without any
+  entity to rename (SPEC v0.28 §9.9, OD-40; TEST v0.36 U-DASH, F-DASH; #87).
 
 ## [0.4.0-beta.1] - 2026-10-22
 
