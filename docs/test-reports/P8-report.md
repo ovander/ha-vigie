@@ -8,7 +8,7 @@ checks are filled in when they are run, and the exit criterion is assessed then.
 | Phase | P8 Track sharing (SPEC HA-SAIL-SPEC-001 v0.30 §9.10, §13; X-12 0.3.0) |
 | Documents | SPEC v0.30, TEST v0.38 |
 | Code | `ovander/ha-noforeignland` (C-15). No change in Vigie |
-| Releases | None yet: the first beta is the owner's call |
+| Releases | [`v0.1.0-beta.1`](https://github.com/ovander/ha-noforeignland/releases/tag/v0.1.0-beta.1) (pre-release, 2026-10-23, `812caf7`): `noforeignland.zip`, manifest stamped `0.1.0-beta.1`, every other file identical to `main`. Tested against a simulated noforeignland only |
 | CI | `lint`, `unit`, `hassfest`, `hacs` in `ovander/ha-noforeignland` |
 | Automated tests | 46 (U-NFL, F-NFL, flows, translations), noforeignland mocked; 100 % coverage on the pure core |
 | Exit criterion | **Not met yet**: E-25 needs noforeignland's integration key (X-12 OD-8) |
@@ -18,7 +18,8 @@ checks are filled in when they are run, and the exit criterion is assessed then.
 | PR | Issue | Content |
 |---|---|---|
 | ovander/ha-vigie#92 | #91 | WP29: the uploader specified (SPEC §9.10, C-15); OD-28, OD-41…OD-44 resolved by the owner; tests planned |
-| ovander/ha-noforeignland#1, this PR | #93 | WP30: the uploader built and tested; TEST statuses; this report |
+| ovander/ha-noforeignland#1, ovander/ha-vigie#94 | #93 | WP30: the uploader built and tested; TEST statuses; this report |
+| ovander/ha-noforeignland#2, this PR | #93 | Changelog and README (step-by-step install, where the keys and options live, an *Entities* card) for `v0.1.0-beta.1`; the release recorded here |
 
 ## 2. Test status (TEST §9, row P8)
 
@@ -80,4 +81,4 @@ options to keep the run short (the default is 60 min).
 
 - noforeignland's integration key (X-12 OD-8); the answers on OD-2 (points per request),
   OD-4 (rate limits) and OD-6 (backdated points).
-- E-25, E-26; then a first beta of `ha-noforeignland`.
+- E-25 (with a test boat), E-26.
