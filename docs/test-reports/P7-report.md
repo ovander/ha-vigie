@@ -8,7 +8,7 @@ formal bench check is filled in when it is run, and the exit criterion is assess
 | Phase | P7 Anchor card (SPEC HA-SAIL-SPEC-001 v0.28 §8.4, §9.6, §9.8, §9.9, §13) |
 | Documents | SPEC v0.28, TEST v0.36 |
 | Code | Vigie `main`: `keep_since` on `vigie.drop_anchor` (WP27); otherwise tests and docs only. Card `ovander/ha-vigie-card` (WP25–WP28) |
-| Releases | Card [`v0.2.0-beta.1`](https://github.com/ovander/ha-vigie-card/releases/tag/v0.2.0-beta.1) (anchor card, own boat line) [`v0.2.0-beta.2`](https://github.com/ovander/ha-vigie-card/releases/tag/v0.2.0-beta.2) (decimal degrees, version in the file) and [`v0.2.0-beta.3`](https://github.com/ovander/ha-vigie-card/releases/tag/v0.2.0-beta.3) (swing track, editor, pre-run fixes, recentering), all pre-releases; Vigie [`v0.4.0-beta.1`](https://github.com/ovander/ha-vigie/releases/tag/v0.4.0-beta.1) (`keep_since`). The ready-made dashboard (WP28) is not released yet: the next card beta is the owner's call |
+| Releases | Card [`v0.2.0-beta.1`](https://github.com/ovander/ha-vigie-card/releases/tag/v0.2.0-beta.1) (anchor card, own boat line) [`v0.2.0-beta.2`](https://github.com/ovander/ha-vigie-card/releases/tag/v0.2.0-beta.2) (decimal degrees, version in the file) and [`v0.2.0-beta.3`](https://github.com/ovander/ha-vigie-card/releases/tag/v0.2.0-beta.3) (swing track, editor, pre-run fixes, recentering), all pre-releases; Vigie [`v0.4.0-beta.1`](https://github.com/ovander/ha-vigie/releases/tag/v0.4.0-beta.1) (`keep_since`). The ready-made dashboard (WP28) is in [`v0.2.0-beta.4`](https://github.com/ovander/ha-vigie-card/releases/tag/v0.2.0-beta.4) |
 | CI | Vigie `lint`, `unit`, `hassfest`, `hacs`. Card `check` (typecheck, unit and headless Chromium tests, build, `dist` up to date, smoke test of the built file with its version) and `hacs`. The card's release workflow also checks the stamped version |
 | Automated tests | Vigie: 523 passed, 1 skipped (U-GPS-08, #2). Card: 116 (U-CARD, U-ACARD, U-DASH, F-CARD, F-ACARD, F-DASH, editors, pre-run regressions) and the smoke test |
 | Exit criterion | **Not met yet**: the formal E-09 (§5.2) is still to run |
@@ -130,7 +130,7 @@ Run on the bench (`CONTRIBUTING.md`, two-Pi bench or container), with the card r
 | 8 | Network cut | Everything but the tiles still drawn | |
 | 9 | Phone in French | Every card string and figure in French | |
 | 10 | Drop 20 m north of 43.5, 7.25; at 10 min, *Recenter* | Circle within a few metres of 43.5, 7.25, time at anchor kept | |
-| 11 | A new dashboard with only `strategy: type: custom:vigie`, following the card README step by step | The boat's view with the traffic map and the anchor card, nothing renamed | |
+| 11 | A new dashboard with only `strategy: type: custom:vigie`, following the card README step by step | The boat's view with the traffic map and the anchor card, nothing renamed | Pass in the owner's lab, 2026-10-23, card `v0.2.0-beta.4` installed through HACS: "the dashboard shows, it works" |
 
 ## 6. Open items
 
