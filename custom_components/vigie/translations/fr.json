@@ -17,16 +17,30 @@
       "no_data": {
         "title": "Aucune donnée reçue",
         "description": "Le port {serial_port} s'est ouvert, mais rien n'est arrivé en 5 s. Vérifiez que le récepteur est alimenté et câblé, et qu'aucune autre intégration n'utilise ce port. Vous pouvez enregistrer quand même : Vigie reste à l'écoute et les entités restent indisponibles jusqu'à l'arrivée des données."
+      },
+      "reconfigure": {
+        "title": "Vigie — port de {name}",
+        "description": "Un autre port série ou une autre vitesse pour ce bateau. Vigie écoute jusqu'à 5 s pour vérifier, puis redémarre dessus : les entités, leur historique, les options et la veille au mouillage sont gardés.",
+        "data": {
+          "serial_port": "Port série",
+          "baudrate": "Vitesse (bauds)"
+        },
+        "data_description": {
+          "serial_port": "Choisissez un port détecté ou saisissez un chemin.",
+          "baudrate": "38 400 est la valeur courante des récepteurs AIS ; certains utilisent 4 800. Toute autre valeur peut être saisie."
+        }
       }
     },
     "error": {
       "cannot_connect": "Impossible d'ouvrir le port série. Vérifiez le chemin et qu'aucun autre programme ne l'utilise.",
       "invalid_baudrate": "Saisissez un nombre entier positif.",
       "no_data": "Aucune donnée NMEA reçue en 5 s.",
-      "wrong_baud": "Des données arrivent mais aucune phrase NMEA valide. La vitesse est sans doute fausse : essayez {other_baudrate}."
+      "wrong_baud": "Des données arrivent mais aucune phrase NMEA valide. La vitesse est sans doute fausse : essayez {other_baudrate}.",
+      "port_in_use": "Ce port est déjà utilisé par un autre bateau Vigie."
     },
     "abort": {
-      "already_configured": "Ce port série est déjà configuré."
+      "already_configured": "Ce port série est déjà configuré.",
+      "reconfigure_successful": "Port changé : Vigie redémarre dessus."
     }
   },
   "options": {

@@ -282,6 +282,14 @@ one tab per boat; nothing to rename. Needs Vigie cards
    Otherwise the list of integrations can come from the browser's cache and miss Vigie.
 5. Settings → Devices & services → Add integration → **Vigie**.
 
+### Changing the serial port or the baud rate
+
+Settings → Devices & services → **Vigie** → ⋮ → **Reconfigure**: pick another port (a
+`/dev/serial/by-id/…` path, a typed one, or `socket://<computer>:<port>` for the bench) or
+another baud rate. Vigie listens up to 5 s to check it, as at setup, then restarts on it;
+the entities, their history, the options and the anchor watch are kept. A port another
+Vigie boat uses is refused.
+
 ### If Vigie does not appear in "Add integration"
 
 - **Version in HACS:** HACS → Vigie should show a `v…-beta.N` version. A commit ID or nothing

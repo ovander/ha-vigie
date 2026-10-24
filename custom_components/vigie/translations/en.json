@@ -17,16 +17,30 @@
       "no_data": {
         "title": "No data received",
         "description": "The port {serial_port} opened, but nothing arrived within 5 s. Check that the receiver is powered and wired, and that no other integration uses this port. You can save anyway: Vigie keeps listening and the entities stay unavailable until data arrives."
+      },
+      "reconfigure": {
+        "title": "Vigie — {name}'s port",
+        "description": "Another serial port or baud rate for this boat. Vigie listens for up to 5 s to check it, then restarts on it: the entities, their history, the options and the anchor watch are kept.",
+        "data": {
+          "serial_port": "Serial port",
+          "baudrate": "Baud rate"
+        },
+        "data_description": {
+          "serial_port": "Pick a detected port or type a path.",
+          "baudrate": "38 400 is usual for AIS receivers; some use 4 800. Any other value can be typed."
+        }
       }
     },
     "error": {
       "cannot_connect": "The serial port cannot be opened. Check the path and that no other program uses it.",
       "invalid_baudrate": "Enter a positive whole number.",
       "no_data": "No NMEA data received within 5 s.",
-      "wrong_baud": "Data arrived but no valid NMEA sentence. The baud rate is probably wrong: try {other_baudrate}."
+      "wrong_baud": "Data arrived but no valid NMEA sentence. The baud rate is probably wrong: try {other_baudrate}.",
+      "port_in_use": "This port is already used by another Vigie boat."
     },
     "abort": {
-      "already_configured": "This serial port is already configured."
+      "already_configured": "This serial port is already configured.",
+      "reconfigure_successful": "Port changed: Vigie restarts on it."
     }
   },
   "options": {

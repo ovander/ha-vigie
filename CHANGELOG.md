@@ -6,6 +6,9 @@ versioning: SemVer.
 ## [Unreleased]
 
 ### Added
+- Change the serial port or the baud rate after setup: Vigie → ⋮ → **Reconfigure**, with
+  the same check as at setup; the entities, their history, the options and the anchor watch
+  are kept (#98).
 - Bench: the replay tool serves a scenario over TCP (`--tcp PORT`): Home Assistant reads it
   with the serial port `socket://<laptop IP>:PORT`, no cable. Recipe in `CONTRIBUTING.md`,
   including the anchor card checks.
