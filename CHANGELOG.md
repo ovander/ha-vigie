@@ -5,28 +5,34 @@ versioning: SemVer.
 
 ## [Unreleased]
 
+## [0.4.0-beta.2] - 2026-10-24
+
+Two things a newcomer to Home Assistant missed: changing the serial port after setup, and
+phone alarms without writing YAML. Everything else works as in 0.4.0-beta.1; the rest is
+specification, tests and docs (the ready-made dashboard of Vigie cards, and the
+noforeignland uploader, which is a separate integration: Vigie still makes no connection).
+
 ### Added
-- Phone alerts in two clicks: blueprints for the collision alert and the anchor alarm,
-  with an *Import blueprint* button in the README. Pick the boat's sensor and your phone;
-  critical alerts (ringing through silent mode) are on by default (#100).
 - Change the serial port or the baud rate after setup: Vigie → ⋮ → **Reconfigure**, with
   the same check as at setup; the entities, their history, the options and the anchor watch
-  are kept (#98).
+  are kept; a port another Vigie boat uses is refused (#98).
+- Phone alerts in two clicks: blueprints for the collision alert and the anchor alarm,
+  with an *Import blueprint* button in the README. Pick the boat's sensor and your phone;
+  critical alerts (ringing through silent mode) are on by default (#100). The YAML
+  automations stay in the README as the manual alternative.
 - Bench: the replay tool serves a scenario over TCP (`--tcp PORT`): Home Assistant reads it
   with the serial port `socket://<laptop IP>:PORT`, no cable. Recipe in `CONTRIBUTING.md`,
-  including the anchor card checks.
-- Docs: a ready-made Vigie dashboard (`strategy: {type: custom:vigie}`), shipped with
-  Vigie cards, that shows the traffic map and the anchor card for each boat without any
-  entity to rename (SPEC v0.28 §9.9, OD-40; TEST v0.36 U-DASH, F-DASH; #87).
-- Docs: sharing the boat's track on noforeignland is specified as a separate integration,
-  `ha-noforeignland`, with outage buffering; Vigie stays offline (SPEC v0.29 §9.10,
-  OD-28, OD-41…OD-44, phase P8; TEST v0.37 U-NFL, F-NFL, E-25, E-26; X-12 0.3.0; #91).
-- Docs: the noforeignland uploader is built in
-  [ha-noforeignland](https://github.com/ovander/ha-noforeignland) (SPEC v0.30, TEST v0.38
-  U-NFL and F-NFL Done; P8 report; #93). Defaults amended by the owner: sent once an hour,
-  one point every 6 h when stationary (OD-43).
-- Docs: noforeignland's integration key is built into ha-noforeignland, with an optional
-  override (SPEC v0.31 OD-45, TEST v0.39; #96).
+  including the anchor card checks (#85).
+
+### Documentation
+- The ready-made Vigie dashboard (`strategy: {type: custom:vigie}`) of Vigie cards
+  0.2.0-beta.4, in the README (SPEC v0.28 §9.9, OD-40; TEST v0.36 U-DASH, F-DASH; #87).
+- Sharing the boat's track on noforeignland, specified and built as a separate integration,
+  [ha-noforeignland](https://github.com/ovander/ha-noforeignland), with outage buffering:
+  new phase P8 (SPEC v0.29–v0.31 §9.10, OD-28, OD-41…OD-45; TEST v0.37–v0.39 U-NFL,
+  F-NFL, E-25, E-26; X-12 0.3.0; P8 report; #91, #93, #96).
+- SPEC v0.32 §11.1 (reconfigure), v0.33 §9.2 (phone alerts); TEST v0.40 F-LIFE-09…12,
+  v0.41 F-TRF-13, F-ANC-11.
 
 ## [0.4.0-beta.1] - 2026-10-22
 
@@ -215,7 +221,8 @@ P1–P3). Tested on synthetic data only; see `docs/test-reports/`.
 - AIS decoder rejects payload armoring characters 0x58–0x5F (`X`…`_`), which the AIVDM
   specification does not allow; they were decoded as six-bit values 40–47 (#11).
 
-[Unreleased]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.1...HEAD
+[Unreleased]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.2...HEAD
+[0.4.0-beta.2]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.1...v0.4.0-beta.2
 [0.4.0-beta.1]: https://github.com/ovander/ha-vigie/compare/v0.3.0-beta.1...v0.4.0-beta.1
 [0.3.0-beta.1]: https://github.com/ovander/ha-vigie/compare/v0.2.0-beta.1...v0.3.0-beta.1
 [0.2.0-beta.1]: https://github.com/ovander/ha-vigie/compare/v0.1.0-beta.1...v0.2.0-beta.1
