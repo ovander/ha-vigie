@@ -6,7 +6,7 @@
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
 | Version | 0.33 (draft) |
-| Date | 2026-10-22 |
+| Date | 2026-10-24 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
 | Project name / domain | **Vigie** / `vigie` (OD-01 resolved) |

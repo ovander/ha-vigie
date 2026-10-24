@@ -23,6 +23,7 @@ they are.
 | #50 | #49 | WP16: pure module `anchor.py` (arm/re-drop, radius, drag alarm latched, position-loss alarm, maximum distance, snapshot); OD-21…OD-26 resolved, OD-27 (track sharing by Home Assistant) |
 | #54 | #53 | WP17: switch, radius, alarm and distance entities; `drop_anchor` / `raise_anchor` actions; options; state saved about 1 s after a change; diagnostics; README alert; `anchor-drag` scenario |
 | #56 | #55 | WP18: bench recipe, E-07 pre-run (§5.1), README anchor map card and anchor icons (findings of the pre-run), this report |
+| #101 | #100 | WP33 (after the phase, owner's request): the anchor alarm as a blueprint, imported with a button (SPEC v0.33 §9.2, §9.6; F-ANC-11); released in `v0.4.0-beta.2` |
 
 ## 2. Test status (TEST §9, row P5)
 
