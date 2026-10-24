@@ -6,10 +6,12 @@ Vigie reads the NMEA 0183 output of a boat's AIS receiver over a serial port and
 into Home Assistant entities: own position and motion, surrounding AIS traffic, and
 CPA/TCPA collision-risk alerts you can use in automations. Local only, no cloud.
 
-> **Status: pre-alpha (phase P3).** The integration reads the receiver and creates own-boat,
-> AIS traffic, collision-risk and diagnostic entities, with ship names, types and sizes. It
-> has been tested on synthetic data only; the checks on board with a real receiver are
-> still to do. See the roadmap below.
+> **Status: beta (phases P1–P8 built).** The integration reads the receiver and creates
+> own-boat, AIS traffic, collision-risk, anchor-watch and diagnostic entities, with ship
+> names, types and sizes; phone alerts come as blueprints, and the dashboard cards and the
+> noforeignland uploader are companion projects. It has been tested on synthetic data and on
+> a desk bench only; the checks on board with a real receiver are still to do. See the
+> roadmap below.
 
 ## ⚠️ Safety
 
@@ -22,7 +24,7 @@ receiver has not heard, and for an anchored or moored Class A target (unless you
 exclusion off). It is **unavailable**, not off, while own position is unknown. Never rely on
 it as your only alarm.
 
-## What it will provide (v1)
+## What it provides
 
 - Own boat: position (device tracker), speed and course over ground, GNSS health.
 - AIS traffic: number of targets, nearest target, a compact target list for map cards.
@@ -30,6 +32,10 @@ it as your only alarm.
 - Watch list: device trackers for chosen MMSIs (friends' boats, tender…).
 - Ship details from AIS static data: name, ship type, size, call sign, destination.
 - Anchor watch: swing radius, dragging and position-lost alarm, distance to the anchor.
+- Phone alerts: blueprints for the collision risk and the anchor alarm (below).
+- Dashboards: the traffic map, the anchor card and a ready-made dashboard in
+  [Vigie cards](https://github.com/ovander/ha-vigie-card); the boat's track on
+  noforeignland with [ha-noforeignland](https://github.com/ovander/ha-noforeignland).
 
 ## Collision alert automation
 
@@ -317,13 +323,13 @@ Vigie boat uses is refused.
 | Phase | Content | Status |
 |---|---|---|
 | P0 | AIS decoder (Class A 1/2/3, Class B 18/19) | ✅ done |
-| P1 | Serial transport, GPS parsing, own-boat entities, AIS target table | built; on-board checks pending |
-| P2 | CPA/TCPA, collision-risk alert, watch-list trackers | built; bench and on-board checks pending |
+| P1 | Serial transport, GPS parsing, own-boat entities, AIS target table; port changed after setup (Reconfigure) | built; on-board checks pending |
+| P2 | CPA/TCPA, collision-risk alert (and its phone-alert blueprint), watch-list trackers | built; bench and on-board checks pending |
 | P3 | AIS static data (names, types, dimensions), map card | built; on-board checks pending |
 | P4 | Additional instruments (wind, depth) and sailing performance | later |
-| P5 | Anchor watch | built; bench and on-board checks pending |
+| P5 | Anchor watch (and its phone-alert blueprint) | built; bench and on-board checks pending |
 | P6 | AIS traffic map card (every target on one map) | built ([ha-vigie-card](https://github.com/ovander/ha-vigie-card)); bench check pending |
-| P7 | Anchor card (the anchor watch in the cockpit, with drop / raise / radius) | in progress ([ha-vigie-card](https://github.com/ovander/ha-vigie-card)) |
+| P7 | Anchor card (the anchor watch in the cockpit, with drop / raise / radius) | built ([ha-vigie-card](https://github.com/ovander/ha-vigie-card)); formal bench check pending |
 | P8 | Sharing the boat's track on noforeignland, kept through internet outages (separate integration [ha-noforeignland](https://github.com/ovander/ha-noforeignland); Vigie stays offline) | built; live checks wait for noforeignland's key |
 
 ## Documentation

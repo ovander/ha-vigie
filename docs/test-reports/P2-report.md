@@ -23,6 +23,7 @@ bench and on board; the exit criterion is assessed once they are.
 | #26 | #25 | WP8: `binary_sensor.collision_risk`, closest target distance, closest threat CPA/TCPA sensors; CPA/TCPA in the `targets` list; threshold options |
 | #28 | #27 | WP9: watch-list `device_tracker.ais_<mmsi>` on their own devices, `watch_list` option |
 | #30 | #29 | WP10: README automation example (tested as published), scenario presets for every TEST §3.4 geometry, this report |
+| #101 | #100 | WP33 (after the phase, owner's request): the collision alert as a blueprint, imported with a button (SPEC v0.33 §9.2; F-TRF-13); released in `v0.4.0-beta.2` |
 
 ## 2. Test status (TEST §9, row P2)
 

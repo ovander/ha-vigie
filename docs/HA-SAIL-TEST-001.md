@@ -6,8 +6,8 @@
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
 | Version | 0.41 (draft) |
-| Date | 2026-10-22 |
-| Parent specification | HA-SAIL-SPEC-001 v0.5 |
+| Date | 2026-10-24 |
+| Parent specification | HA-SAIL-SPEC-001 v0.33 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open points in §10 |
 

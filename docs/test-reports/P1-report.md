@@ -24,6 +24,7 @@
 | #14 | #13 | WP4: setup/unload, coordinator, config flow (port discovery, probe), options flow |
 | #16 | #15 | WP5: 14 entities per boat, diagnostics download, English/French names; D-08 fixture; F-PERF tests |
 | #18 | #17 | WP6: scenario, replay and capture tools; nightly `perf` workflow; E-1 recipe in `CONTRIBUTING.md` |
+| #99 | #98 | WP32 (after the phase, owner's request): *Reconfigure* the serial port and the baud rate of a configured boat, with the setup probe, keeping the entities, history, options and anchor watch (SPEC v0.32 §11.1; F-LIFE-09…12); released in `v0.4.0-beta.2` |
 
 Entities per boat: SOG, COG, heading, GNSS fix, satellites, HDOP, `device_tracker.<boat>`,
 `sensor.ais_targets` (50 nearest in an unrecorded attribute), sentences per minute and last
