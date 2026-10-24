@@ -1,0 +1,67 @@
+blueprint:
+  name: Vigie — anchor alarm
+  description: >-
+    Sends a notification to your phone when Vigie's anchor watch raises its alarm: the boat
+    is dragging (its distance from the anchor against the radius), or the receiver has stopped
+    giving a position. The alert is an aid: keep a watch on deck.
+  domain: automation
+  author: ovander
+  source_url: https://github.com/ovander/ha-vigie/blob/main/blueprints/automation/vigie/anchor_alarm.yaml
+  homeassistant:
+    min_version: 2026.2.0
+  input:
+    anchor_alarm:
+      name: Anchor alarm
+      description: Your boat's anchor alarm sensor, binary_sensor.<boat>_anchor_alarm.
+      selector:
+        entity:
+          filter:
+            - integration: vigie
+              domain: binary_sensor
+    phone:
+      name: Phone
+      description: The phone to notify (Home Assistant companion app).
+      selector:
+        device:
+          filter:
+            - integration: mobile_app
+    critical:
+      name: Critical alert
+      description: >-
+        Rings even when the phone is silenced (iOS needs the companion app's critical-alert
+        permission; Android delivers it at once with high priority).
+      default: true
+      selector:
+        boolean: {}
+
+mode: single
+
+triggers:
+  - trigger: state
+    entity_id: !input anchor_alarm
+    to: "on"
+
+variables:
+  alarm: !input anchor_alarm
+  phone: !input phone
+  critical: !input critical
+  boat_entities: "{{ device_entities(device_id(alarm)) }}"
+  distance_entity: "{{ boat_entities | select('search', '^sensor[.].*_anchor_distance$') | first | default('') }}"
+  radius_entity: "{{ boat_entities | select('search', '^number[.].*_anchor_radius$') | first | default('') }}"
+  notify_action: "notify.mobile_app_{{ device_attr(phone, 'name') | slugify }}"
+  push_data: >-
+    {{ {'ttl': 0, 'priority': 'high', 'push': {'interruption-level': 'critical'}}
+       if critical else {'priority': 'high'} }}
+
+actions:
+  - action: "{{ notify_action }}"
+    data:
+      title: "⚓ Anchor alarm"
+      message: >-
+        {% if state_attr(alarm, 'reason') == 'drag' %}
+        Dragging: {{ states(distance_entity, rounded=True) }} m
+        from the anchor (radius {{ states(radius_entity) | int(0) }} m).
+        {% else %}
+        No position from the receiver: check the GPS and the power.
+        {% endif %}
+      data: "{{ push_data }}"

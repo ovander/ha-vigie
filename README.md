@@ -40,8 +40,14 @@ passed, so an automation on it runs once per encounter. Its attributes name the 
 target (`mmsi`, `name`) and count the threats (`threat_count`). Thresholds are in the
 integration's options.
 
-Example for a boat named *Garnet* and the Home Assistant companion app (replace
-`mobile_app_my_phone` with your phone's notify service):
+**The simplest way: the blueprint.** Click
+[![Import blueprint](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fovander%2Fha-vigie%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fvigie%2Fcollision_alert.yaml),
+confirm the import, then **Create automation**: pick your boat's *Collision risk* sensor, your phone (the Home Assistant
+companion app) and whether the alert is critical (on by default: it rings even when the phone
+is silenced; on iOS, allow critical alerts for the companion app). Save. Nothing to type.
+
+The same automation written by hand, for a boat named *Garnet* and the Home Assistant companion app
+(replace `mobile_app_my_phone` with your phone's notify service):
 
 ```yaml
 automation:
@@ -114,7 +120,13 @@ Both delays are options. `sensor.<boat>_anchor_distance` shows the distance to t
 with the bearing and the largest distance since the anchor was dropped. The watch, the
 anchor point and an alarm that is on survive a restart of Home Assistant or a power cut.
 
-Example alert (same phone as above):
+**The simplest way: the blueprint.** Click
+[![Import blueprint](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fovander%2Fha-vigie%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fvigie%2Fanchor_alarm.yaml),
+confirm the import, then **Create automation**: pick your boat's *Anchor alarm* sensor, your phone (the Home Assistant
+companion app) and whether the alert is critical (on by default: it rings even when the phone
+is silenced; on iOS, allow critical alerts for the companion app). Save. Nothing to type.
+
+The same automation written by hand, for a boat named *Garnet* (same phone as above):
 
 ```yaml
 automation:
