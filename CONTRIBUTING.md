@@ -102,7 +102,7 @@ never wire an RS-232 adapter (±12 V) to a Pi's GPIO pins.
 sudo apt install -y git python3-venv
 sudo usermod -aG dialout $USER     # once, then log out and back in
 git clone https://github.com/ovander/ha-vigie && cd ha-vigie
-git checkout v0.2.0-beta.1         # the release installed on the HA Pi
+git checkout v0.4.0-beta.2         # the release installed on the HA Pi
 python3 -m venv .venv && . .venv/bin/activate
 pip install pyserial pyais
 for p in head-on crossing clear-crossing not-urgent anchored multi-target named-traffic anchor-drag; do
@@ -157,6 +157,59 @@ its anchor, so drop the anchor at the preset's coordinates, not with the switch:
 Developer tools → Actions, run `vigie.drop_anchor` with latitude 43.5, longitude 7.25 and
 radius 50, then replay `--preset anchor-drag` once at real speed (15 min). The alarm is due
 at 698 s (`--list`). Fill in `docs/test-reports/P5-report.md` §5.
+
+### Network bench on a Raspberry Pi (`--tcp`, from any computer)
+
+The simplest bench that stays on board: a spare Raspberry Pi replays the scenarios over the
+network, Home Assistant reads them as a second Vigie boat. No serial cable, nothing to
+install on your computer but an SSH client (built into Windows, macOS and Linux). Works for
+any user name and any Raspberry Pi OS (Python 3.11 or later).
+
+**Once: prepare the Pi.**
+
+1. With Raspberry Pi Imager (Windows, macOS or Linux), flash Raspberry Pi OS Lite. In the
+   advanced settings: host name `vigie-bench`, SSH on, a user name and password of your
+   choice, and the Wi-Fi unless the Pi is wired.
+2. Start the Pi and open a terminal on your computer (PowerShell or Terminal on Windows,
+   Terminal on macOS). Connect with your user name:
+   `ssh <user>@vigie-bench.local`. If the name does not answer (common on Windows), use the
+   Pi's IP address from your router: `ssh <user>@192.168.1.42`.
+3. On the Pi (the same commands whatever your computer):
+
+   ```bash
+   sudo apt update && sudo apt install -y git python3-venv
+   git clone https://github.com/ovander/ha-vigie && cd ha-vigie
+   git checkout v0.4.0-beta.2         # the release installed in Home Assistant
+   python3 -m venv .venv && . .venv/bin/activate
+   pip install "pyais>=2.6"
+   for p in multi-target named-traffic crossing anchor-drag; do
+     python -m tests.tools.scenario --preset $p -o $p.nmea
+   done
+   ```
+
+**Once: add the bench boat in Home Assistant.** Settings → Devices & services → Add
+integration → Vigie: boat name *Bench*, port `socket://vigie-bench.local:10110` (or
+`socket://<Pi IP>:10110`; reserve that address in the router so it stays the same), any
+baud rate. Leave the real boat's entry on the receiver. The bench entities are
+`…bench_…`; give the bench its own blueprint automations so its alerts are labelled.
+
+**Each run.**
+
+```bash
+ssh <user>@vigie-bench.local
+cd ha-vigie && . .venv/bin/activate
+python -m tests.tools.replay multi-target.nmea --tcp 10110 --loop
+```
+
+Keep the window open while testing; Ctrl-C stops the replay. To change scenario, stop it
+and start again with `named-traffic.nmea`, `crossing.nmea` or `anchor-drag.nmea`. One Home
+Assistant at a time can connect; each connection replays from the start. For the anchor
+watch (E-07, E-09), run `vigie.drop_anchor` on the *Bench* entry at 43.5, 7.25 with radius
+50 first, then `anchor-drag.nmea` once, without `--loop`: *Outside the circle* at 678 s,
+*Dragging* at 698 s.
+
+This bench covers every check except the serial path itself (E-01, E-04, E-05): use the
+two-Pi bench above for those.
 
 ### Network bench from a laptop (`--tcp`)
 

@@ -5,6 +5,10 @@ versioning: SemVer.
 
 ## [Unreleased]
 
+### Documentation
+- `CONTRIBUTING.md`: a network bench on a Raspberry Pi (`--tcp`), step by step from any
+  computer (Windows, macOS, Linux); the two-Pi bench checks out the current release (#103).
+
 ## [0.4.0-beta.2] - 2026-10-24
 
 Two things a newcomer to Home Assistant missed: changing the serial port after setup, and
