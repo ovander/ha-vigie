@@ -44,12 +44,8 @@ triggers:
     to: "on"
 
 variables:
-  risk: !input collision_risk
   phone: !input phone
   critical: !input critical
-  boat_entities: "{{ device_entities(device_id(risk)) }}"
-  cpa_entity: "{{ boat_entities | select('search', '_closest_threat_cpa$') | first | default('') }}"
-  tcpa_entity: "{{ boat_entities | select('search', '_closest_threat_tcpa$') | first | default('') }}"
   notify_action: "notify.mobile_app_{{ device_attr(phone, 'name') | slugify }}"
   push_data: >-
     {{ {'ttl': 0, 'priority': 'high', 'push': {'interruption-level': 'critical'}}
@@ -59,9 +55,12 @@ actions:
   - action: "{{ notify_action }}"
     data:
       title: "⚠️ Collision risk"
+      # The risk sensor carries the threat's CPA and TCPA: entity IDs depend on the language
+      # (#105)
       message: >-
-        {{ state_attr(risk, 'name') or 'MMSI ' ~ state_attr(risk, 'mmsi') }}:
-        CPA {{ states(cpa_entity, rounded=True) }} NM
-        in {{ states(tcpa_entity, rounded=True) }} min.
+        {% set threat = trigger.to_state.attributes %}
+        {{ threat.name or 'MMSI ' ~ threat.mmsi }}:
+        CPA {{ '%.2f' | format(threat.cpa_nm | float(0)) }} NM
+        in {{ '%.1f' | format(threat.tcpa_min | float(0)) }} min.
         Check the lookout.
       data: "{{ push_data }}"

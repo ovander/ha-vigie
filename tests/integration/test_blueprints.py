@@ -1,7 +1,8 @@
 """F-TRF-13, F-ANC-11: the alarm blueprints, imported and run (WP33, #100; SPEC §9.2, §9.6).
 
 Each blueprint is copied into Home Assistant's blueprint folder, as the import button does,
-and an automation is made from it with a phone device, as the UI does.
+and an automation is made from it with a phone device, as the UI does. With Home Assistant in
+French too: entity IDs then come from the French names (WP34, #105).
 """
 
 import re
@@ -13,9 +14,11 @@ from freezegun.api import FrozenDateTimeFactory
 from homeassistant.const import STATE_ON
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry as er
 from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import MockConfigEntry, async_mock_service
 
+from custom_components.vigie.const import DOMAIN
 from tests.helpers import BY_ID_PORT, FakePorts
 from tests.integration.common import make_entry, setup, tick
 from tests.integration.test_anchor_watch import ANCHOR, START, call, hold
@@ -23,6 +26,23 @@ from tests.integration.test_traffic_entities import play
 from tests.tools import scenario
 
 BLUEPRINTS = Path(__file__).parents[2] / "blueprints" / "automation" / "vigie"
+
+
+LANGUAGES = pytest.mark.parametrize("language", ["en", "fr"])
+
+
+async def boat(hass: HomeAssistant, language: str) -> MockConfigEntry:
+    """The boat set up with Home Assistant in `language`, which names its entity IDs."""
+    hass.config.language = language
+    entry = make_entry(hass)
+    await setup(hass, entry)
+    return entry
+
+
+def entity_id(hass: HomeAssistant, entry: MockConfigEntry, domain: str, key: str) -> str:
+    found = er.async_get(hass).async_get_entity_id(domain, DOMAIN, f"{entry.entry_id}_{key}")
+    assert found is not None
+    return found
 
 
 def install(hass: HomeAssistant, name: str) -> None:
@@ -56,17 +76,16 @@ def test_blueprints_are_documented(name: str) -> None:
     assert f"blueprints%2Fautomation%2Fvigie%2F{name}" in readme  # the import button
 
 
+@LANGUAGES
 async def test_f_trf_13_collision_blueprint(
-    hass: HomeAssistant, fake_ports: FakePorts, freezer: FrozenDateTimeFactory
+    hass: HomeAssistant, fake_ports: FakePorts, freezer: FrozenDateTimeFactory, language: str
 ):
-    entry = make_entry(hass)
-    await setup(hass, entry)
+    entry = await boat(hass, language)
+    risk = entity_id(hass, entry, "binary_sensor", "collision_risk")
+    if language == "fr":
+        assert risk == "binary_sensor.garnet_risque_de_collision", risk
     calls = async_mock_service(hass, "notify", "mobile_app_my_phone")
-    await automation(
-        hass,
-        "collision_alert.yaml",
-        {"collision_risk": "binary_sensor.garnet_collision_risk", "phone": phone(hass)},
-    )
+    await automation(hass, "collision_alert.yaml", {"collision_risk": risk, "phone": phone(hass)})
     # U-TRF-03 crossing, played past the CPA: one alert for the encounter
     await play(
         hass, freezer, fake_ports[BY_ID_PORT], scenario.generate(scenario.PRESETS["crossing"])
@@ -107,18 +126,17 @@ async def test_f_trf_13_collision_blueprint_not_critical(
     assert calls[0].data["data"] == {"priority": "high"}
 
 
+@LANGUAGES
 async def test_f_anc_11_anchor_blueprint_drag(
-    hass: HomeAssistant, fake_ports: FakePorts, freezer: FrozenDateTimeFactory
+    hass: HomeAssistant, fake_ports: FakePorts, freezer: FrozenDateTimeFactory, language: str
 ):
-    entry = make_entry(hass)
-    await setup(hass, entry)
+    entry = await boat(hass, language)
+    alarm = entity_id(hass, entry, "binary_sensor", "anchor_alarm")
+    if language == "fr":
+        assert alarm == "binary_sensor.garnet_alarme_de_mouillage", alarm
     fake = fake_ports[BY_ID_PORT]
     calls = async_mock_service(hass, "notify", "mobile_app_my_phone")
-    await automation(
-        hass,
-        "anchor_alarm.yaml",
-        {"anchor_alarm": "binary_sensor.garnet_anchor_alarm", "phone": phone(hass)},
-    )
+    await automation(hass, "anchor_alarm.yaml", {"anchor_alarm": alarm, "phone": phone(hass)})
     await call(hass, "drop_anchor", entry, latitude=ANCHOR[0], longitude=ANCHOR[1], radius=50)
     by_second: dict[int, list[str]] = {}
     for t, sentence in scenario.generate(scenario.PRESETS["anchor-drag"]):
@@ -126,11 +144,13 @@ async def test_f_anc_11_anchor_blueprint_drag(
     for second in range(720):
         fake.feed_lines(*by_second[second])
         await tick(hass, freezer, 1)
-    assert hass.states.get("binary_sensor.garnet_anchor_alarm").state == STATE_ON
+    assert hass.states.get(alarm).state == STATE_ON
     assert len(calls) == 1
     assert calls[0].data["title"] == "⚓ Anchor alarm"
     message = calls[0].data["message"]
-    assert re.search(r"Dragging: \d+ m\s+from the anchor \(radius 50 m\)", message), message
+    match = re.search(r"Dragging: (\d+) m\s+from the anchor \(radius 50 m\)", message)
+    assert match, message
+    assert int(match[1]) > 50  # outside the circle
 
 
 async def test_f_anc_11_anchor_blueprint_position_lost(

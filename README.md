@@ -43,7 +43,7 @@ it as your only alarm.
 than the CPA threshold (default 0.5 NM) within the TCPA threshold (default 15 min). Once on,
 it stays on for 60 s after the last threat, or turns off at once when every threat has
 passed, so an automation on it runs once per encounter. Its attributes name the most urgent
-target (`mmsi`, `name`) and count the threats (`threat_count`). Thresholds are in the
+target (`mmsi`, `name`, `cpa_nm`, `tcpa_min`) and count the threats (`threat_count`). Thresholds are in the
 integration's options.
 
 **The simplest way: the blueprint.** Click
@@ -51,9 +51,13 @@ integration's options.
 confirm the import, then **Create automation**: pick your boat's *Collision risk* sensor, your phone (the Home Assistant
 companion app) and whether the alert is critical (on by default: it rings even when the phone
 is silenced; on iOS, allow critical alerts for the companion app). Save. Nothing to type.
+After a Vigie update that changes a blueprint (the changelog says so), re-import it:
+Settings → Automations & scenes → Blueprints → ⋮ → **Re-import blueprint**.
 
 The same automation written by hand, for a boat named *Garnet* and the Home Assistant companion app
-(replace `mobile_app_my_phone` with your phone's notify service):
+(replace `mobile_app_my_phone` with your phone's notify service, and the entity ID with
+yours: Home Assistant names entity IDs in its language, `binary_sensor.garnet_risque_de_collision`
+in French; see it in the entity's settings):
 
 ```yaml
 automation:
@@ -68,10 +72,9 @@ automation:
         data:
           title: "⚠️ Collision risk"
           message: >-
-            {% set r = 'binary_sensor.garnet_collision_risk' %}
-            {{ state_attr(r, 'name') or 'MMSI ' ~ state_attr(r, 'mmsi') }}:
-            CPA {{ states('sensor.garnet_closest_threat_cpa', rounded=True) }} NM
-            in {{ states('sensor.garnet_closest_threat_tcpa', rounded=True) }} min.
+            {% set r = trigger.to_state.attributes %}
+            {{ r.name or 'MMSI ' ~ r.mmsi }}:
+            CPA {{ r.cpa_nm }} NM in {{ r.tcpa_min }} min.
             Check the lookout.
           data:
             ttl: 0            # Android: deliver now
@@ -123,7 +126,8 @@ alarm is on.
   clears by itself when a position inside the radius comes back.
 
 Both delays are options. `sensor.<boat>_anchor_distance` shows the distance to the anchor,
-with the bearing and the largest distance since the anchor was dropped. The watch, the
+with the bearing and the largest distance since the anchor was dropped; the alarm also
+carries the distance and the radius (`distance_m`, `radius_m`). The watch, the
 anchor point and an alarm that is on survive a restart of Home Assistant or a power cut.
 
 **The simplest way: the blueprint.** Click
@@ -132,7 +136,8 @@ confirm the import, then **Create automation**: pick your boat's *Anchor alarm* 
 companion app) and whether the alert is critical (on by default: it rings even when the phone
 is silenced; on iOS, allow critical alerts for the companion app). Save. Nothing to type.
 
-The same automation written by hand, for a boat named *Garnet* (same phone as above):
+The same automation written by hand, for a boat named *Garnet* (same phone and entity ID
+remarks as above):
 
 ```yaml
 automation:
@@ -147,9 +152,9 @@ automation:
         data:
           title: "⚓ Anchor alarm"
           message: >-
-            {% if state_attr('binary_sensor.garnet_anchor_alarm', 'reason') == 'drag' %}
-            Dragging: {{ states('sensor.garnet_anchor_distance', rounded=True) }} m
-            from the anchor (radius {{ states('number.garnet_anchor_radius') | int }} m).
+            {% set a = trigger.to_state.attributes %}
+            {% if a.reason == 'drag' %}
+            Dragging: {{ a.distance_m | int }} m from the anchor (radius {{ a.radius_m | int }} m).
             {% else %}
             No position from the receiver: check the GPS and the power.
             {% endif %}

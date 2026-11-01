@@ -42,12 +42,8 @@ triggers:
     to: "on"
 
 variables:
-  alarm: !input anchor_alarm
   phone: !input phone
   critical: !input critical
-  boat_entities: "{{ device_entities(device_id(alarm)) }}"
-  distance_entity: "{{ boat_entities | select('search', '^sensor[.].*_anchor_distance$') | first | default('') }}"
-  radius_entity: "{{ boat_entities | select('search', '^number[.].*_anchor_radius$') | first | default('') }}"
   notify_action: "notify.mobile_app_{{ device_attr(phone, 'name') | slugify }}"
   push_data: >-
     {{ {'ttl': 0, 'priority': 'high', 'push': {'interruption-level': 'critical'}}
@@ -57,10 +53,12 @@ actions:
   - action: "{{ notify_action }}"
     data:
       title: "⚓ Anchor alarm"
+      # The alarm carries its distance and radius: entity IDs depend on the language (#105)
       message: >-
-        {% if state_attr(alarm, 'reason') == 'drag' %}
-        Dragging: {{ states(distance_entity, rounded=True) }} m
-        from the anchor (radius {{ states(radius_entity) | int(0) }} m).
+        {% set alarm = trigger.to_state.attributes %}
+        {% if alarm.reason == 'drag' %}
+        Dragging: {{ alarm.distance_m | int(0) }} m
+        from the anchor (radius {{ alarm.radius_m | int(0) }} m).
         {% else %}
         No position from the receiver: check the GPS and the power.
         {% endif %}

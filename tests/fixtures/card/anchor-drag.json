@@ -3,6 +3,8 @@
     "binary_sensor.garnet_anchor_alarm": {
       "attributes": {
         "device_class": "safety",
+        "distance_m": 55.0,
+        "radius_m": 50.0,
         "reason": "drag"
       },
       "state": "on"
@@ -3437,6 +3439,8 @@
     "binary_sensor.garnet_anchor_alarm": {
       "attributes": {
         "device_class": "safety",
+        "distance_m": null,
+        "radius_m": null,
         "reason": null
       },
       "state": "off"
@@ -3487,6 +3491,8 @@
     "binary_sensor.garnet_anchor_alarm": {
       "attributes": {
         "device_class": "safety",
+        "distance_m": null,
+        "radius_m": 50.0,
         "reason": "no_position"
       },
       "state": "on"
@@ -3528,6 +3534,8 @@
     "binary_sensor.garnet_anchor_alarm": {
       "attributes": {
         "device_class": "safety",
+        "distance_m": 32.0,
+        "radius_m": 50.0,
         "reason": null
       },
       "state": "off"
@@ -3583,6 +3591,8 @@
     "binary_sensor.garnet_anchor_alarm": {
       "attributes": {
         "device_class": "safety",
+        "distance_m": null,
+        "radius_m": 50.0,
         "reason": null
       },
       "state": "off"

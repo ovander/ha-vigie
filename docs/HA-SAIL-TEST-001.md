@@ -5,9 +5,9 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.41 (draft) |
+| Version | 0.42 (draft) |
 | Date | 2026-10-24 |
-| Parent specification | HA-SAIL-SPEC-001 v0.33 |
+| Parent specification | HA-SAIL-SPEC-001 v0.34 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open points in §10 |
 
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.42 | 2026-11-01 | WP34 (#105, SPEC v0.34 §9.2, §9.6): F-TRF-13 and F-ANC-11 also run with Home Assistant in French (entity IDs from the French names); F-TRF-02 and F-ANC-03 check the new attributes; F-TRF-01 counts state changes only. Done. WP35 (#106, SPEC §9.8): F-ACARD-14 (drop again during the drag alarm); F-ACARD-10 allows the fifth call. Done in ovander/ha-vigie-card. |
 | 0.41 | 2026-10-23 | WP33 (#100, SPEC v0.33 §9.2): F-TRF-13 and F-ANC-11, the alarm blueprints imported and run, Done. |
 | 0.40 | 2026-10-23 | WP32 (#98, SPEC v0.32 §11.1): F-LIFE-09…12, reconfiguring the port and the baud rate, Done. |
 | 0.39 | 2026-10-23 | WP31 (#96, SPEC v0.31 OD-45): U-NFL-09 and F-NFL-01 extended to the built-in integration key and its optional override, Done in ovander/ha-noforeignland#3. |
@@ -346,7 +347,7 @@ Driven by D-07 scenarios replayed in accelerated time.
 | ID | Case | Expected | SPEC | Status |
 |---|---|---|---|---|
 | F-TRF-01 | U-TRF-05 scenario played over time | `binary_sensor.collision_risk` turns **on** when TCPA crosses 15 min, **off** after CPA passes | §8.2, §9.2 | Done |
-| F-TRF-02 | U-TRF-01 head-on | Closest threat CPA/TCPA sensors match U-TRF-01 values within tolerance | §9.2 | Done |
+| F-TRF-02 | U-TRF-01 head-on | Closest threat CPA/TCPA sensors match U-TRF-01 values within tolerance; `collision_risk` carries the same `cpa_nm`, `tcpa_min` (WP34) | §9.2 | Done |
 | F-TRF-03 | 60 targets | `sensor.ais_targets` = 60, attribute list capped at 50 nearest | §9.2 | Done |
 | F-TRF-04 | Target stops reporting | Removed after expiry (Class A 10 min, Class B 15 min) | §9.4 | Done |
 | F-TRF-05 | Watch list with 2 MMSIs | Exactly 2 AIS trackers created; removal from list removes them | §9.3 | Done |
@@ -357,7 +358,7 @@ Driven by D-07 scenarios replayed in accelerated time.
 | F-TRF-10 | Stationary threat: static data arrives after the position, then its destination changes | `collision_risk` and the tracker are written although their state and position do not change | §9.4 | Done |
 | F-TRF-11 | Ship-type translations | Every category in `strings.json`, `en.json`, `fr.json` for every entity with the attribute; French strings loaded by HA | CLAUDE.md, OD-17 | Done |
 | F-TRF-12 | `heading` reported by one target, not by another; a crossing threat, a clear crossing and an anchored Class A, with the stationary exclusion on and off; no own position | Every row has `heading` (`None` when not reported) and `threat`; `threat` true exactly for the traffic picture's threats (anchored target only without the exclusion); false while own position is unknown | §9.2, §9.7, OD-31 | Done |
-| F-TRF-13 | Collision blueprint (WP33): imported, an automation made with the risk sensor and a phone device; `crossing` played past the CPA; again with *Critical alert* off | One notification to `notify.mobile_app_my_phone`, `⚠️ Collision risk`, `MMSI 235000001: CPA 0.45 NM in 4.0 min` (± 0.02 NM, ± 0.2 min), critical push data; without critical, `priority: high` only | §9.2 | Done |
+| F-TRF-13 | Collision blueprint (WP33): imported, an automation made with the risk sensor and a phone device; `crossing` played past the CPA; again with *Critical alert* off; with Home Assistant in English and in French (WP34: `binary_sensor.garnet_risque_de_collision`) | One notification to `notify.mobile_app_my_phone`, `⚠️ Collision risk`, `MMSI 235000001: CPA 0.45 NM in 4.0 min` (± 0.02 NM, ± 0.2 min), critical push data; without critical, `priority: high` only | §9.2 | Done |
 
 ### 4.5 Load and recorder — `F-PERF`
 
@@ -377,7 +378,7 @@ Marked `@pytest.mark.perf`, excluded from the default run and executed by the ni
 |---|---|---|---|---|
 | F-ANC-01 | Entry set up | `switch.anchor_watch`, `number.anchor_radius` (config, 50 m), `binary_sensor.anchor_alarm` (safety, off), `sensor.anchor_distance` (distance, m, unavailable while disarmed) on the boat's device with translation keys and entry-scoped unique IDs | §9.6 | Done |
 | F-ANC-02 | Switch turned on with own position; without own position | Armed at the current position, attributes set, distance 0; without position the call fails with a translated error and the switch stays off | §9.6 | Done |
-| F-ANC-03 | `anchor-drag` preset played, README anchor automation installed | Alarm on with reason `drag` at the time `--list` gives (± 1 tick); the automation runs once; distance written ≤ 1/s with a 1 m dead-band | §8.4, §9.6, §10.2 | Done |
+| F-ANC-03 | `anchor-drag` preset played, README anchor automation installed | Alarm on with reason `drag` at the time `--list` gives (± 1 tick); the automation runs once; distance written ≤ 1/s with a 1 m dead-band; `anchor_alarm` carries `distance_m` (the sensor's, rounded) and `radius_m` 50 (WP34) | §8.4, §9.6, §10.2 | Done |
 | F-ANC-04 | `vigie.drop_anchor` with latitude, longitude and radius; with radius only; with only latitude; `vigie.raise_anchor` | Anchor at the given point with the given radius (number updated); at own position; refused; disarmed and alarm off | §9.6 | Done |
 | F-ANC-05 | Armed, GPS silent; port disconnected | Alarm `no_position` after 60 s in both cases (not unavailable); cleared when the position returns inside | §8.4 | Done |
 | F-ANC-06 | Armed with a latched drag alarm, HA restarted (state injected in Home Assistant's storage); same without an alarm; a change, then 2 s; invalid stored state; entry deleted | Armed again with the same point, radius, maximum distance and alarm on; without an alarm and with no position after the restart, `no_position` after 60 s; the change is in the storage within 2 s; invalid state starts disarmed (radius kept); the stored state is deleted with the entry | §10.4 | Done |
@@ -385,7 +386,7 @@ Marked `@pytest.mark.perf`, excluded from the default run and executed by the ni
 | F-ANC-08 | Translations | `reason` values, attribute labels, service fields and errors in `strings.json`, `en.json`, `fr.json` (F-ENT-08 extended to the anchor entities) | §9.6, CLAUDE.md | Done |
 | F-ANC-09 | Two boats (two entries) armed at different points | Independent watches; a service call targets one entry only | §9.6, NFR-06 | Done |
 | F-ANC-10 | `vigie.drop_anchor` with `keep_since: true` (OD-39): armed, boat at 38 m; recenter to 25 m north; then without coordinates, with the watch off, during a `drag` alarm | `armed_at` and radius unchanged, distance and largest distance about 13 m; refused with `recenter_needs_position`, `anchor_not_armed`, `anchor_alarm_on` (translated), alarm still on | §8.4, §9.6 | Done |
-| F-ANC-11 | Anchor blueprint (WP33): imported, an automation made with the alarm sensor and a phone device; `anchor-drag` with the anchor dropped at 43.5, 7.25, radius 50; then the receiver silent 61 s | One notification each: `⚓ Anchor alarm`, `Dragging: N m from the anchor (radius 50 m)`; `No position from the receiver` | §9.6 | Done |
+| F-ANC-11 | Anchor blueprint (WP33): imported, an automation made with the alarm sensor and a phone device; `anchor-drag` with the anchor dropped at 43.5, 7.25, radius 50; then the receiver silent 61 s; with Home Assistant in English and in French (WP34: `binary_sensor.garnet_alarme_de_mouillage`) | One notification each: `⚓ Anchor alarm`, `Dragging: N m from the anchor (radius 50 m)` with N > 50; `No position from the receiver` | §9.6 | Done |
 
 ### 4.7 Traffic map card — `F-CARD` (SPEC §9.7, P6)
 
@@ -422,10 +423,11 @@ In the card repository (`test/browser/`), as §4.7: headless Chromium, a fake `h
 | F-ACARD-07 | Swing track | One history request for the tracker since `armed_at`; the recorded positions drawn as a line; a new state adds a point without a new request; `track_hours: 0`: no request, no line | Done |
 | F-ACARD-08 | A refused call (Home Assistant error) | The error message shown in the card; states and controls unchanged | Done |
 | F-ACARD-09 | `hass.locale` French | Every card string and figure in French (`55,4 m`) | Done |
-| F-ACARD-10 | Every test above | The only calls are the four of SPEC §9.8 (the fourth, recentering, only with `keep_since: true`) on the configured entities, and the history request; never another service or entity | Done |
+| F-ACARD-10 | Every test above | The only calls are the five of SPEC §9.8 (recentering only with `keep_since: true`; *Drop again here* with `config_entry_id` only) on the configured entities, and the history request; never another service or entity | Done |
 | F-ACARD-11 | Visual editor | Every option editable; a one-line configuration (`switch` only) round trips | Done |
 | F-ACARD-12 | Recenter on the swing (OD-39 A): anchor written 20 m north of the recorded swing, 15 min at anchor; then 5 min; then the drag alarm | Dashed preview and "Recenter garnet's circle here? (≈ 20 m…)"; *Cancel*: no call; *Recenter*: `vigie.drop_anchor` with the entry from the registries, `keep_since: true`, a point within 5 m of the swing's centre. *Too soon* with *Place it by hand*. Buttons disabled during the alarm | Done |
 | F-ACARD-13 | Move the anchor by hand (OD-39 B): tap the map | Preview at the tapped point; *Recenter* calls `vigie.drop_anchor` with exactly that point and `keep_since: true` | Done |
+| F-ACARD-14 | Drop again during the drag alarm (WP35): `anchor-drag` fixture, alarm on; then *Position lost*; then the watch armed without alarm | *Drop again here* shown; the warning names the boat, the radius and the distance from the current anchor; *Cancel*: no call; *Confirm*: `vigie.drop_anchor` with `config_entry_id` only. On *Position lost*, disabled with the reason. Not shown without an alarm | Done |
 
 ### 4.9 Vigie dashboard — `F-DASH` (SPEC §9.9, P7)
 

@@ -5,6 +5,18 @@ versioning: SemVer.
 
 ## [Unreleased]
 
+### Fixed
+- Phone alerts with Home Assistant in another language than English: the anchor alarm said
+  `Dragging: unknown m from the anchor (radius 0 m)` and the collision alert
+  `CPA unknown NM in unknown min`. The blueprints looked for the boat's sensors by their
+  English entity IDs; they now read the alarm itself. **Re-import both blueprints**
+  (Settings → Automations → Blueprints → ⋮ → Re-import) (#105).
+
+### Changed
+- `binary_sensor.<boat>_anchor_alarm` also carries `distance_m` and `radius_m`, and
+  `binary_sensor.<boat>_collision_risk` the most urgent threat's `cpa_nm` and `tcpa_min`,
+  for your own automations too; not recorded (their sensors keep the history) (#105).
+
 ### Documentation
 - `CONTRIBUTING.md`: a network bench on a Raspberry Pi (`--tcp`), step by step from any
   computer (Windows, macOS, Linux); the two-Pi bench checks out the current release (#103).
