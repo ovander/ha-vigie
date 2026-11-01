@@ -5,12 +5,19 @@ versioning: SemVer.
 
 ## [Unreleased]
 
+## [0.4.0-beta.3] - 2026-11-01
+
+A fix for the phone alerts outside English: with Home Assistant in French (or any language
+but English), the anchor alarm and the collision alert came without their figures. After
+updating, **re-import both blueprints**. Nothing else changes in Vigie. With Vigie cards
+0.2.0-beta.5, the anchor card can also drop the anchor again during a drag alarm.
+
 ### Fixed
 - Phone alerts with Home Assistant in another language than English: the anchor alarm said
   `Dragging: unknown m from the anchor (radius 0 m)` and the collision alert
   `CPA unknown NM in unknown min`. The blueprints looked for the boat's sensors by their
   English entity IDs; they now read the alarm itself. **Re-import both blueprints**
-  (Settings → Automations → Blueprints → ⋮ → Re-import) (#105).
+  (Settings → Automations & scenes → Blueprints → ⋮ → Re-import blueprint) (#105).
 
 ### Changed
 - `binary_sensor.<boat>_anchor_alarm` also carries `distance_m` and `radius_m`, and
@@ -237,7 +244,8 @@ P1–P3). Tested on synthetic data only; see `docs/test-reports/`.
 - AIS decoder rejects payload armoring characters 0x58–0x5F (`X`…`_`), which the AIVDM
   specification does not allow; they were decoded as six-bit values 40–47 (#11).
 
-[Unreleased]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.2...HEAD
+[Unreleased]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.3...HEAD
+[0.4.0-beta.3]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.2...v0.4.0-beta.3
 [0.4.0-beta.2]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.1...v0.4.0-beta.2
 [0.4.0-beta.1]: https://github.com/ovander/ha-vigie/compare/v0.3.0-beta.1...v0.4.0-beta.1
 [0.3.0-beta.1]: https://github.com/ovander/ha-vigie/compare/v0.2.0-beta.1...v0.3.0-beta.1

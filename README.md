@@ -190,8 +190,9 @@ state in large type, the distance against the radius with a gauge, the swing cir
 your boat, and has three buttons: **Drop anchor here**, **Raise anchor** (only after a
 confirmation) and the radius **−** / **+**. After 10 minutes at anchor, **Recenter** moves
 the circle to the centre of the swing, where the anchor is; **Move the anchor** lets you
-tap it on the map. Both show the new circle and ask before changing anything. One line is
-enough:
+tap it on the map. Both show the new circle and ask before changing anything. During a
+drag alarm, **Drop again here** (cards 0.2.0-beta.5) sets a new circle on the boat without
+raising the anchor first, after a warning. One line is enough:
 
 ```yaml
 type: custom:vigie-anchor-card
