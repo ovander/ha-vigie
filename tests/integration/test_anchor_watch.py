@@ -189,6 +189,10 @@ async def test_f_anc_03_anchor_drag_preset_and_readme_automation(
     assert len(writes) <= 800
     assert all(abs(b - a) >= 1 - 1e-9 for a, b in pairwise(values))
     distance = hass.states.get("sensor.garnet_anchor_distance")
+    # The alarm carries the distance and the radius, for the notification (WP34)
+    alarm = hass.states.get("binary_sensor.garnet_anchor_alarm")
+    assert alarm.attributes["distance_m"] == round(float(distance.state))
+    assert alarm.attributes["radius_m"] == 50
     assert distance.attributes["max_distance_m"] >= 50
     assert distance.attributes["bearing_to_anchor"] == pytest.approx(180, abs=1)
     assert (distance.attributes["latitude"], distance.attributes["longitude"]) == ANCHOR

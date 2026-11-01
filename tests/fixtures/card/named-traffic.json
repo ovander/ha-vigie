@@ -3,6 +3,7 @@
     "attributes": {
       "beam_m": 30,
       "callsign": "ABCD",
+      "cpa_nm": 0.45,
       "destination": "MARSEILLE",
       "device_class": "safety",
       "draught_m": 8.5,
@@ -12,6 +13,7 @@
       "name": "CARGO ONE",
       "ship_type": "cargo",
       "ship_type_code": 70,
+      "tcpa_min": 14.7,
       "threat_count": 1
     },
     "state": "on"

@@ -390,6 +390,12 @@
           "name": {
             "name": "Name"
           },
+          "cpa_nm": {
+            "name": "CPA (NM)"
+          },
+          "tcpa_min": {
+            "name": "TCPA (min)"
+          },
           "ship_type_code": {
             "name": "AIS ship type code"
           },
@@ -422,6 +428,12 @@
               "drag": "Dragging",
               "no_position": "Position lost"
             }
+          },
+          "distance_m": {
+            "name": "Distance (m)"
+          },
+          "radius_m": {
+            "name": "Radius (m)"
           }
         }
       }

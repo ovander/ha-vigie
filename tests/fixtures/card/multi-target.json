@@ -3,6 +3,7 @@
     "attributes": {
       "beam_m": null,
       "callsign": null,
+      "cpa_nm": 0.45,
       "destination": null,
       "device_class": "safety",
       "draught_m": null,
@@ -12,6 +13,7 @@
       "name": null,
       "ship_type": null,
       "ship_type_code": null,
+      "tcpa_min": 2.7,
       "threat_count": 2
     },
     "state": "on"

@@ -14,6 +14,10 @@ from .coordinator import STATIC_ATTRIBUTES, VigieConfigEntry, VigieCoordinator
 from .entity import VigieEntity
 
 
+def _round(value: float | None, digits: int) -> float | None:
+    return None if value is None else round(value, digits)
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: VigieConfigEntry,
@@ -54,6 +58,8 @@ class CollisionRiskBinarySensor(VigieEntity, BinarySensorEntity):
     """
 
     _attr_device_class = BinarySensorDeviceClass.SAFETY
+    # The threat's CPA and TCPA, for the notification (WP34); their sensors keep the history
+    _unrecorded_attributes = frozenset({"cpa_nm", "tcpa_min"})
 
     def __init__(self, coordinator: VigieCoordinator) -> None:
         super().__init__(coordinator, "collision_risk")
@@ -64,12 +70,16 @@ class CollisionRiskBinarySensor(VigieEntity, BinarySensorEntity):
         return self.coordinator.risk.active
 
     def gate_value(self) -> Any:
-        # Written when the state, the number of threats, the most urgent one or its static
-        # data changes
+        # Written when the state, the number of threats, the most urgent one, its static
+        # data or its CPA/TCPA (as rounded in the attributes) changes
         picture = self.coordinator.picture
         urgent = picture.closest_threat
-        static = None if urgent is None else self.coordinator.statics.get(urgent[0])
-        return (self.current_value(), len(picture.threats), urgent and urgent[0], static)
+        if urgent is None:
+            return (self.current_value(), 0, None, None, None)
+        mmsi, e = urgent
+        static = self.coordinator.statics.get(mmsi)
+        cpa = (_round(e.cpa_nm, 2), _round(e.tcpa_min, 1))
+        return (self.current_value(), len(picture.threats), mmsi, static, cpa)
 
     @property
     def is_on(self) -> bool:
@@ -81,12 +91,21 @@ class CollisionRiskBinarySensor(VigieEntity, BinarySensorEntity):
         urgent = picture.closest_threat
         if urgent is None:
             none = dict.fromkeys(STATIC_ATTRIBUTES)
-            return {"threat_count": 0, "mmsi": None, "name": None, **none}
-        mmsi = urgent[0]
+            return {
+                "threat_count": 0,
+                "mmsi": None,
+                "name": None,
+                "cpa_nm": None,
+                "tcpa_min": None,
+                **none,
+            }
+        mmsi, e = urgent
         return {
             "threat_count": len(picture.threats),
             "mmsi": mmsi,
             "name": self.coordinator.target_name(mmsi),
+            "cpa_nm": _round(e.cpa_nm, 2),
+            "tcpa_min": _round(e.tcpa_min, 1),
             **self.coordinator.static_attributes(mmsi),
         }
 
@@ -100,6 +119,8 @@ class AnchorAlarmBinarySensor(VigieEntity, BinarySensorEntity):
 
     _attr_device_class = BinarySensorDeviceClass.SAFETY
     _always_available = True
+    # The distance, for the notification (WP34); the distance sensor keeps the history
+    _unrecorded_attributes = frozenset({"distance_m"})
 
     def __init__(self, coordinator: VigieCoordinator) -> None:
         super().__init__(coordinator, "anchor_alarm")
@@ -108,10 +129,21 @@ class AnchorAlarmBinarySensor(VigieEntity, BinarySensorEntity):
         status = self.coordinator.anchor_status
         return (status.alarm, status.reason)
 
+    def gate_value(self) -> Any:
+        # Also written when the distance moves by a metre or the radius changes
+        status = self.coordinator.anchor_status
+        return (status.alarm, status.reason, _round(status.distance_m, 0), status.radius_m)
+
     @property
     def is_on(self) -> bool:
         return self.coordinator.anchor_status.alarm
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        return {"reason": self.coordinator.anchor_status.reason}
+        status = self.coordinator.anchor_status
+        return {
+            "reason": status.reason,
+            # None when disarmed or without position, like the distance sensor
+            "distance_m": _round(status.distance_m, 0),
+            "radius_m": status.radius_m if status.armed else None,
+        }

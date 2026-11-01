@@ -70,7 +70,12 @@ async def test_f_trf_01_risk_on_when_tcpa_crosses_15_min_off_after_passage(
         "state_changed",
         lambda e: (
             changes.append((e.time_fired.timestamp(), e.data["new_state"].state))
+            # State changes only: the threat's CPA and TCPA attributes are written too (WP34)
             if e.data["entity_id"] == eid
+            and (
+                e.data["old_state"] is None
+                or e.data["old_state"].state != e.data["new_state"].state
+            )
             else None
         ),
     )
@@ -104,7 +109,11 @@ async def test_f_trf_02_head_on_closest_threat(hass: HomeAssistant, boat, freeze
     assert cpa.attributes["mmsi"] == 235000001
     assert float(tcpa.state) == pytest.approx(10.0, abs=0.1)
     assert tcpa.attributes["unit_of_measurement"] == "min"
-    assert state(hass, entry, "collision_risk", "binary_sensor").state == STATE_ON
+    risk = state(hass, entry, "collision_risk", "binary_sensor")
+    assert risk.state == STATE_ON
+    # The threat's CPA and TCPA on the risk sensor too, for the notification (WP34)
+    assert risk.attributes["cpa_nm"] == pytest.approx(float(cpa.state), abs=0.005)
+    assert risk.attributes["tcpa_min"] == pytest.approx(float(tcpa.state), abs=0.05)
     closest = state(hass, entry, "closest_target_distance")
     assert float(closest.state) == pytest.approx(2.0, abs=0.01)
     assert closest.attributes["unit_of_measurement"] == UnitOfLength.NAUTICAL_MILES
