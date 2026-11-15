@@ -5,8 +5,8 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.34 (draft) |
-| Date | 2026-11-01 |
+| Version | 0.35 (draft) |
+| Date | 2026-11-15 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
 | Project name / domain | **Vigie** / `vigie` (OD-01 resolved) |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.35 | 2026-11-15 | WP36 (#113), from #112: §9.7 the traffic map can draw the own boat's track, option `track_hours` (0–24 h, off by default), from Home Assistant's history of the tracker (read only, as the anchor card, OD-36) then live. |
 | 0.34 | 2026-11-01 | WP34 (#105): owner's report, an incomplete anchor alarm notification. Home Assistant names entity IDs in its language, so the blueprints did not find the sensors next to the alarm in French (`unknown m`, `radius 0 m`). §9.2: `collision_risk` also carries the most urgent threat's `cpa_nm` and `tcpa_min`; §9.6: `anchor_alarm` carries `distance_m` and `radius_m` (kept out of the recorder, the sensors keep the history); *Phone alerts*: the blueprints read the triggering sensor only. WP35 (#106): owner's request. §9.8: *Drop again here* while the drag alarm is on, after an explicit warning (re-drop, §8.4). |
 | 0.33 | 2026-10-23 | WP33 (#100): owner's request. §9.2 *Phone alerts*: two blueprints (collision alert, anchor alarm) turn the README automations into an import button and three choices (sensor, phone, critical alert); §9.6 points to it. |
 | 0.32 | 2026-10-23 | WP32 (#98): owner's request. §11.1 *Reconfigure*: the serial port and the baud rate of a configured boat can be changed, with the setup probe, keeping the entities, their history, the options and the anchor watch; a port of another Vigie boat is refused. |
@@ -412,7 +413,8 @@ Specified in v0.19. Decisions OD-29…OD-33 resolved v0.20. The Vigie side (`hea
 
 - the own boat: `device_tracker.<boat>` (position; `sog`, `cog`, `heading` attributes);
 - the traffic: the `targets` attribute of `sensor.<boat>_ais_targets` (the 50 nearest targets, rebuilt at most every 5 s, §9.2 and §10.2), each row with MMSI, name, class, position, SOG, COG, distance, CPA, TCPA, age, ship type and length;
-- optionally `binary_sensor.<boat>_collision_risk` and `sensor.<boat>_anchor_distance` (anchor point and radius, §9.6).
+- optionally `binary_sensor.<boat>_collision_risk` and `sensor.<boat>_anchor_distance` (anchor point and radius, §9.6);
+- with `track_hours` (v0.35): Home Assistant's history of `device_tracker.<boat>` for the last `track_hours` (websocket `history/history_during_period`, read only, one request per configuration), then the live updates; it needs the recorder, on by default.
 
 WP20 adds two fields to each `targets` row so that the card applies Vigie's rules instead of re-implementing them: `heading` (true heading when reported) and `threat` (true when the target is a threat under §8.2 with the user's thresholds). The row stays compact and the attribute stays under Home Assistant's size limit (F-PERF-03). No new entity, no new API.
 
@@ -426,6 +428,7 @@ WP20 adds two fields to each `targets` row so that the card applies Vigie's rule
 | Labels | Ship name, else MMSI; shown from a zoom level, always for threats |
 | Range rings | 0.5, 1 and 2 NM around the own boat (configurable, can be off) |
 | Anchor | When the anchor watch is on: anchor symbol and the swing circle (radius); red when the alarm is on |
+| Own track | Option `track_hours` (WP36, #112; 0 = off, the default; at most 24 h): the own boat's positions over the last `track_hours`, a thin line behind the boat; older points drop out; at most 500 points, thinned evenly |
 | Details | Tap a target: name, MMSI, ship type, length, SOG, COG, distance, CPA, TCPA, age. Tap the own boat: its position in degrees and minutes and in decimal degrees (`43.501917, 7.250000`: signed, point and six decimals whatever the language, to paste into a charting app or `vigie.drop_anchor`), SOG, COG, heading and the position's state (below) |
 | Own boat line | Under the map, always shown (#77): position in degrees and minutes (`43° 30,000′ N 7° 15,000′ E`), SOG, COG, heading (`—` when unknown); *position current* while `device_tracker.<boat>` is available, else *position lost since HH:MM* (the tracker's last change), with the last position the card saw drawn faded |
 | View | First view: the outer range ring around the own boat, fitted once the card has a size (Home Assistant lays a card out after its first states); then centred on the own boat (follow mode on by default, off after a manual pan, button to come back, paused while a details popup is open); north-up |
@@ -436,7 +439,7 @@ Numbers (CPA, TCPA, speeds, distances, positions) are shown in the user's locale
 
 **Age of the own position (#77).** Vigie makes the tracker unavailable once the fix is older than the staleness timeout (10 s, NFR-05) and writes it only after a 5 m move (§10.2), so the tracker's update time is not the age of the fix. The cards therefore say *current* or *lost since*, never a number of seconds; a per-second age would need a tracker write every second, against §10.2.
 
-**Configuration** (YAML, or the visual editor: Home Assistant's form with entity pickers limited to Vigie's entities; the YAML keeps only what the user set): `entity` (the `ais_targets` sensor, required), `own` (the boat's tracker, required), `collision_risk`, `anchor` (optional), `vector_minutes`, `rings_nm`, `label_zoom`, `height`, `tiles` and `overlay` (OD-32). Every user-visible string of the card exists in English and French.
+**Configuration** (YAML, or the visual editor: Home Assistant's form with entity pickers limited to Vigie's entities; the YAML keeps only what the user set): `entity` (the `ais_targets` sensor, required), `own` (the boat's tracker, required), `collision_risk`, `anchor` (optional), `vector_minutes`, `rings_nm`, `label_zoom`, `height`, `track_hours` (v0.35), `tiles` and `overlay` (OD-32). Every user-visible string of the card exists in English and French.
 
 **Map engine (OD-30).** Leaflet (BSD-2-Clause, X-13) bundled into the card's single JavaScript file; written in TypeScript with Lit, the framework of Home Assistant's own frontend.
 

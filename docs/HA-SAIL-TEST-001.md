@@ -5,9 +5,9 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.42 (draft) |
+| Version | 0.43 (draft) |
 | Date | 2026-10-24 |
-| Parent specification | HA-SAIL-SPEC-001 v0.34 |
+| Parent specification | HA-SAIL-SPEC-001 v0.35 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open points in §10 |
 
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.43 | 2026-11-15 | WP36 (#113, SPEC v0.35 §9.7): U-CARD-06 also checks `track_hours`; F-CARD-12 (own track) new; Done in ovander/ha-vigie-card. |
 | 0.42 | 2026-11-01 | WP34 (#105, SPEC v0.34 §9.2, §9.6): F-TRF-13 and F-ANC-11 also run with Home Assistant in French (entity IDs from the French names); F-TRF-02 and F-ANC-03 check the new attributes; F-TRF-01 counts state changes only. Done. WP35 (#106, SPEC §9.8): F-ACARD-14 (drop again during the drag alarm); F-ACARD-10 allows the fifth call. Done in ovander/ha-vigie-card. |
 | 0.41 | 2026-10-23 | WP33 (#100, SPEC v0.33 §9.2): F-TRF-13 and F-ANC-11, the alarm blueprints imported and run, Done. |
 | 0.40 | 2026-10-23 | WP32 (#98, SPEC v0.32 §11.1): F-LIFE-09…12, reconfiguring the port and the baud rate, Done. |
@@ -246,7 +247,7 @@ In the card repository (`ha-vigie-card`, `test/unit/`), pure TypeScript function
 | U-CARD-03 | Symbol choice: heading known; heading unknown and COG known; neither; SOG 0.3 kn | Oriented on heading; on COG; circle; circle | Done |
 | U-CARD-04 | Style: `threat` true; Class A; Class B; age 200 s | Red; dark; light; faded | Done |
 | U-CARD-05 | Label: name present; name null | Name; MMSI | Done |
-| U-CARD-06 | Config validation: missing `entity`; missing `own`; `vector_minutes` 0 or negative; `rings_nm` not a list | Error naming the field; defaults applied otherwise | Done |
+| U-CARD-06 | Config validation: missing `entity`; missing `own`; `vector_minutes` 0 or negative; `rings_nm` not a list; `track_hours` negative, above 24 or not a number | Error naming the field; defaults applied otherwise | Done |
 | U-CARD-07 | Translations: every key in `en` and `fr` | Same key sets, no empty string | Done |
 | U-CARD-08 | Position in degrees and minutes (#77), English then French: 43.5, 7.25; −33.856, −151.2153; 43.50049833, 7.25; 43.9999999, 0 | `43° 30.000′ N`, `7° 15.000′ E` (`43° 30,000′ N` in French); `33° 51.360′ S`, `151° 12.918′ W`; `43° 30.030′ N`; `44° 00.000′ N` (no `60.000′`), `0° 00.000′ E`. Decimal degrees, any language: 43.501916666, 7.25 → `43.501917, 7.250000`; −33.856, −151.2153 → `-33.856000, -151.215300`; 0, −0.0000001 → `0.000000, 0.000000` | Done |
 
@@ -405,6 +406,7 @@ In the card repository (`test/browser/`): the card rendered in headless Chromium
 | F-CARD-09 | `hass.locale` French | Every card string in French | Done |
 | F-CARD-10 | Base map and overlay configured | Every tile image of both layers has `referrerpolicy="strict-origin-when-cross-origin"`: the tile server gets the page's origin as `Referer`, never its path (SPEC §9.7, OpenStreetMap tile usage policy) | Done |
 | F-CARD-11 | Own boat (#77): `multi-target` states; tap the own boat; then the tracker unavailable | Line under the map with position, SOG, COG, heading (`—` when null) and *position current*; the same in a details popup, with *Position (dd)* `43.501917, 7.250000`; then *position lost since HH:MM* and the last position drawn faded | Done |
+| F-CARD-12 | Own track (#112): `multi-target` states, `track_hours: 2`, a tracker history of 30 points over the last hour and 5 points 5 h old; then a new position; then no `track_hours` | One history request for the own tracker, starting 2 h back; a track of the 30 recent points and the boat (the old ones left out); the new position extends it without another request; without the option, no request and no track | Done |
 
 Vigie side (WP20, in this repository, Done): F-TRF-12 (§4.4) — `heading` and `threat` in every `targets` row, `threat` equal to the target being in the traffic picture's threats with the configured thresholds and stationary exclusion; F-PERF-03 still under the attribute size limit with 50 rows.
 
