@@ -5,6 +5,10 @@ versioning: SemVer.
 
 ## [Unreleased]
 
+### Documentation
+- SPEC v0.35 §9.7, TEST v0.43: the traffic map's own boat track (`track_hours`), built in
+  Vigie cards (#112, #113).
+
 ## [0.4.0-beta.3] - 2026-11-01
 
 A fix for the phone alerts outside English: with Home Assistant in French (or any language
