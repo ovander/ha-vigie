@@ -16,6 +16,9 @@ versioning: SemVer.
   on current releases (#117).
 
 ### Documentation
+- Installation from Home Assistant's **Marketplace** (2026.11 replaces HACS): add Vigie by
+  its GitHub link and allow its pre-releases; the HACS steps stay for 2026.2 to 2026.10;
+  *Tools* instead of *Developer tools* (#116).
 - SPEC v0.35 §9.7, TEST v0.43: the traffic map's own boat track (`track_hours`), built in
   Vigie cards (#112, #113).
 

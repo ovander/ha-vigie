@@ -154,7 +154,7 @@ card on a dashboard: replay `--preset named-traffic` once and fill in
 Same bench, with the README's anchor-alarm automation installed and
 `sensor.<boat>_anchor_distance` added to the map card. The simulated boat lies 30 m from
 its anchor, so drop the anchor at the preset's coordinates, not with the switch: in
-Developer tools → Actions, run `vigie.drop_anchor` with latitude 43.5, longitude 7.25 and
+Settings → Tools → Actions (*Developer tools* before Home Assistant 2026.8), run `vigie.drop_anchor` with latitude 43.5, longitude 7.25 and
 radius 50, then replay `--preset anchor-drag` once at real speed (15 min). The alarm is due
 at 698 s (`--list`). Fill in `docs/test-reports/P5-report.md` §5.
 
@@ -228,7 +228,7 @@ on a Mac or PC, no serial cable:
 
 For the anchor card (P7, E-09): with the anchor card on a dashboard, start the replay (Vigie
 connects at once) and within a few seconds run `vigie.drop_anchor` at 43.5, 7.25 with
-radius 50 (Developer tools → Actions), then watch the swing, *Outside the circle* at 678 s and *Dragging* at 698 s. To try
+radius 50 (Tools → Actions), then watch the swing, *Outside the circle* at 678 s and *Dragging* at 698 s. To try
 recentering, drop it 20 m north instead (latitude 43.50018) and press *Recenter* after
 10 minutes: the circle moves back to 43.5, 7.25. Checklist in
 `docs/test-reports/P7-report.md` §5.2.

@@ -185,7 +185,7 @@ entities:
 
 For the cockpit, the **anchor card** of
 [Vigie cards](https://github.com/ovander/ha-vigie-card) (`custom:vigie-anchor-card`, the
-same HACS download as the traffic map below, 0.2.0-beta.1 or later) shows the watch's
+same download as the traffic map below, 0.2.0-beta.1 or later) shows the watch's
 state in large type, the distance against the radius with a gauge, the swing circle and
 your boat, and has three buttons: **Drop anchor here**, **Raise anchor** (only after a
 confirmation) and the radius **−** / **+**. After 10 minutes at anchor, **Recenter** moves
@@ -254,7 +254,8 @@ attribute of `sensor.<boat>_ais_targets`, for cards that read attributes.
 ### Traffic map card
 
 The traffic map of [Vigie cards](https://github.com/ovander/ha-vigie-card)
-(`custom:vigie-traffic-card`, installed separately through HACS, category *Dashboard*)
+(`custom:vigie-traffic-card`, installed separately from the Marketplace, or HACS before
+2026.11)
 draws that full picture: every target oriented on its course, threats in red with their
 point of closest approach, range rings, the anchor and its swing circle, your boat's
 position, speed and course, details on tap. It has a visual editor:
@@ -293,7 +294,25 @@ one tab per boat; nothing to rename. Needs Vigie cards
 - An AIS receiver or Class B transponder with NMEA 0183 output (typically 38 400 baud).
 - Do not run another integration on the same serial port.
 
-## Installation (HACS)
+## Installation
+
+Vigie is not in the community catalog yet: you add it by its GitHub link. It only has beta
+versions (pre-releases) for now, so you also allow those.
+
+### Home Assistant 2026.11 or later: the Marketplace
+
+1. Settings → **Marketplace** → **Add from link** (top right). *GitHub link*:
+   `ovander/ha-vigie` → **Add**. The first time, the Marketplace asks you to connect GitHub:
+   open the link it shows, sign in to GitHub and enter the code. Nothing to configure on
+   GitHub.
+2. Allow beta versions: Settings → Devices & services → **Marketplace** → the **Vigie**
+   device. Its **Pre-release** switch is hidden at first: open the entities not shown,
+   select *Pre-release*, ⚙ settings → **Enabled** → Update. Then turn the switch **on**.
+   Without it, the Marketplace finds no version to install.
+3. Settings → Marketplace → **Vigie** → **Install**, and confirm. The setup of Vigie opens
+   straight away: no restart.
+
+### Home Assistant 2026.2 to 2026.10: HACS
 
 1. HACS → ⋮ → Custom repositories → add `https://github.com/ovander/ha-vigie`, category
    *Integration*.
@@ -306,6 +325,10 @@ one tab per boat; nothing to rename. Needs Vigie cards
    Otherwise the list of integrations can come from the browser's cache and miss Vigie.
 5. Settings → Devices & services → Add integration → **Vigie**.
 
+Updating to Home Assistant 2026.11 moves HACS into the Marketplace by itself: Vigie stays
+installed and keeps its updates. If no new beta is offered afterwards, turn on its
+*Pre-release* switch (step 2 above).
+
 ### Changing the serial port or the baud rate
 
 Settings → Devices & services → **Vigie** → ⋮ → **Reconfigure**: pick another port (a
@@ -316,8 +339,9 @@ Vigie boat uses is refused.
 
 ### If Vigie does not appear in "Add integration"
 
-- **Version in HACS:** HACS → Vigie should show a `v…-beta.N` version. A commit ID or nothing
-  installed means step 2 missed the beta version: ⋮ → Redownload with beta versions shown.
+- **Version:** Settings → Marketplace → Vigie (HACS → Vigie before 2026.11) should show a
+  `v…-beta.N` version. Nothing to install, or a commit ID, means the beta versions were not
+  allowed: the *Pre-release* switch (Marketplace) or *Show beta versions* (HACS).
 - **Files:** `/config/custom_components/vigie/` must exist and contain `manifest.json` with
   that version (check with the File editor, Samba or SSH add-on).
 - **Home Assistant version:** Settings → About must show 2026.2.0 or later.
