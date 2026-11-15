@@ -5,6 +5,12 @@ versioning: SemVer.
 
 ## [Unreleased]
 
+## [0.4.0-beta.4] - 2026-11-15
+
+Ready for current Home Assistant: checked on 2026.10, ready for the 2027.8 change to device
+links, and installable from the Marketplace that replaces HACS in 2026.11. Nothing changes
+in what Vigie shows or does.
+
 ### Fixed
 - Ready for Home Assistant 2027.8: the devices of watched targets are linked to the boat's
   device the way current Home Assistant expects (`via_device_id`), the old way kept for
@@ -261,7 +267,8 @@ P1–P3). Tested on synthetic data only; see `docs/test-reports/`.
 - AIS decoder rejects payload armoring characters 0x58–0x5F (`X`…`_`), which the AIVDM
   specification does not allow; they were decoded as six-bit values 40–47 (#11).
 
-[Unreleased]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.3...HEAD
+[Unreleased]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.4...HEAD
+[0.4.0-beta.4]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.3...v0.4.0-beta.4
 [0.4.0-beta.3]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.2...v0.4.0-beta.3
 [0.4.0-beta.2]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.1...v0.4.0-beta.2
 [0.4.0-beta.1]: https://github.com/ovander/ha-vigie/compare/v0.3.0-beta.1...v0.4.0-beta.1
