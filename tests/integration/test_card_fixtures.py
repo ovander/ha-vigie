@@ -46,6 +46,9 @@ ANCHOR_ENTITIES = (
 )
 ANCHOR = (43.5, 7.25)  # the `anchor-drag` preset's anchor
 START = scenario.DEFAULT_START_EPOCH
+# Tracker attributes Home Assistant adds itself from 2026.7: the cards do not read them, so
+# the fixtures stay the same on every Home Assistant version Vigie supports (#117)
+HA_ADDED = ("in_zones", "tracking_type")
 
 
 def _record(hass: HomeAssistant, entities: tuple[str, ...] = ENTITIES) -> dict:
@@ -54,6 +57,8 @@ def _record(hass: HomeAssistant, entities: tuple[str, ...] = ENTITIES) -> dict:
         state = hass.states.get(entity_id)
         attrs = dict(state.attributes)
         attrs.pop("friendly_name", None)
+        for key in HA_ADDED:
+            attrs.pop(key, None)
         out[entity_id] = {"state": state.state, "attributes": attrs}
     # Plain JSON, as the card receives it over the WebSocket API (ISO dates)
     return json.loads(json.dumps(out, cls=JSONEncoder))
@@ -146,7 +151,8 @@ async def test_anchor_card_fixture_states(
         state = event.data["new_state"]
         if event.data["entity_id"] == "device_tracker.garnet" and state is not None:
             changed = state.last_updated.timestamp()
-            track.append({"s": state.state, "a": dict(state.attributes), "lu": changed})
+            attrs = {k: v for k, v in state.attributes.items() if k not in HA_ADDED}
+            track.append({"s": state.state, "a": attrs, "lu": changed})
 
     stop = hass.bus.async_listen("state_changed", on_change)
     await hass.services.async_call(

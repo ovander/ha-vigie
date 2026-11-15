@@ -34,6 +34,26 @@ jobs:
       # Coverage gate on the protocol layer (TEST-001 §7, SPEC NFR-08)
       - run: pytest --cov --cov-report=term-missing --cov-fail-under=90
 
+  # Not a required check: the newest Home Assistant, to see a break or a deprecation before
+  # users do (#117). Deprecation warnings Home Assistant logs are listed in the job summary.
+  unit-latest:
+    name: unit-latest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - run: pip install -r requirements_test_latest.txt
+      - run: pytest -p no:cacheprovider 2>&1 | tee pytest.log
+        shell: bash
+      - if: always()
+        run: |
+          {
+            echo "## Home Assistant deprecations seen by the tests"
+            grep -oh "Detected that custom integration 'vigie'.*" pytest.log | sort -u || echo "None."
+          } >> "$GITHUB_STEP_SUMMARY"
+
   hassfest:
     name: hassfest
     runs-on: ubuntu-latest

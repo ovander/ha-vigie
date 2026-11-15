@@ -5,6 +5,16 @@ versioning: SemVer.
 
 ## [Unreleased]
 
+### Fixed
+- Ready for Home Assistant 2027.8: the devices of watched targets are linked to the boat's
+  device the way current Home Assistant expects (`via_device_id`), the old way kept for
+  Home Assistant before 2026.10 (#117).
+
+### Changed
+- CI: a non-required `unit-latest` job runs the tests on the newest Home Assistant test
+  harness (Python 3.14) and lists the deprecations it reports; the tests run on 2026.2 and
+  on current releases (#117).
+
 ### Documentation
 - Installation from Home Assistant's **Marketplace** (2026.11 replaces HACS): add Vigie by
   its GitHub link and allow its pre-releases; the HACS steps stay for 2026.2 to 2026.10;

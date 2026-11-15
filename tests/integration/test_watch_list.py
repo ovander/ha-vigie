@@ -55,6 +55,15 @@ async def boat(hass: HomeAssistant, fake_ports: FakePorts):
     return entry, fake_ports
 
 
+def _device(hass: HomeAssistant, entry: ConfigEntry, identifier: str) -> dr.DeviceEntry | None:
+    """A Vigie device by its identifier, on every Home Assistant version Vigie supports:
+    `async_get_device` is deprecated from 2026.10 (#117)."""
+    devices = dr.async_get(hass)
+    if hasattr(devices, "async_get_device_by_identifier"):
+        return devices.async_get_device_by_identifier((DOMAIN, identifier), entry.entry_id)
+    return devices.async_get_device({(DOMAIN, identifier)})
+
+
 async def test_f_trf_05_two_mmsis_two_trackers_removal_removes_them(
     hass: HomeAssistant, boat, freezer: FrozenDateTimeFactory
 ):
@@ -71,10 +80,9 @@ async def test_f_trf_05_two_mmsis_two_trackers_removal_removes_them(
     }
 
     # Each on its own device, linked to the boat's device
-    devices = dr.async_get(hass)
-    boat_device = devices.async_get_device({(DOMAIN, entry.entry_id)})
+    boat_device = _device(hass, entry, entry.entry_id)
     for mmsi in (WATCHED_A, WATCHED_B):
-        device = devices.async_get_device({(DOMAIN, f"{entry.entry_id}_{mmsi}")})
+        device = _device(hass, entry, f"{entry.entry_id}_{mmsi}")
         assert device is not None and device.via_device_id == boat_device.id
         assert device.name == f"AIS {mmsi}"
 
@@ -97,7 +105,7 @@ async def test_f_trf_05_two_mmsis_two_trackers_removal_removes_them(
     # Remove one MMSI: its entity and device go away on reload
     await _set_watch_list(hass, entry, [str(WATCHED_A)])
     assert list(_watched_trackers(hass, entry).values()) == [f"device_tracker.ais_{WATCHED_A}"]
-    assert devices.async_get_device({(DOMAIN, f"{entry.entry_id}_{WATCHED_B}")}) is None
+    assert _device(hass, entry, f"{entry.entry_id}_{WATCHED_B}") is None
     assert hass.states.get(f"device_tracker.ais_{WATCHED_B}") is None
 
     # Empty list: none left
