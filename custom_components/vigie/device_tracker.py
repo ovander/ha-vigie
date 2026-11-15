@@ -13,7 +13,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .const import DOMAIN
 from .coordinator import VigieConfigEntry, VigieCoordinator
-from .entity import VigieEntity, with_identity
+from .entity import VigieEntity, boat_device_info, with_identity
 from .state import COG, HEADING, POSITION, SOG, position_delta_m
 
 POSITION_DEADBAND_M = 5.0  # SPEC §10.2
@@ -26,12 +26,27 @@ async def async_setup_entry(
 ) -> None:
     coordinator = entry.runtime_data
     _remove_unwatched(hass, entry, coordinator.watch_list)
+    # The boat's device first: the watched targets' devices are linked to it
+    boat = dr.async_get(hass).async_get_or_create(
+        config_entry_id=entry.entry_id, **boat_device_info(entry)
+    )
     async_add_entities(
         [
             OwnBoatTracker(coordinator),
-            *(WatchedTargetTracker(coordinator, mmsi) for mmsi in coordinator.watch_list),
+            *(WatchedTargetTracker(coordinator, mmsi, boat.id) for mmsi in coordinator.watch_list),
         ]
     )
+
+
+def _via_boat(entry_id: str, boat_device_id: str) -> dict[str, Any]:
+    """The link to the boat's device, as this Home Assistant takes it (#117).
+
+    `via_device_id` from 2026.10 (`via_device` stops working in 2027.8); 2026.2, the minimum,
+    has `via_device` only.
+    """
+    if "via_device_id" in DeviceInfo.__optional_keys__:
+        return {"via_device_id": boat_device_id}
+    return {"via_device": (DOMAIN, entry_id)}
 
 
 def _remove_unwatched(
@@ -103,7 +118,7 @@ class WatchedTargetTracker(VigieEntity, TrackerEntity):
     _attr_name = None  # the target's device name, "AIS <mmsi>"
     _attr_source_type = SourceType.GPS
 
-    def __init__(self, coordinator: VigieCoordinator, mmsi: int) -> None:
+    def __init__(self, coordinator: VigieCoordinator, mmsi: int, boat_device_id: str) -> None:
         super().__init__(
             coordinator,
             f"ais_{mmsi}",
@@ -119,7 +134,7 @@ class WatchedTargetTracker(VigieEntity, TrackerEntity):
             translation_key="watched_target",
             translation_placeholders={"mmsi": str(mmsi)},
             model="AIS target",
-            via_device=(DOMAIN, entry_id),
+            **_via_boat(entry_id, boat_device_id),
         )
 
     def current_value(self) -> tuple[float, float] | None:

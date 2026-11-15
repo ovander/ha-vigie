@@ -37,6 +37,9 @@ HA_ATTRIBUTES = {
     "longitude",
     "gps_accuracy",
     "options",
+    # device_tracker, from Home Assistant 2026.7 (#117)
+    "in_zones",
+    "tracking_type",
     # number entities (anchor radius)
     "min",
     "max",

@@ -1,0 +1,10 @@
+# The newest Home Assistant test harness, for the non-required `unit-latest` CI job (#117):
+# shows early what a new Home Assistant release breaks or deprecates. The required `unit`
+# job stays on the minimum version (requirements_test.txt, SPEC OD-06). Raise this pin
+# when a new harness comes out.
+pytest>=8
+pytest-cov>=5
+pyais>=2.6
+# Home Assistant 2026.10.4; needs Python 3.14
+pytest-homeassistant-custom-component==0.13.375
+pyserial-asyncio-fast==0.16
