@@ -14,6 +14,7 @@ import math
 from collections.abc import Callable
 from typing import Any
 
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import Entity
@@ -36,6 +37,16 @@ def with_identity(delta: Callable[[Any, Any], float]) -> Callable[[Any, Any], fl
     return compare
 
 
+def boat_device_info(entry: ConfigEntry) -> DeviceInfo:
+    """The boat's device: every entity of the entry but the watched targets belongs to it."""
+    return DeviceInfo(
+        identifiers={(DOMAIN, entry.entry_id)},
+        name=entry.title,
+        manufacturer="Vigie",
+        model="NMEA 0183 AIS receiver",
+    )
+
+
 class VigieEntity(Entity):
     """Push-updated entity of one boat."""
 
@@ -56,12 +67,7 @@ class VigieEntity(Entity):
         entry = coordinator.entry
         self._attr_unique_id = f"{entry.entry_id}_{key}"
         self._attr_translation_key = key
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, entry.entry_id)},
-            name=entry.title,
-            manufacturer="Vigie",
-            model="NMEA 0183 AIS receiver",
-        )
+        self._attr_device_info = boat_device_info(entry)
         self._gate = WriteGate(
             interval_s=0.0, deadband=deadband, delta=delta, clock=coordinator.now
         )

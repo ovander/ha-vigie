@@ -5,7 +5,7 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.43 (draft) |
+| Version | 0.44 (draft) |
 | Date | 2026-10-24 |
 | Parent specification | HA-SAIL-SPEC-001 v0.35 |
 | Owner | Olivier (Garnet & Jade Consulting) |
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.44 | 2026-11-15 | WP39 (#117): §7 the non-required `unit-latest` job runs the suite on the newest Home Assistant test harness (Python 3.14), its deprecation warnings in the job summary; F-ENT-08, F-TRF-05 and the card fixture check run on 2026.2 and on current releases (tracker attributes Home Assistant adds itself, `in_zones` and `tracking_type`, are not Vigie's). |
 | 0.43 | 2026-11-15 | WP36 (#113, SPEC v0.35 §9.7): U-CARD-06 also checks `track_hours`; F-CARD-12 (own track) new; Done in ovander/ha-vigie-card. |
 | 0.42 | 2026-11-01 | WP34 (#105, SPEC v0.34 §9.2, §9.6): F-TRF-13 and F-ANC-11 also run with Home Assistant in French (entity IDs from the French names); F-TRF-02 and F-ANC-03 check the new attributes; F-TRF-01 counts state changes only. Done. WP35 (#106, SPEC §9.8): F-ACARD-14 (drop again during the drag alarm); F-ACARD-10 allows the fifth call. Done in ovander/ha-vigie-card. |
 | 0.41 | 2026-10-23 | WP33 (#100, SPEC v0.33 §9.2): F-TRF-13 and F-ANC-11, the alarm blueprints imported and run, Done. |
@@ -533,6 +534,8 @@ Every PR must pass:
 3. Functional tests (`F-*`) green, excluding `F-PERF` (marker `perf`, run nightly by `.github/workflows/nightly.yml` (job `perf`, junit report kept as an artifact) — timing-sensitive on shared runners). They run in the `unit` CI job.
 4. No HA import in any pure module (NFR-02 check).
 5. `hassfest` and HACS validation pass.
+
+Not a gate (v0.44, #117): the `unit-latest` job runs the same suite on the newest Home Assistant test harness (`requirements_test_latest.txt`, Python 3.14) and lists the deprecations Home Assistant logs about Vigie. Its pin is raised when a new harness comes out; a failure there is fixed so that both the minimum (2026.2, OD-06) and the newest release pass.
 
 `anchor.py` (P5) is in gates 2 and 4 and in the mypy strict list since WP16.
 
