@@ -93,6 +93,12 @@
       "heading": {
         "name": "Cap"
       },
+      "latitude": {
+        "name": "Latitude"
+      },
+      "longitude": {
+        "name": "Longitude"
+      },
       "fix_quality": {
         "name": "Position GNSS",
         "state": {
