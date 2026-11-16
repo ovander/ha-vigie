@@ -27,7 +27,16 @@ GGA = nmea("GPGGA,081502,4330.000,N,00715.500,E,1,08,0.9,5.0,M,48.0,M,,")
 AIS_TYPE1 = "!AIVDM,1,1,,B,177KQJ5000G?tO`K>RA1wUbN0TKH,0*5C"  # gpsd reference, MMSI 477553000
 AIS_TYPE18 = "!AIVDM,1,1,,A,B5NJ;PP005l4ot5Isbl03wsUkP06,0*76"  # public sample, MMSI 367430530
 
-OWN_BOAT_KEYS = ["sog", "cog", "heading", "fix_quality", "satellites", "hdop"]
+OWN_BOAT_KEYS = [
+    "sog",
+    "cog",
+    "heading",
+    "latitude",
+    "longitude",
+    "fix_quality",
+    "satellites",
+    "hdop",
+]
 
 
 @pytest.fixture
@@ -60,6 +69,8 @@ def state(hass: HomeAssistant, entry, key: str, domain: str = "sensor"):
         ),
         ("cog", None, "°", SensorStateClass.MEASUREMENT_ANGLE, None, 271.0),
         ("heading", None, "°", SensorStateClass.MEASUREMENT_ANGLE, None, STATE_UNAVAILABLE),
+        ("latitude", None, "°", None, None, 43.5),  # #111
+        ("longitude", None, "°", None, None, 7 + 15.5 / 60),
         ("fix_quality", SensorDeviceClass.ENUM, None, None, EntityCategory.DIAGNOSTIC, "gps"),
         ("satellites", None, None, SensorStateClass.MEASUREMENT, EntityCategory.DIAGNOSTIC, 8),
         ("hdop", None, None, SensorStateClass.MEASUREMENT, EntityCategory.DIAGNOSTIC, 0.9),
@@ -150,6 +161,25 @@ async def test_f_ent_03_device_tracker(
     assert hass.states.get(eid).attributes["latitude"] == pytest.approx(43.5 + 0.05 / 60)
 
 
+async def test_f_ent_03_latitude_longitude_sensors(
+    hass: HomeAssistant, loaded, fake_ports: FakePorts, freezer: FrozenDateTimeFactory
+):
+    """#111: the tracker's position as two sensors, same dead-band, six decimals."""
+    lat, lon = state(hass, loaded, "latitude"), state(hass, loaded, "longitude")
+    assert lat.attributes["friendly_name"] == "Garnet Latitude"
+    assert float(lat.state) == pytest.approx(43.5)
+    assert float(lon.state) == round(7 + 15.5 / 60, 6)
+    assert lat.attributes["unit_of_measurement"] == "°"
+    # ~93 m north: written; ~3 m more: below the dead-band, as the tracker
+    fake_ports[BY_ID_PORT].feed_lines(rmc(lat="4330.050"))
+    await tick(hass, freezer)
+    assert float(state(hass, loaded, "latitude").state) == pytest.approx(43.5 + 0.05 / 60, abs=1e-6)
+    fake_ports[BY_ID_PORT].feed_lines(rmc(lat="4330.0516"))
+    await tick(hass, freezer)
+    assert float(state(hass, loaded, "latitude").state) == pytest.approx(43.5 + 0.05 / 60, abs=1e-6)
+    assert float(state(hass, loaded, "longitude").state) == round(7 + 15.5 / 60, 6)
+
+
 # --- F-ENT-04 ---------------------------------------------------------------
 
 
@@ -206,8 +236,9 @@ async def test_f_ent_06_two_boats_no_unique_id_collision(
 
 async def test_f_ent_07_unique_ids_prefixed_by_entry_id(hass: HomeAssistant, loaded):
     ents = er.async_entries_for_config_entry(er.async_get(hass), loaded.entry_id)
-    # P1: 14; P2 adds collision_risk, closest target, CPA, TCPA; P5 the 4 anchor entities
-    assert len(ents) == 22
+    # P1: 14; P2 adds collision_risk, closest target, CPA, TCPA; P5 the 4 anchor entities;
+    # latitude and longitude (#111)
+    assert len(ents) == 24
     assert all(e.unique_id.startswith(f"{loaded.entry_id}_") for e in ents)
     assert all(e.platform == DOMAIN for e in ents)
 

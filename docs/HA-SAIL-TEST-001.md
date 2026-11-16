@@ -5,9 +5,9 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.44 (draft) |
+| Version | 0.45 (draft) |
 | Date | 2026-10-24 |
-| Parent specification | HA-SAIL-SPEC-001 v0.35 |
+| Parent specification | HA-SAIL-SPEC-001 v0.36 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open points in §10 |
 
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.45 | 2026-11-16 | WP40 (#111, SPEC v0.36 §9.1): F-ENT-01 covers `latitude` and `longitude`; F-ENT-03 checks their dead-band; F-ENT-04 and F-HUB-03 their unavailability; F-ENT-07 counts 24 entities. Done. |
 | 0.44 | 2026-11-15 | WP39 (#117): §7 the non-required `unit-latest` job runs the suite on the newest Home Assistant test harness (Python 3.14), its deprecation warnings in the job summary; F-ENT-08, F-TRF-05 and the card fixture check run on 2026.2 and on current releases (tracker attributes Home Assistant adds itself, `in_zones` and `tracking_type`, are not Vigie's). |
 | 0.43 | 2026-11-15 | WP36 (#113, SPEC v0.35 §9.7): U-CARD-06 also checks `track_hours`; F-CARD-12 (own track) new; Done in ovander/ha-vigie-card. |
 | 0.42 | 2026-11-01 | WP34 (#105, SPEC v0.34 §9.2, §9.6): F-TRF-13 and F-ANC-11 also run with Home Assistant in French (entity IDs from the French names); F-TRF-02 and F-ANC-03 check the new attributes; F-TRF-01 counts state changes only. Done. WP35 (#106, SPEC §9.8): F-ACARD-14 (drop again during the drag alarm); F-ACARD-10 allows the fifth call. Done in ovander/ha-vigie-card. |
@@ -335,7 +336,7 @@ F-HUB-01, 02, 04 and 05 prove hub behaviour (routing, counters, backoff, framing
 |---|---|---|---|---|
 | F-ENT-01 | D-05 replay (synthetic stand-in until #2) | All §9.1 entities created with correct device_class, native unit, state_class, translation key | §9.1 | Done (synthetic; real data: #2) |
 | F-ENT-02 | HA unit system switched to metric/imperial; display unit set per entity | Native stays kn under both unit systems (HA does not auto-convert knots); a per-entity display unit (km/h, mph) is converted correctly | §9 | Done |
-| F-ENT-03 | Own position | `device_tracker.<boat>` updates, SOG/COG attributes | §9.1 | Done |
+| F-ENT-03 | Own position | `device_tracker.<boat>` updates, SOG/COG attributes; `latitude`/`longitude` sensors follow it with the same dead-band (v0.45) | §9.1 | Done |
 | F-ENT-04 | GPS silent > staleness timeout | Own-boat entities unavailable; `sensor.ais_targets` stays available, with `distance` `None` from the next list rebuild (≤ 5 s) (entities depending on own position, P2, unavailable) | §10.1, NFR-05 | Done |
 | F-ENT-05 | Heading never provided | `heading` unavailable, no error | §7.4 | Done |
 | F-ENT-06 | Two config entries (two boats, two fake ports) | No unique-ID collision | NFR-06 | Done |

@@ -93,6 +93,12 @@
       "heading": {
         "name": "Heading"
       },
+      "latitude": {
+        "name": "Latitude"
+      },
+      "longitude": {
+        "name": "Longitude"
+      },
       "fix_quality": {
         "name": "GNSS fix",
         "state": {

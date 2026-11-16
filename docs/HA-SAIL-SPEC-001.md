@@ -5,8 +5,8 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.35 (draft) |
-| Date | 2026-11-15 |
+| Version | 0.36 (draft) |
+| Date | 2026-11-16 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
 | Project name / domain | **Vigie** / `vigie` (OD-01 resolved) |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.36 | 2026-11-16 | WP40 (#111), from a user's request: §9.1 own position also as two sensors, `latitude` and `longitude` (°, six decimals, no state class, the tracker's 5 m dead-band), for dashboards and automations that cannot read the tracker's attributes. |
 | 0.35 | 2026-11-15 | WP36 (#113), from #112: §9.7 the traffic map can draw the own boat's track, option `track_hours` (0–24 h, off by default), from Home Assistant's history of the tracker (read only, as the anchor card, OD-36) then live. |
 | 0.34 | 2026-11-01 | WP34 (#105): owner's report, an incomplete anchor alarm notification. Home Assistant names entity IDs in its language, so the blueprints did not find the sensors next to the alarm in French (`unknown m`, `radius 0 m`). §9.2: `collision_risk` also carries the most urgent threat's `cpa_nm` and `tcpa_min`; §9.6: `anchor_alarm` carries `distance_m` and `radius_m` (kept out of the recorder, the sensors keep the history); *Phone alerts*: the blueprints read the triggering sensor only. WP35 (#106): owner's request. §9.8: *Drop again here* while the drag alarm is on, after an explicit warning (re-drop, §8.4). |
 | 0.33 | 2026-10-23 | WP33 (#100): owner's request. §9.2 *Phone alerts*: two blueprints (collision alert, anchor alarm) turn the README automations into an import button and three choices (sensor, phone, critical alert); §9.6 points to it. |
@@ -333,11 +334,12 @@ All entities belong to one HA device per config entry ("the boat"), except watch
 | `sog` | Speed over ground | speed | kn | measurement |
 | `cog` | Course over ground | — | ° | measurement_angle |
 | `heading` | Heading (true), optional | — | ° | measurement_angle |
+| `latitude`, `longitude` | Own position, decimal degrees N/E positive, six decimals (v0.36, #111) | — | ° | — (a position has no meaningful statistics) |
 | `fix_quality` | GNSS fix | enum | — | — (diagnostic) |
 | `satellites` | Satellites in use | — | — | measurement (diagnostic) |
 | `hdop` | Horizontal dilution | — | — | measurement (diagnostic) |
 
-`device_tracker.<boat>` exposes own position (GPS source type) with SOG, COG, heading and position-source attributes.
+`device_tracker.<boat>` exposes own position (GPS source type) with SOG, COG, heading and position-source attributes. `latitude` and `longitude` give the same position as two sensors, for cards and automations that read states, not attributes; written with the tracker's dead-band (about 5 m, 0.00005° per coordinate) and unavailable when the tracker is.
 
 Angles (OD-10, resolved v0.5): verified in HA 2026.2.3, state class `measurement_angle` exists and requires the unit `°`; the only angle device class, `wind_direction`, does not describe COG or heading, so no device class is set. Long-term statistics then use circular means.
 

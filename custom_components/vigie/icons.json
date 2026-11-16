@@ -6,6 +6,12 @@
       }
     },
     "sensor": {
+      "latitude": {
+        "default": "mdi:latitude"
+      },
+      "longitude": {
+        "default": "mdi:longitude"
+      },
       "anchor_distance": {
         "default": "mdi:anchor"
       }

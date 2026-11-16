@@ -5,6 +5,11 @@ versioning: SemVer.
 
 ## [Unreleased]
 
+### Added
+- Own position as two sensors, `sensor.<boat>_latitude` and `sensor.<boat>_longitude`
+  (decimal degrees, six decimals), for dashboards and automations that cannot read the
+  tracker's attributes; written with the tracker's 5 m dead-band (#111).
+
 ## [0.4.0-beta.4] - 2026-11-15
 
 Ready for current Home Assistant: checked on 2026.10, ready for the 2027.8 change to device

@@ -46,6 +46,20 @@ def _own(key: str) -> Callable[[VigieCoordinator], Any]:
     return value
 
 
+def _coordinate(index: int) -> Callable[[VigieCoordinator], float | None]:
+    """Latitude (0) or longitude (1) of own position, decimal degrees N/E positive (#111)."""
+
+    def value(coordinator: VigieCoordinator) -> float | None:
+        field = coordinator.own.get(POSITION)
+        return None if field is None else round(field.value[index], 6)
+
+    return value
+
+
+# About 5 m: the own tracker's dead-band (SPEC §10.2), per coordinate
+COORDINATE_DEADBAND_DEG = 0.00005
+
+
 def _fix_quality(coordinator: VigieCoordinator) -> str | None:
     field = coordinator.own.get(FIX_QUALITY)
     return None if field is None else str(field.value)
@@ -164,6 +178,24 @@ SENSORS: tuple[VigieSensorDescription, ...] = (
         value_fn=_own(HEADING),
         deadband=1.0,
         circular=True,
+    ),
+    # Own position as two numbers (#111): the tracker has them as attributes only. No state
+    # class: a position has no meaningful long-term statistics
+    VigieSensorDescription(
+        key="latitude",
+        translation_key="latitude",
+        native_unit_of_measurement=DEGREE,
+        suggested_display_precision=6,
+        value_fn=_coordinate(0),
+        deadband=COORDINATE_DEADBAND_DEG,
+    ),
+    VigieSensorDescription(
+        key="longitude",
+        translation_key="longitude",
+        native_unit_of_measurement=DEGREE,
+        suggested_display_precision=6,
+        value_fn=_coordinate(1),
+        deadband=COORDINATE_DEADBAND_DEG,
     ),
     VigieSensorDescription(
         key=FIX_QUALITY,
