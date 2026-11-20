@@ -5,8 +5,8 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.36 (draft) |
-| Date | 2026-11-16 |
+| Version | 0.37 (draft) |
+| Date | 2026-11-20 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
 | Project name / domain | **Vigie** / `vigie` (OD-01 resolved) |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.37 | 2026-11-20 | #116 follow-up: §2.1 and §12 *Packaging*: installed from Home Assistant's Marketplace from 2026.11 (it replaces HACS), from HACS before. |
 | 0.36 | 2026-11-16 | WP40 (#111), from a user's request: §9.1 own position also as two sensors, `latitude` and `longitude` (°, six decimals, no state class, the tracker's 5 m dead-band), for dashboards and automations that cannot read the tracker's attributes. |
 | 0.35 | 2026-11-15 | WP36 (#113), from #112: §9.7 the traffic map can draw the own boat's track, option `track_hours` (0–24 h, off by default), from Home Assistant's history of the tracker (read only, as the anchor card, OD-36) then live. |
 | 0.34 | 2026-11-01 | WP34 (#105): owner's report, an incomplete anchor alarm notification. Home Assistant names entity IDs in its language, so the blueprints did not find the sensors next to the alarm in French (`unknown m`, `radius 0 m`). §9.2: `collision_risk` also carries the most urgent threat's `cpa_nm` and `tcpa_min`; §9.6: `anchor_alarm` carries `distance_m` and `radius_m` (kept out of the recorder, the sensors keep the history); *Phone alerts*: the blueprints read the triggering sensor only. WP35 (#106): owner's request. §9.8: *Drop again here* while the drag alarm is on, after an explicit warning (re-drop, §8.4). |
@@ -73,7 +74,7 @@ The integration must run standalone on a boat-mounted Home Assistant instance (t
 - Own-boat entities: position, SOG, COG, heading when available, GNSS health.
 - AIS target table with expiry; aggregate traffic sensor; opt-in tracking of selected MMSIs.
 - CPA/TCPA computation for each target and a closest-threat alert (§8).
-- UI configuration (config flow + options flow), HACS-installable.
+- UI configuration (config flow + options flow), installable from Home Assistant's Marketplace (2026.11 and later) or HACS (before).
 - Anchor watch on own position: swing radius, drag and position-loss alarm (§8.4, §9.6). Phase P5 (OD-21, resolved v0.15).
 - Dashboard cards, in a separate repository: the AIS traffic map (§9.7, P6) and the anchor card (§9.8, P7; OD-34, OD-38 resolved v0.24), and a ready-made dashboard with both (§9.9, OD-40).
 - Sharing the boat's track on noforeignland, with outage buffering, by a separate integration in its own repository (§9.10, P8; OD-28 resolved v0.29). Vigie itself stays offline.
@@ -625,7 +626,7 @@ Changing an option reloads the entry. The anchor radius is not an option: it cha
 
 - **Tests:** defined in HA-SAIL-TEST-001 (X-10): unit (pure Python, no HA), functional (HA test harness with a fake serial transport), end-to-end (replay bench, in port, under way). NFR traceability and CI gates are specified there.
 - **CI:** GitHub Actions running tests, `ruff`, `mypy`, `hassfest`, HACS validation.
-- **Packaging:** `manifest.json` with `iot_class: local_push`, `integration_type: hub`, `config_flow: true`, explicit `requirements` (`pyserial-asyncio-fast`). Installed via HACS custom repository. The `nmea/` package can later move to PyPI (HA best practice).
+- **Packaging:** `manifest.json` with `iot_class: local_push`, `integration_type: hub`, `config_flow: true`, explicit `requirements` (`pyserial-asyncio-fast`). Installed by its GitHub link: Home Assistant's Marketplace from 2026.11 (*Add from link*, pre-releases allowed), a HACS custom repository before. The `nmea/` package can later move to PyPI (HA best practice).
 - **Minimum Home Assistant version:** 2026.2.0 (OD-06, resolved v0.5), declared in `hacs.json`. Functional tests run against HA 2026.2.3 via `pytest-homeassistant-custom-component==0.13.316`. HA 2026.x requires Python 3.13; pure modules stay compatible with Python 3.12.
 - **Workflow:** GitHub issue → PR → CI → review → versioned release.
 - **Security:** no network listener, no credentials, no outbound traffic. Serial input treated as untrusted: bounded line length, strict parsing, exceptions contained per line.

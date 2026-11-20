@@ -5,9 +5,9 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.45 (draft) |
+| Version | 0.46 (draft) |
 | Date | 2026-10-24 |
-| Parent specification | HA-SAIL-SPEC-001 v0.36 |
+| Parent specification | HA-SAIL-SPEC-001 v0.37 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open points in §10 |
 
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.46 | 2026-11-20 | Parent SPEC v0.37 (install from the Marketplace); no test change. |
 | 0.45 | 2026-11-16 | WP40 (#111, SPEC v0.36 §9.1): F-ENT-01 covers `latitude` and `longitude`; F-ENT-03 checks their dead-band; F-ENT-04 and F-HUB-03 their unavailability; F-ENT-07 counts 24 entities. Done. |
 | 0.44 | 2026-11-15 | WP39 (#117): §7 the non-required `unit-latest` job runs the suite on the newest Home Assistant test harness (Python 3.14), its deprecation warnings in the job summary; F-ENT-08, F-TRF-05 and the card fixture check run on 2026.2 and on current releases (tracker attributes Home Assistant adds itself, `in_zones` and `tracking_type`, are not Vigie's). |
 | 0.43 | 2026-11-15 | WP36 (#113, SPEC v0.35 §9.7): U-CARD-06 also checks `track_hours`; F-CARD-12 (own track) new; Done in ovander/ha-vigie-card. |

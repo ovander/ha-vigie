@@ -259,7 +259,8 @@ The traffic map of [Vigie cards](https://github.com/ovander/ha-vigie-card)
 2026.11)
 draws that full picture: every target oriented on its course, threats in red with their
 point of closest approach, range rings, the anchor and its swing circle, your boat's
-position, speed and course, details on tap. It has a visual editor:
+position, speed and course, details on tap, and, as an option, your boat's track
+(`track_hours`, cards 0.2.0-beta.6). It has a visual editor:
 
 ```yaml
 type: custom:vigie-traffic-card
