@@ -15,6 +15,10 @@ and automations. Nothing else changes.
   (decimal degrees, six decimals), for dashboards and automations that cannot read the
   tracker's attributes; written with the tracker's 5 m dead-band (#111).
 
+### Documentation
+- README: the traffic map's optional boat track (cards 0.2.0-beta.6); CONTRIBUTING and
+  SPEC v0.37: install from the Marketplace from Home Assistant 2026.11 (#116).
+
 ## [0.4.0-beta.4] - 2026-11-15
 
 Ready for current Home Assistant: checked on 2026.10, ready for the 2027.8 change to device

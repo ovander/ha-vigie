@@ -60,7 +60,8 @@ Home Assistant **Container** on a Linux host (a Raspberry Pi with Raspberry Pi O
 
    Mapping one device with `--device /dev/pts/N:/dev/ttyAIS` also works, but only until the
    replay is restarted: a new PTY may get another number, which breaks E-04.
-3. Install Vigie from the release tag through HACS, add the integration on
+3. Install Vigie from the release tag (Marketplace from Home Assistant 2026.11, HACS before;
+   README *Installation*), add the integration on
    `/srv/vigie-bench/ttyAIS` at 38 400 baud.
 4. E-04: stop the replay (Ctrl-C), wait 30 s, start it again with the same command. Vigie
    retries at 1, 3, 7, 15, 31, 63 s after the loss and then every 60 s, so recovery can take
@@ -73,7 +74,7 @@ Raspberry Pi can take the laptop's place: see the two-Pi bench below.
 ### Two-Pi bench (HA OS on the target Pi)
 
 Runs every bench check on the boat's own hardware: the HA Pi runs HA OS with Vigie from
-HACS, a second Pi with Raspberry Pi OS plays the scenarios into a serial link.
+the Marketplace (HACS before 2026.11), a second Pi with Raspberry Pi OS plays the scenarios into a serial link.
 
 ```
  Bench Pi (Raspberry Pi OS)                         HA Pi (HA OS + Vigie)
