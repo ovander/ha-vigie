@@ -5,6 +5,11 @@ versioning: SemVer.
 
 ## [Unreleased]
 
+## [0.4.0-beta.5] - 2026-11-20
+
+Your boat's position as two plain numbers: latitude and longitude sensors, for dashboards
+and automations. Nothing else changes.
+
 ### Added
 - Own position as two sensors, `sensor.<boat>_latitude` and `sensor.<boat>_longitude`
   (decimal degrees, six decimals), for dashboards and automations that cannot read the
@@ -272,7 +277,8 @@ P1–P3). Tested on synthetic data only; see `docs/test-reports/`.
 - AIS decoder rejects payload armoring characters 0x58–0x5F (`X`…`_`), which the AIVDM
   specification does not allow; they were decoded as six-bit values 40–47 (#11).
 
-[Unreleased]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.4...HEAD
+[Unreleased]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.5...HEAD
+[0.4.0-beta.5]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.4...v0.4.0-beta.5
 [0.4.0-beta.4]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.3...v0.4.0-beta.4
 [0.4.0-beta.3]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.2...v0.4.0-beta.3
 [0.4.0-beta.2]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.1...v0.4.0-beta.2
