@@ -44,8 +44,19 @@ it as your only alarm.
 than the CPA threshold (default 0.5 NM) within the TCPA threshold (default 15 min). Once on,
 it stays on for 60 s after the last threat, or turns off at once when every threat has
 passed, so an automation on it runs once per encounter. Its attributes name the most urgent
-target (`mmsi`, `name`, `cpa_nm`, `tcpa_min`) and count the threats (`threat_count`). Thresholds are in the
-integration's options.
+target (`mmsi`, `name`, `cpa_nm`, `tcpa_min`) and count the threats (`threat_count`).
+
+**Changing when it warns.** Settings → Devices & services → **Vigie** → **Configure** (the
+button on Vigie's page, or ⚙ next to your boat), then:
+
+| Option | Default | Range | What it does |
+|---|---|---|---|
+| *CPA threshold* | 0.5 NM | 0.05–5 NM, by 0.05 | A target is a threat if it will pass closer than this |
+| *TCPA threshold* | 15 min | 1–60 min | …and if that closest point is less than this far ahead |
+| *Ignore anchored and moored targets* | on | on/off | Class A targets reporting at anchor or moored, under 0.5 kn, never warn |
+
+**Submit** applies them at once. A larger CPA threshold warns earlier but for many more
+ships: at 2 NM, almost every ship you cross raises it.
 
 **The simplest way: the blueprint.** Click
 [![Import blueprint](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2Fovander%2Fha-vigie%2Fblob%2Fmain%2Fblueprints%2Fautomation%2Fvigie%2Fcollision_alert.yaml),
