@@ -5,6 +5,10 @@ versioning: SemVer.
 
 ## [Unreleased]
 
+### Documentation
+- README: where the collision alert's thresholds are set (Vigie → *Configure*), with their
+  defaults and ranges (#109).
+
 ## [0.4.0-beta.5] - 2026-11-20
 
 Your boat's position as two plain numbers: latitude and longitude sensors, for dashboards
