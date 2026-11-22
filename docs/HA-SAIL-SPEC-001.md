@@ -5,8 +5,8 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.37 (draft) |
-| Date | 2026-11-20 |
+| Version | 0.38 (draft) |
+| Date | 2026-11-22 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
 | Project name / domain | **Vigie** / `vigie` (OD-01 resolved) |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.38 | 2026-11-22 | WP41 (#111 follow-up, user's request): §9.1 `position_dm`, the own position as text in degrees and minutes, as on a chartplotter (`43° 30.000′ N 7° 15.500′ E`), the tracker's 5 m dead-band; `geo.format_dm`. |
 | 0.37 | 2026-11-20 | #116 follow-up: §2.1 and §12 *Packaging*: installed from Home Assistant's Marketplace from 2026.11 (it replaces HACS), from HACS before. |
 | 0.36 | 2026-11-16 | WP40 (#111), from a user's request: §9.1 own position also as two sensors, `latitude` and `longitude` (°, six decimals, no state class, the tracker's 5 m dead-band), for dashboards and automations that cannot read the tracker's attributes. |
 | 0.35 | 2026-11-15 | WP36 (#113), from #112: §9.7 the traffic map can draw the own boat's track, option `track_hours` (0–24 h, off by default), from Home Assistant's history of the tracker (read only, as the anchor card, OD-36) then live. |
@@ -336,6 +337,7 @@ All entities belong to one HA device per config entry ("the boat"), except watch
 | `cog` | Course over ground | — | ° | measurement_angle |
 | `heading` | Heading (true), optional | — | ° | measurement_angle |
 | `latitude`, `longitude` | Own position, decimal degrees N/E positive, six decimals (v0.36, #111) | — | ° | — (a position has no meaningful statistics) |
+| `position_dm` | Own position as text, degrees and minutes to three decimals with the hemisphere, as on a chartplotter: `43° 30.000′ N 7° 15.500′ E` (point as decimal separator in every language; entity `sensor.<boat>_position`) (v0.38) | — | — | — |
 | `fix_quality` | GNSS fix | enum | — | — (diagnostic) |
 | `satellites` | Satellites in use | — | — | measurement (diagnostic) |
 | `hdop` | Horizontal dilution | — | — | measurement (diagnostic) |

@@ -26,8 +26,9 @@ it as your only alarm.
 
 ## What it provides
 
-- Own boat: position (device tracker, and latitude and longitude sensors), speed and course
-  over ground, GNSS health.
+- Own boat: position (device tracker; latitude and longitude sensors; and a text sensor in
+  degrees and minutes, `43° 30.000′ N 7° 15.500′ E`), speed and course over ground, GNSS
+  health.
 - AIS traffic: number of targets, nearest target, a compact target list for map cards.
 - Collision risk: CPA/TCPA of the most urgent target and a `collision_risk` binary sensor.
 - Watch list: device trackers for chosen MMSIs (friends' boats, tender…).

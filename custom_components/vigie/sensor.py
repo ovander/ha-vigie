@@ -16,8 +16,10 @@ from homeassistant.const import DEGREE, EntityCategory, UnitOfLength, UnitOfSpee
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
+from .const import POSITION_DEADBAND_M
 from .coordinator import VigieConfigEntry, VigieCoordinator
 from .entity import VigieEntity, with_identity
+from .geo import format_dm
 from .nmea.parsers import FixQuality
 from .state import (
     COG,
@@ -31,6 +33,7 @@ from .state import (
     Source,
     StaticInfo,
     angle_delta,
+    position_delta_m,
 )
 from .traffic import Encounter
 
@@ -330,6 +333,7 @@ async def async_setup_entry(
     async_add_entities(
         [
             *(VigieSensor(coordinator, description) for description in SENSORS),
+            PositionSensor(coordinator),
             AisTargetsSensor(coordinator),
         ]
     )
@@ -364,6 +368,28 @@ class VigieSensor(VigieEntity, SensorEntity):
     @property
     def native_value(self) -> Any:
         return self.current_value()
+
+
+class PositionSensor(VigieEntity, SensorEntity):
+    """Own position in degrees and minutes, as on a chartplotter (#111):
+    `43° 30.000′ N 7° 15.500′ E`. Written with the tracker's 5 m dead-band (SPEC §10.2)."""
+
+    def __init__(self, coordinator: VigieCoordinator) -> None:
+        super().__init__(
+            coordinator, "position_dm", deadband=POSITION_DEADBAND_M, delta=position_delta_m
+        )
+
+    def current_value(self) -> tuple[float, float] | None:
+        field = self.coordinator.own.get(POSITION)
+        if field is None:
+            return None
+        position: tuple[float, float] = field.value
+        return position
+
+    @property
+    def native_value(self) -> str | None:
+        position = self.current_value()
+        return None if position is None else format_dm(*position)
 
 
 class AisTargetsSensor(VigieEntity, SensorEntity):

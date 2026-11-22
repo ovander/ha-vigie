@@ -33,3 +33,17 @@ def bearing_deg(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     y = math.sin(dlmb) * math.cos(phi2)
     x = math.cos(phi1) * math.sin(phi2) - math.sin(phi1) * math.cos(phi2) * math.cos(dlmb)
     return math.degrees(math.atan2(y, x)) % 360.0
+
+
+def format_dm(lat: float, lon: float) -> str:
+    """Position in degrees and decimal minutes, as on a chartplotter (#111):
+    `43° 30.000′ N 7° 15.500′ E`. Minutes to three decimals (about 2 m), point as the
+    decimal separator whatever the language; 59.9996′ rounds up to the next degree."""
+    return f"{_dm(lat, 'N', 'S')} {_dm(lon, 'E', 'W')}"
+
+
+def _dm(value: float, positive: str, negative: str) -> str:
+    thousandths = round(abs(value) * 60_000)  # minutes × 1000, rounded once
+    degrees, rest = divmod(thousandths, 60_000)
+    hemisphere = positive if value >= 0 else negative
+    return f"{degrees}° {rest / 1000:06.3f}′ {hemisphere}"

@@ -5,9 +5,9 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.46 (draft) |
+| Version | 0.47 (draft) |
 | Date | 2026-10-24 |
-| Parent specification | HA-SAIL-SPEC-001 v0.37 |
+| Parent specification | HA-SAIL-SPEC-001 v0.38 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open points in §10 |
 
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.47 | 2026-11-22 | WP41 (SPEC v0.38 §9.1): U-GEO-01 (degrees and minutes, hemispheres, rounding carry) new; F-ENT-03 checks `position_dm` and its dead-band, F-ENT-04 / F-HUB-03 its unavailability, F-ENT-07 counts 25 entities. Done. |
 | 0.46 | 2026-11-20 | Parent SPEC v0.37 (install from the Marketplace); no test change. |
 | 0.45 | 2026-11-16 | WP40 (#111, SPEC v0.36 §9.1): F-ENT-01 covers `latitude` and `longitude`; F-ENT-03 checks their dead-band; F-ENT-04 and F-HUB-03 their unavailability; F-ENT-07 counts 24 entities. Done. |
 | 0.44 | 2026-11-15 | WP39 (#117): §7 the non-required `unit-latest` job runs the suite on the newest Home Assistant test harness (Python 3.14), its deprecation warnings in the job summary; F-ENT-08, F-TRF-05 and the card fixture check run on 2026.2 and on current releases (tracker attributes Home Assistant adds itself, `in_zones` and `tracking_type`, are not Vigie's). |
@@ -204,6 +205,7 @@ The merge logic is written as plain classes in `state.py` (no HA) wrapped by the
 | U-COO-04 | VDM with own MMSI | Not inserted in the target table | Done |
 | U-COO-05 | Dead-band: SOG 5.00 → 5.04 → 5.12 | 5.00 is written; 5.04 is suppressed (< 0.1 kn from the last *written* value); 5.12 is written | Done |
 | U-COO-06 | Throttle: 10 updates in 1 s | One write per `update_interval` with the latest value | Done |
+| U-GEO-01 | `geo.format_dm` (#111): 43.5, 7.258333; a southern and an eastern point; a western one; 0, 0; 10° 59.99996′ N, 179° 59.99996′ W | `43° 30.000′ N 7° 15.500′ E`; S/E and W letters; `0° 00.000′ N 0° 00.000′ E`; minutes rounded up into the next degree (`11° 00.000′ N 180° 00.000′ W`) | Done |
 
 ### 3.6 Static data store — `U-STA` (SPEC §9.4, OD-18)
 

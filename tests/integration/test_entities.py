@@ -33,6 +33,7 @@ OWN_BOAT_KEYS = [
     "heading",
     "latitude",
     "longitude",
+    "position_dm",
     "fix_quality",
     "satellites",
     "hdop",
@@ -180,6 +181,23 @@ async def test_f_ent_03_latitude_longitude_sensors(
     assert float(state(hass, loaded, "longitude").state) == round(7 + 15.5 / 60, 6)
 
 
+async def test_f_ent_03_position_sensor_degrees_minutes(
+    hass: HomeAssistant, loaded, fake_ports: FakePorts, freezer: FrozenDateTimeFactory
+):
+    """#111: the position as on a chartplotter, in one text sensor, the tracker's dead-band."""
+    assert entity_id(hass, loaded, "position_dm") == "sensor.garnet_position"
+    st = state(hass, loaded, "position_dm")
+    assert st.state == "43° 30.000′ N 7° 15.500′ E"
+    assert st.attributes["friendly_name"] == "Garnet Position"
+    assert "unit_of_measurement" not in st.attributes and "state_class" not in st.attributes
+    fake_ports[BY_ID_PORT].feed_lines(rmc(lat="4330.050"))  # ~93 m: written
+    await tick(hass, freezer)
+    assert state(hass, loaded, "position_dm").state == "43° 30.050′ N 7° 15.500′ E"
+    fake_ports[BY_ID_PORT].feed_lines(rmc(lat="4330.0516"))  # ~3 m more: not written
+    await tick(hass, freezer)
+    assert state(hass, loaded, "position_dm").state == "43° 30.050′ N 7° 15.500′ E"
+
+
 # --- F-ENT-04 ---------------------------------------------------------------
 
 
@@ -237,8 +255,8 @@ async def test_f_ent_06_two_boats_no_unique_id_collision(
 async def test_f_ent_07_unique_ids_prefixed_by_entry_id(hass: HomeAssistant, loaded):
     ents = er.async_entries_for_config_entry(er.async_get(hass), loaded.entry_id)
     # P1: 14; P2 adds collision_risk, closest target, CPA, TCPA; P5 the 4 anchor entities;
-    # latitude and longitude (#111)
-    assert len(ents) == 24
+    # latitude, longitude and the position in degrees and minutes (#111)
+    assert len(ents) == 25
     assert all(e.unique_id.startswith(f"{loaded.entry_id}_") for e in ents)
     assert all(e.platform == DOMAIN for e in ents)
 
