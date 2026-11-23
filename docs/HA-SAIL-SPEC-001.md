@@ -5,8 +5,8 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-SPEC-001 |
-| Version | 0.38 (draft) |
-| Date | 2026-11-22 |
+| Version | 0.39 (draft) |
+| Date | 2026-11-23 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open decisions in §14 |
 | Project name / domain | **Vigie** / `vigie` (OD-01 resolved) |
@@ -18,6 +18,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.39 | 2026-11-23 | WP42 (#125), owner's decision: §9.10 and OD-45 amended. Obtaining both noforeignland keys (boat and integration) is the end user's responsibility; the uploader provides none. The integration key field is required while no key is built in; format check relaxed to 8–128 characters without a space; Reconfigure keeps the integration key when its field is left empty. |
 | 0.38 | 2026-11-22 | WP41 (#111 follow-up, user's request): §9.1 `position_dm`, the own position as text in degrees and minutes, as on a chartplotter (`43° 30.000′ N 7° 15.500′ E`), the tracker's 5 m dead-band; `geo.format_dm`. |
 | 0.37 | 2026-11-20 | #116 follow-up: §2.1 and §12 *Packaging*: installed from Home Assistant's Marketplace from 2026.11 (it replaces HACS), from HACS before. |
 | 0.36 | 2026-11-16 | WP40 (#111), from a user's request: §9.1 own position also as two sensors, `latitude` and `longitude` (°, six decimals, no state class, the tracker's 5 m dead-band), for dashboards and automations that cannot read the tracker's attributes. |
@@ -538,10 +539,10 @@ Specified in v0.29 (WP29, #91) after OD-28 was resolved (owner, option b); built
 | Field | Rule |
 |---|---|
 | Source | A `device_tracker` entity (entity selector); proposes Vigie's own boat tracker when there is one |
-| Boat key | The boat's API key from noforeignland's website (X-12 §4.2); a password field |
-| Integration key | Optional (OD-45): an override of the built-in key, a password field, UUID format checked; required only while the integration has no built-in key |
+| Boat key | The boat's API key from noforeignland's website (X-12 §4.2), obtained by the user; a password field |
+| Integration key | The user's own key, obtained from noforeignland (OD-45 as amended v0.39); a password field; **required** while the integration has no built-in key (today), optional otherwise; 8–128 characters without a space (X-12 §4.1 shows UUIDs, but no format is promised). In Reconfigure, an empty field keeps the stored key |
 
-No request is sent during setup: a test send would put a point on the public map. A key is only proved by the first send (status *rejected* otherwise, below). **Integration key (OD-45, v0.31):** noforeignland's key identifies the software, not the boat (X-12 §4.1), so it is built into the integration (`protocol.BUILTIN_INTEGRATION_KEY`), as noforeignland's own SignalK plugin ships its key; it is added once noforeignland has issued it and agreed to its publication. Until then setup requires the optional field. Neither the shared key of the SignalK plugin nor any other project's key is used (X-12 OD-8). The boat key and an override stay in the config entry, are never logged and are redacted from diagnostics, which only say which integration key is used (`override`, `built-in` or `none`); sending with no key at all is a rejection.
+No request is sent during setup: a test send would put a point on the public map. A key is only proved by the first send (status *rejected* otherwise, below). **Whose keys (v0.39, owner):** obtaining both keys from noforeignland is the end user's responsibility, and so is respecting noforeignland's terms, guidelines and rules for their use (keep them private, stay within its fair-use limits, options included); the README and the form say so; the uploader provides neither and never suggests reusing another program's key. **Integration key (OD-45, v0.31):** noforeignland's key identifies the software, not the boat (X-12 §4.1), so it is built into the integration (`protocol.BUILTIN_INTEGRATION_KEY`), as noforeignland's own SignalK plugin ships its key; it is added once noforeignland has issued it and agreed to its publication. Until then setup requires the optional field. Neither the shared key of the SignalK plugin nor any other project's key is used (X-12 OD-8). The boat key and an override stay in the config entry, are never logged and are redacted from diagnostics, which only say which integration key is used (`override`, `built-in` or `none`); sending with no key at all is a rejection.
 
 **Options (OD-43: the reference client's defaults, X-12 §8.1, §8.3, except sending and the stationary point, amended v0.30).**
 
@@ -694,7 +695,7 @@ Changing an option reloads the entry. The anchor radius is not an option: it cha
 | ~~OD-42~~ | ~~Track uploader: phase~~ | **Resolved v0.29** (owner): new phase P8 *Track sharing*, after P7, independent of P4; #51 moves into it (§13) | — |
 | ~~OD-43~~ | ~~Track uploader: sampling and sending defaults~~ | **Resolved v0.29** (owner): the reference client's (X-12 §8.1, §8.3): 60 s, 80 m, 1.5 kn, 24 h keepalive, send every 10 min; buffer 10 000 points; all in the options (§9.10). Rejected: a lighter default (5 min, hourly). **Amended v0.30** (owner): send every 60 min and a stationary point every 6 h; logging stays at one point a minute after 80 m, so the track keeps its detail (rejected: one point an hour, which would cut across headlands) | — |
 | ~~OD-44~~ | ~~Track uploader: privacy~~ | **Resolved v0.29** (owner): a *Sharing* switch; off, nothing is logged or sent (§9.10). Rejected: also pausing inside a chosen zone; no control | — |
-| ~~OD-45~~ | ~~Track uploader: where noforeignland's integration key lives~~ | **Resolved v0.31** (owner): built into the integration, as noforeignland's SignalK plugin ships its own; an optional override in setup and Reconfigure (§9.10). Publication agreed with noforeignland when the key is requested. Rejected: every user asking noforeignland for a key of their own | — |
+| ~~OD-45~~ | ~~Track uploader: where noforeignland's integration key lives~~ | **Resolved v0.31** (owner): built into the integration, as noforeignland's SignalK plugin ships its own; an optional override in setup and Reconfigure (§9.10). Publication agreed with noforeignland when the key is requested. **Amended v0.39** (owner): noforeignland issues no key for personal projects, so the user enters their own key, obtained from noforeignland, and is responsible for obtaining both keys; the built-in key stays possible if one is ever issued | — |
 
 (OD-05 and OD-09 from v0.1 were tied to NMEA 2000 and polars; both moved to P4 and are no longer open for v1.)
 

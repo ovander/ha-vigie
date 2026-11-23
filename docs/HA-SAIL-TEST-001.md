@@ -5,9 +5,9 @@
 | Item | Value |
 |---|---|
 | Document ID | HA-SAIL-TEST-001 |
-| Version | 0.47 (draft) |
+| Version | 0.48 (draft) |
 | Date | 2026-10-24 |
-| Parent specification | HA-SAIL-SPEC-001 v0.38 |
+| Parent specification | HA-SAIL-SPEC-001 v0.39 |
 | Owner | Olivier (Garnet & Jade Consulting) |
 | Status | Draft — open points in §10 |
 
@@ -17,6 +17,7 @@
 
 | Version | Date | Change |
 |---|---|---|
+| 0.48 | 2026-11-23 | WP42 (#125, SPEC v0.39 OD-45 amended): U-NFL-09 accepts any key of 8–128 characters without a space; F-NFL-01 checks the integration key field is required without a built-in key, optional with one, and that Reconfigure keeps the stored key when the field is empty. Done in ovander/ha-noforeignland#5. |
 | 0.47 | 2026-11-22 | WP41 (SPEC v0.38 §9.1): U-GEO-01 (degrees and minutes, hemispheres, rounding carry) new; F-ENT-03 checks `position_dm` and its dead-band, F-ENT-04 / F-HUB-03 its unavailability, F-ENT-07 counts 25 entities. Done. |
 | 0.46 | 2026-11-20 | Parent SPEC v0.37 (install from the Marketplace); no test change. |
 | 0.45 | 2026-11-16 | WP40 (#111, SPEC v0.36 §9.1): F-ENT-01 covers `latitude` and `longitude`; F-ENT-03 checks their dead-band; F-ENT-04 and F-HUB-03 their unavailability; F-ENT-07 counts 24 entities. Done. |
@@ -298,7 +299,7 @@ In the uploader's repository (`ovander/ha-noforeignland`, `tests/core/`): pure P
 | U-NFL-06 | Request: two points | Form body `boatApiKey`, `timestamp` = the last point's epoch ms, `track` = `[[ms, lat, lon], …]` ascending, `pluginVersion` `ha-noforeignland/<version>`; headers `X-NFL-API-Key`, `Accept-Encoding: identity`; keys never in a log line | Done |
 | U-NFL-07 | Response classification: 200 `{"status":"ok"}`; 200 unreadable body; 200 `{"status":"error","message":"Invalid boat API key"}`; 401; 503; timeout | sent; sent (X-12 §6); rejected with the message; rejected; retry; retry | Done |
 | U-NFL-08 | Buffer round trip (to and from the stored form) after a partial send | Exactly the unsent points, in order | Done |
-| U-NFL-09 | Integration key format; which key is sent (OD-45): an override, an empty override, none, with and without a built-in key | A UUID accepted, anything else refused; the override when set, else the built-in key, else none | Done |
+| U-NFL-09 | Integration key format; which key is sent (OD-45): an override, an empty override, none, with and without a built-in key | 8–128 characters without a space accepted (a UUID or not, v0.48), anything else refused; the override when set, else the built-in key, else none | Done |
 
 ## 4. Functional tests (`tests/integration/`)
 
@@ -450,7 +451,7 @@ In the uploader's repository (`tests/integration/`), with `pytest-homeassistant-
 
 | ID | Case | Expected | Status |
 |---|---|---|---|
-| F-NFL-01 | Config flow: source, boat key and an override; a non-UUID override; Vigie's tracker present; with a built-in key, no override; without one, no override (OD-45) | Entry created, no request sent; error on the key field; Vigie's tracker proposed; entry created from the source and boat key only; a key asked for. Sending: the built-in key in the header, diagnostics `built-in` without the key; no key at all, *rejected* and no request | Done |
+| F-NFL-01 | Config flow: source, boat key and an override; an override with a space; Vigie's tracker present; with a built-in key, no override; without one, a blank override; Reconfigure with the integration key left empty (OD-45 as amended v0.39) | Entry created, no request sent; error on the key field; Vigie's tracker proposed; entry created from the source and boat key only (field optional); the field required and a key asked for; the stored integration key kept. Sending: the built-in key in the header, diagnostics `built-in` without the key; no key at all, *rejected* and no request | Done |
 | F-NFL-02 | Entities | *Sharing* (on), *Status*, *Buffered points*, *Last point logged*, *Last send*, with translations in English and French | Done |
 | F-NFL-03 | Boat moving at 6 kn, server answering `ok`: with a 10-min send for 30 min; with the defaults for 2 h, then stationary for 7 h | A point each minute, a send at each interval with the points since the last one; *Status* `ok`. Defaults: a send each hour (59 then 60 points); stationary, one point at 6 h; a still boat logs nothing else | Done |
 | F-NFL-04 | Outage (R-1): server unreachable for 2 h while moving, then back | Points kept (*Status* `waiting`, buffer grows); at recovery one send of all of them, in order, in chunks; no point sent twice, none lost | Done |
