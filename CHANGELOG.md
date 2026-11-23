@@ -10,8 +10,9 @@ versioning: SemVer.
   (`43° 30.000′ N 7° 15.500′ E`), next to the decimal latitude and longitude (#111).
 
 ### Documentation
-- SPEC v0.39, TEST v0.48: obtaining noforeignland's keys is the user's responsibility; the
-  uploader asks for both (OD-45 amended, #125).
+- SPEC v0.39, TEST v0.48: obtaining noforeignland's keys, and respecting noforeignland's
+  rules for their use, is the user's responsibility; the uploader asks for both (OD-45
+  amended, #125).
 - README: where the collision alert's thresholds are set (Vigie → *Configure*), with their
   defaults and ranges (#109).
 
