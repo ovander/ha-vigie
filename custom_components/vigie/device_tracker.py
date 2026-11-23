@@ -11,12 +11,10 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .const import DOMAIN
+from .const import DOMAIN, POSITION_DEADBAND_M
 from .coordinator import VigieConfigEntry, VigieCoordinator
 from .entity import VigieEntity, boat_device_info, with_identity
 from .state import COG, HEADING, POSITION, SOG, position_delta_m
-
-POSITION_DEADBAND_M = 5.0  # SPEC §10.2
 
 
 async def async_setup_entry(

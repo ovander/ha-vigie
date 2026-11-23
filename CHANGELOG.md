@@ -5,6 +5,10 @@ versioning: SemVer.
 
 ## [Unreleased]
 
+### Added
+- `sensor.<boat>_position`: your position in degrees and minutes, as on a chartplotter
+  (`43° 30.000′ N 7° 15.500′ E`), next to the decimal latitude and longitude (#111).
+
 ### Documentation
 - README: where the collision alert's thresholds are set (Vigie → *Configure*), with their
   defaults and ranges (#109).

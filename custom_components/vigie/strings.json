@@ -99,6 +99,9 @@
       "longitude": {
         "name": "Longitude"
       },
+      "position_dm": {
+        "name": "Position"
+      },
       "fix_quality": {
         "name": "GNSS fix",
         "state": {

@@ -46,3 +46,6 @@ ATTR_LATITUDE = "latitude"
 ATTR_LONGITUDE = "longitude"
 ATTR_RADIUS = "radius"
 ATTR_KEEP_SINCE = "keep_since"
+
+# Own position written when it moved by this much (SPEC §10.2): tracker and position sensor
+POSITION_DEADBAND_M = 5.0
