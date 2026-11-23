@@ -5,6 +5,12 @@ versioning: SemVer.
 
 ## [Unreleased]
 
+## [0.4.0-beta.6] - 2026-11-23
+
+Your position also as on a chartplotter, in degrees and minutes, next to the decimal
+latitude and longitude. Nothing else changes in Vigie; the docs now say where the
+collision alert's thresholds are set.
+
 ### Added
 - `sensor.<boat>_position`: your position in degrees and minutes, as on a chartplotter
   (`43° 30.000′ N 7° 15.500′ E`), next to the decimal latitude and longitude (#111).
@@ -292,7 +298,8 @@ P1–P3). Tested on synthetic data only; see `docs/test-reports/`.
 - AIS decoder rejects payload armoring characters 0x58–0x5F (`X`…`_`), which the AIVDM
   specification does not allow; they were decoded as six-bit values 40–47 (#11).
 
-[Unreleased]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.5...HEAD
+[Unreleased]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.6...HEAD
+[0.4.0-beta.6]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.5...v0.4.0-beta.6
 [0.4.0-beta.5]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.4...v0.4.0-beta.5
 [0.4.0-beta.4]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.3...v0.4.0-beta.4
 [0.4.0-beta.3]: https://github.com/ovander/ha-vigie/compare/v0.4.0-beta.2...v0.4.0-beta.3
