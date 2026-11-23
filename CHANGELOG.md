@@ -5,6 +5,10 @@ versioning: SemVer.
 
 ## [Unreleased]
 
+### Documentation
+- `CONTRIBUTING.md`: recording the receiver for the X-09 regression captures, step by
+  step from any computer, with the privacy choice before sending (#2).
+
 ## [0.4.0-beta.6] - 2026-11-23
 
 Your position also as on a chartplotter, in degrees and minutes, next to the decimal

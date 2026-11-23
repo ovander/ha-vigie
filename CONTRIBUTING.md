@@ -234,6 +234,55 @@ recentering, drop it 20 m north instead (latitude 43.50018) and press *Recenter*
 10 minutes: the circle moves back to 43.5, 7.25. Checklist in
 `docs/test-reports/P7-report.md` §5.2.
 
+### Recording the receiver (X-09 captures, issue #2)
+
+Two raw recordings of a real receiver become regression fixtures (TEST-001 D-05, D-06; U-GPS-08,
+U-AIS-13, F-ENT-01 on real data):
+
+| File | Conditions | At least |
+|---|---|---|
+| **D-05, in port** | moored, receiver on | 15 min (`--duration 900`) |
+| **D-06, under way** | sailing or motoring, ideally with traffic | 30 min (`--duration 1800`) |
+
+1. **A computer, once.** A laptop or the bench Pi, Linux, macOS or Windows, Python 3.11 or later:
+
+   ```bash
+   git clone https://github.com/ovander/ha-vigie.git && cd ha-vigie
+   python3 -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+   pip install pyserial
+   ```
+
+2. **The receiver on that computer.** A serial port has one reader at a time: move the
+   receiver's USB cable from the Home Assistant machine to the computer (simplest), or, to
+   capture on the Home Assistant machine itself, first disable Vigie (Settings → Devices &
+   services → Vigie → ⋮ → **Disable**). The port: `ls /dev/serial/by-id/` (Linux),
+   `ls /dev/cu.*` (macOS), *Device Manager → Ports (COM & LPT)* (Windows, e.g. `COM3`).
+
+3. **Capture**, in `ha-vigie` with the virtual environment active, at the receiver's baud
+   rate (the one chosen when setting up Vigie, often 38400):
+
+   ```bash
+   python -m tests.tools.capture --port /dev/serial/by-id/usb-…-port0 --baud 38400 --duration 900
+   python -m tests.tools.capture --port /dev/serial/by-id/usb-…-port0 --baud 38400 --duration 1800
+   ```
+
+   Each run writes `captures/<UTC time>_<port>.nmea` (git-ignored), every line timestamped
+   and kept as received, garbled ones included. Check with `head captures/*.nmea`: lines
+   `$GPRMC…` and `!AIVDM…` after the time; an empty file means a wrong port or baud rate.
+   Put the cable back, or enable Vigie again.
+
+4. **Privacy (TEST-001 TP-03), decide before sending.** A capture holds your MMSI
+   (`!AIVDO` sentences) and your position, in port your berth; other ships' data is public.
+   Fixtures are published, so choose: (a) keep your MMSI and the berth; (b) have them replaced
+   by a made-up MMSI and position before the file is committed; (c) capture only away from
+   the home port.
+
+5. **Send.** GitHub does not take `.nmea` attachments: zip the files and drop the zip in a
+   comment on [issue #2](https://github.com/ovander/ha-vigie/issues/2), with the receiver
+   model and baud rate, the conditions (in port or under way, area, traffic) and your
+   choice (a), (b) or (c). The files are then anonymised if asked, added to
+   `tests/fixtures/` and the D-05/D-06 tests switched from their synthetic stand-ins.
+
 ## Workflow
 
 1. Open or pick an issue (label it with its phase and layer).
